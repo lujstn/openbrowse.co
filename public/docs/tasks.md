@@ -1,0 +1,102 @@
+# Writing tasks
+
+> How the agent reads your prompt, and the prompt shapes that measurably change what comes back: completion targets, record definitions, and scope.
+
+*Source: https://openbrowse.co/docs/tasks*
+
+Prompt shape changes results more than model choice does. This page explains what the agent actually does with your task text, then gives the patterns that work.
+
+## What happens to your prompt
+
+Three things are extracted from the task before the first step:
+
+1. **The start URL.** The first `http(s)` URL in the task is saved to the session clipboard as `startUrl`, and the agent is instructed to begin by opening it. Put the URL in the task; do not make the agent search for the site.
+2. **The goal.** A cheap pre-flight LLM call reduces the task to one sentence stating what a complete and correct result looks like. That sentence is pinned under your task as `GOAL:` and re-injected every ten steps, so the first sentence of your task effectively becomes the run's standing instruction. Make it carry the finish line.
+3. **The schema, if any.** With an `outputSchema`, an empty answer store is built before the run and the agent is told its purpose is to fill it, not to memorise things. Field names and descriptions in the schema act as instructions; see [structured output](https://openbrowse.co/docs/structured-output).
+
+The system prompt already teaches the extraction method (collect links, read pages in bulk, load draft rows, fix judgement fields, settle absent fields, finish), warns the agent that index pages are a table of contents rather than the content, and forbids guessing enum values. You do not need to restate any of that. Your task supplies what the system prompt cannot know: the site, the goal, and the definition of done.
+
+## State the finish line
+
+The single highest-leverage sentence is a completion target the agent can check itself against.
+
+Weak:
+
+```
+Get all the jobs from https://example.com/careers
+```
+
+Strong:
+
+```
+Open https://example.com/careers and capture every currently open vacancy.
+The page shows a total count; keep going until your number of records
+matches it. A record is one vacancy with its own detail page.
+```
+
+If the page shows a total, say so. If it does not, give the expected order of magnitude ("there are roughly 30 products") or a structural definition ("one record per row in the table"). The completeness gate can verify that every schema field is filled or settled; it cannot know that the site has 14 items unless the page states it or you do.
+
+## Define what a record is
+
+Ambiguity about what counts as an item is the most common source of over- or under-counting. Listings often mix records with category links, adverts and "load more" stubs. One sentence settles it:
+
+```
+A record is a property listing with a price and its own detail page.
+Ignore the featured carousel at the top; those repeat further down.
+```
+
+## Say where the truth lives, when you know
+
+The agent discovers embedded panels, JSON-LD and detail pages on its own, and its `read_pages` tool reads inside cross-origin embeds automatically. But when you already know the structure, saying so saves steps and money:
+
+```
+The listings are inside an embedded job board panel. Each vacancy's
+description and published date are on its own detail page, not the list.
+```
+
+## Keep judgement criteria in the schema, not the prose
+
+For structured extraction, put per-field rules in the schema's `description` fields, where they are attached to the exact field they govern, and keep the task about scope and completion. A field description like `"seniority as stated on the page, null if not stated"` outperforms the same rule buried in a paragraph of task text, and the store validates against the field either way.
+
+## Scope tightly for budget models
+
+`gpt-5.6-luna` produces good extractions at very low cost, but only when the prompt is narrow. Broad prompts ("find out everything about this company") invite wandering and, on smaller models, hallucination. If you want cheap, be specific; if you must be vague, use a stronger model. See [choosing a model](https://openbrowse.co/docs/models).
+
+## Secrets, standing instructions and budgets
+
+- **`sensitiveData`** passes credentials as named placeholders: the agent sees the key names and uses them to fill forms, but the values are never shown to the model.
+
+  ```ts
+  const session = await client.sessions.create({
+    task: "Log in to https://app.example.com and download this month's invoice data.",
+    model: "claude-sonnet-5",
+    profileId: "<profile-id>",
+    sensitiveData: { app_password: process.env.APP_PASSWORD },
+  });
+  ```
+
+- **`systemPromptExtension`** prepends your own standing rules to the built-in ones, and is the right place for policies that apply to every step ("never submit forms", "stay on example.com").
+- **`maxCostUsd`** is a hard stop-loss checked after every step; see [cost control](https://openbrowse.co/docs/cost).
+
+## Follow-up tasks
+
+With `keepAlive: true`, the session returns to `idle` when the task finishes instead of stopping, and a follow-up request with the same `sessionId` runs a new task in it. The browser is relaunched per run, so state that must survive between tasks belongs in a [profile](https://openbrowse.co/docs/profiles) (cookies, logins) or in the output of the previous task, not in open tabs.
+
+## A complete example
+
+```ts
+const session = await client.sessions.create({
+  task: [
+    "Open https://example.com/careers and capture every currently open vacancy.",
+    "The page shows a total; keep going until your record count matches it.",
+    "A record is one vacancy with its own detail page; read each detail page",
+    "rather than the listing snippet.",
+  ].join(" "),
+  model: "gpt-5.6-terra",
+  reasoningEffort: "none",
+  maxCostUsd: 3.0,
+  outputSchema: vacancySchema,
+});
+```
+
+This is, near enough, the prompt behind the published [benchmark](https://openbrowse.co/benchmarks): 14 of 14 records, $0.24, under two minutes.

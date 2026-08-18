@@ -1,0 +1,7 @@
+{
+  "$comment": "Pinned deliberately: the site launched describing v1.2.0. scripts/sync-citation.mjs regenerates this from the upstream CITATION.cff and will move it to the current release, so run it only when you intend to un-pin. See DEPLOY.md.",
+  "version": "1.2.0",
+  "doi": "10.5281/zenodo.21986248",
+  "dateReleased": "2026-08-17",
+  "orcid": "https://orcid.org/0009-0004-3743-2349"
+}

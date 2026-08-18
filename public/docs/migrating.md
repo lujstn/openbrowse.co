@@ -1,0 +1,110 @@
+# Migrating from Browser Use Cloud
+
+> Everything that changes when an existing browser-use-sdk integration moves from Browser Use Cloud to a self-hosted OpenBrowse instance: the two-line client change, the request fields that are silently ignored, the model names that are rejected, and the timing differences that will surprise you.
+
+*Source: https://openbrowse.co/docs/migrating*
+
+OpenBrowse serves the same v3 REST surface as Browser Use Cloud, so the client change is two lines. This page is about everything else: the handful of places where the two are not the same, ordered by how likely each one is to cost you an afternoon.
+
+## The two lines
+
+```ts
+import { BrowserUse } from "browser-use-sdk/v3";
+
+const client = new BrowserUse({
+  apiKey: process.env.OPENBROWSE_API_KEY,
+  baseUrl: "https://your-host/v3",
+});
+```
+
+The import matters. The bare `browser-use-sdk` entry point is the v4 client, whose runs API has a different request shape that OpenBrowse does not implement. The v3 client lives at `browser-use-sdk/v3` and its method is `sessions.create`, not `tasks.create`.
+
+The `baseUrl` needs the `/v3` suffix, because the SDK's own default base URL ends in `/api/v3` and its request paths are relative to it.
+
+Retry logic, polling, profile ids, output schemas and cost caps all carry over untouched.
+
+## 1. There is no proxy
+
+> **Warning:** This is the one that changes your results without erroring. Browser Use Cloud runs a managed US residential proxy by default, so target sites currently see a residential IP. OpenBrowse has no proxy layer at all: requests leave from your machine's own address. Test anything geo-gated, rate-limited by IP, or fussy about datacentre ranges before you migrate the rest.
+
+`proxyCountryCode` is accepted so your code still compiles, and does nothing. If you need a proxy, put one in front of the instance at the network level, or keep those particular jobs on the cloud. There is no per-session proxy selection to reach for.
+
+## 2. Ten request fields are accepted and ignored
+
+Three of them are declared in the request model and deliberately inert:
+
+| Field | What happens |
+| --- | --- |
+| `proxyCountryCode` | Ignored, as above |
+| `enableRecording` | Ignored. Sessions are not recorded and `recordingUrls` comes back empty |
+| `skills` | Ignored. There is no skills or marketplace equivalent |
+
+The other seven are not declared at all, so they are dropped silently before your request is ever validated:
+
+| Field | Why it matters |
+| --- | --- |
+| `agentmail` | **The cloud defaults this to on.** A caller expecting a provisioned inbox gets none, and no error |
+| `codeMode` | Changes the shape of `output` on the cloud to `{text, code}`. Here `output` keeps its normal shape |
+| `workspaceId` | No workspaces exist. `workspaceId` comes back null |
+| `enableScheduledTasks` | No scheduler. Schedule from your own side |
+| `cacheScript` | No script cache |
+| `autoHeal` | No auto-heal behaviour |
+| `useOwnKey` | Always effectively true: the instance uses the provider keys in its own `.env` |
+
+`agentmail` and `codeMode` are the two worth checking for in your codebase, because both change what you get back rather than merely doing less.
+
+The matching response fields (`recordingUrls`, `screenshotUrl`, `workspaceId`, `proxyCountryCode`) are always empty or null.
+
+## 3. Fourteen of the cloud's model names are rejected
+
+Browser Use Cloud's v3 `model` enum has 22 names. OpenBrowse implements 8 of them. Naming one of the other 14 fails at request time with a 422 rather than falling back to a default.
+
+The cloud's own default, `claude-opus-4.7`, is supported here. It is not the *default* here, though, and that catches people the other way round:
+
+> **Warning:** Omit `model` on the cloud and you get `claude-opus-4.7`. Omit it here and you get `claude-sonnet-5`, silently and without an error. So a caller who names a model risks a 422, and a caller who relied on the cloud's default gets a quiet model swap instead. Set `model` explicitly and neither happens.
+
+**Supported on both:** `claude-opus-4.7`, `claude-opus-4.8`, `claude-opus-4.6`, `claude-sonnet-5`, `claude-sonnet-4.6`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`.
+
+**Rejected here, with the nearest equivalent:**
+
+| Cloud name | Here |
+| --- | --- |
+| `bu-mini`, `bu-max`, `bu-ultra` | No equivalent. These are tiers rather than models; pick a model by name |
+| `gemini-3-flash`, `gemini-3-pro`, `gemini-3.1-pro`, `gemini-3.5-flash` | Google is not supported yet |
+| `gpt-5.2`, `gpt-5.5`, `gpt-5-mini`, `gpt-5.4-mini` | Use `gpt-5.6-sol`, `gpt-5.6-terra` or `gpt-5.6-luna` |
+| `claude-haiku-4.5` | Use `claude-sonnet-4.6` |
+| `glm-5.2`, `minimax-m3` | No equivalent |
+
+OpenBrowse also serves models the cloud's v3 enum does not offer: `claude-opus-5`, `claude-fable-5`, `claude-mythos-5`, and a `[1m]` long-context variant of every Anthropic name. Of those, the cloud reaches `claude-opus-5` and `claude-fable-5` through its v4 runs API only, and has no equivalent of `claude-mythos-5` or the `[1m]` variants at all. The full list is on [choosing a model](https://openbrowse.co/docs/models).
+
+## 4. `thinkingLevel: null` is rejected
+
+The cloud's `thinkingLevel` field works here and maps onto `reasoningEffort`, with `disabled` becoming `none`. One exception: the cloud documents `thinkingLevel: null` as the way to clear the setting, and here an explicit `null` is read as a value rather than as an absence, so it fails with `'None' is not a supported thinkingLevel`.
+
+Omit the field entirely instead.
+
+## 5. `liveUrl` is not immediate
+
+On Browser Use Cloud, `liveUrl` is available the moment a session is created. Here, creating a session returns `status: "created"` with `liveUrl` still null; the instance then allocates a virtual display and launches Chromium, and only then does the status become `running` with `liveUrl` populated.
+
+That is a few seconds. If your integration reads `liveUrl` straight off the create response and embeds it, it will embed nothing. Poll until `status` is `running`.
+
+## 6. The status sets are not identical
+
+A session created without a task and never given one is expired after fifteen minutes and moves to `expired`, which is not in the cloud's status enum. If your code switches exhaustively over the cloud's set, add a branch for it.
+
+Going the other way, the cloud has `timed_out` and OpenBrowse does not: a run that exceeds its limits here ends as `stopped` or `error`, with the reason in `lastStepSummary` or the step feed.
+
+## 7. There is nothing else running the machine
+
+The cloud absorbs uptime, capacity and upgrades. Here a box has to stay up, and concurrency is bounded by memory: budget roughly 2GB of RAM per concurrent session. [Installation](https://openbrowse.co/docs/installation) covers running it under systemd so it survives a reboot, and [exposing it safely](https://openbrowse.co/docs/exposing) covers reaching it from outside your network.
+
+## What does carry over
+
+Worth stating plainly, because the list above is longer than the list of things that break:
+
+- The whole `sessions` surface: create, get, list, stop, and follow-up tasks against an existing session.
+- `outputSchema` and structured output, with stricter validation here than on the cloud.
+- `maxCostUsd`, enforced as a hard stop-loss. If your caps were priced for a service charging platform fees on top of tokens, `CLOUD_MAX_COST_FACTOR` scales incoming caps down without touching your clients; see [cost control](https://openbrowse.co/docs/cost).
+- Profiles. OpenBrowse imports the Playwright storage-state format a cloud profile export gives you, cookies plus per-origin `localStorage`, and an imported profile keeps its cloud id, so existing `profileId` references keep working. See [profiles](https://openbrowse.co/docs/profiles).
+- Both authentication styles: `Authorization: Bearer <key>` and the `X-Browser-Use-API-Key` header the SDK sends.

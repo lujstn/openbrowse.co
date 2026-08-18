@@ -1,0 +1,103 @@
+{
+  "$comment": "Transcribed from lujstn/openbrowse README.md. scripts/check-upstream.mjs reparses that README and fails if this drifts.",
+  "finding": {
+    "title": "OpenAI and Anthropic models want opposite ends of the reasoning dial",
+    "summary": "On browser tasks the two families fail in opposite directions. OpenAI models do better with less reasoning: they spend less time planning ahead and more time reacting to the page actually in front of them. Anthropic's 5-series Claude models lean towards rabbit holes and need reasoning time to refocus on the goal.",
+    "$comment": "The per-family evidence sentences are derived from data/benchmarks.json by reasoningContrast in lib/benchmark.ts, so they cannot contradict the runs table beside them."
+  },
+  "reasoningLevels": [
+    "default",
+    "none",
+    "low",
+    "medium",
+    "high",
+    "xhigh",
+    "max"
+  ],
+  "reasoningNote": "Values are validated per model at request time and providers differ in their defaults, so it is worth setting reasoningEffort explicitly rather than inheriting it. Not every model accepts every level: see the per-model table in the documentation.",
+  "thinkingDistinction": {
+    "browserThinking": "How the platform itself works, in steps: the see, plan, next and thinking cards in the live feed. Not switchable.",
+    "modelReasoning": "The chain-of-thought reasoning the LLM provider exposes, such as Anthropic extended thinking or OpenAI reasoning effort. Set per session with reasoningEffort."
+  },
+  "recommendations": [
+    {
+      "id": "most-cases",
+      "label": "For most use cases",
+      "picks": [
+        {
+          "model": "gpt-5.6-terra",
+          "reasoningEffort": "none"
+        },
+        {
+          "model": "gpt-5.6-sol",
+          "reasoningEffort": "none"
+        },
+        {
+          "model": "claude-sonnet-5",
+          "reasoningEffort": "high"
+        }
+      ],
+      "rationale": "The best balance of reliability, accuracy and cost."
+    },
+    {
+      "id": "intense",
+      "label": "For intense workflows",
+      "picks": [
+        {
+          "model": "claude-opus-5",
+          "reasoningEffort": "medium"
+        },
+        {
+          "model": "gpt-5.6-sol",
+          "reasoningEffort": "none"
+        }
+      ],
+      "rationale": "Both are strong here, but watch token burn."
+    },
+    {
+      "id": "budget",
+      "label": "On a budget",
+      "picks": [
+        {
+          "model": "gpt-5.6-luna",
+          "reasoningEffort": "max"
+        }
+      ],
+      "rationale": "Pair it with a tightly focused prompt. It takes a while and it is more prone to hallucination on broad prompts, but the extractions themselves are still good quality."
+    }
+  ],
+  "providers": [
+    {
+      "name": "OpenAI",
+      "status": "supported",
+      "models": [
+        "gpt-5.6-sol",
+        "gpt-5.6-terra",
+        "gpt-5.6-luna"
+      ]
+    },
+    {
+      "name": "Anthropic",
+      "status": "supported",
+      "models": [
+        "claude-mythos-5",
+        "claude-fable-5",
+        "claude-opus-5",
+        "claude-sonnet-5",
+        "claude-opus-4.8",
+        "claude-opus-4.8[1m]",
+        "claude-opus-4.7",
+        "claude-opus-4.7[1m]",
+        "claude-opus-4.6",
+        "claude-opus-4.6[1m]",
+        "claude-sonnet-4.6",
+        "claude-sonnet-4.6[1m]"
+      ]
+    },
+    {
+      "name": "Google",
+      "status": "coming-soon",
+      "models": []
+    }
+  ]
+}

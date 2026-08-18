@@ -1,0 +1,9 @@
+{
+  "title": "v3/profiles/profile_id",
+  "pages": [
+    "get",
+    "patch",
+    "delete",
+    "put"
+  ]
+}

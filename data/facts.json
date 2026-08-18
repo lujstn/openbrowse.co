@@ -1,0 +1,1035 @@
+{
+  "repo": "https://github.com/lujstn/openbrowse",
+  "note": "Constants the published prose states as fact, each pinned to the line of application source it came from. scripts/check-facts.mjs re-extracts every value from the app repository and re-greps content/docs/*.mdx and content/landing.ts for it, so a value can neither drift in the code without failing the build nor quietly disappear from the prose that publishes it.",
+  "prose": [
+    "content/docs/*.mdx",
+    "content/landing.ts"
+  ],
+  "facts": [
+    {
+      "key": "step_timeout_seconds",
+      "value": "520",
+      "source": "app/agent/runner.py",
+      "pattern": "\"step_timeout\": (\\d+),",
+      "prose": "the whole step has 520 seconds"
+    },
+    {
+      "key": "llm_timeout_seconds",
+      "value": "180",
+      "source": "app/agent/runner.py",
+      "pattern": "\"llm_timeout\": (\\d+),",
+      "prose": "each LLM call 180 seconds"
+    },
+    {
+      "key": "anthropic_client_timeout_seconds",
+      "value": "180",
+      "source": "app/agent/runner.py",
+      "pattern": "(?m)^\\s*\"timeout\": (\\d+),$",
+      "prose": "180 seconds for Anthropic"
+    },
+    {
+      "key": "openai_client_timeout_long_effort_seconds",
+      "value": "240",
+      "source": "app/agent/runner.py",
+      "pattern": "timeout=(\\d+) if effort in _OPENAI_LONG_EFFORTS",
+      "prose": "rising to 240 at reasoning"
+    },
+    {
+      "key": "openai_client_timeout_default_seconds",
+      "value": "90",
+      "source": "app/agent/runner.py",
+      "pattern": "if effort in _OPENAI_LONG_EFFORTS else (\\d+),",
+      "prose": "and 90 for OpenAI"
+    },
+    {
+      "key": "max_actions_per_step",
+      "value": "8",
+      "source": "app/agent/runner.py",
+      "pattern": "\"max_actions_per_step\": (\\d+),",
+      "prose": "an `action` list of up to eight actions"
+    },
+    {
+      "key": "goal_reminder_step_interval",
+      "value": "10",
+      "source": "app/agent/runner.py",
+      "pattern": "step_count % (\\d+) == 0",
+      "prose": "re-injected into the conversation every ten steps"
+    },
+    {
+      "key": "anthropic_truncation_retry_max_tokens",
+      "value": "64000",
+      "source": "app/agent/runner.py",
+      "pattern": "self\\.max_tokens = (\\d+)$",
+      "prose": "a 64,000-token ceiling"
+    },
+    {
+      "key": "max_review_rounds",
+      "value": "3",
+      "source": "app/agent/runner.py",
+      "pattern": "(?m)^_MAX_REVIEW_ROUNDS = (\\d+)$",
+      "prose": "bounded at three rounds"
+    },
+    {
+      "key": "max_review_justifications",
+      "value": "2",
+      "source": "app/agent/runner.py",
+      "pattern": "(?m)^_MAX_REVIEW_JUSTIFICATIONS = (\\d+)$",
+      "prose": "it gets two of those before the message demands the changes"
+    },
+    {
+      "key": "thinking_budget_low",
+      "value": "2048",
+      "source": "app/agent/runner.py",
+      "scope": "_THINKING_BUDGETS: dict\\[str, int\\] = \\{[\\s\\S]*?\\}",
+      "pattern": "\"low\": (\\d+),",
+      "prose": "map to 2,048, 8,192 and 16,384 thinking tokens"
+    },
+    {
+      "key": "thinking_budget_medium",
+      "value": "8192",
+      "source": "app/agent/runner.py",
+      "scope": "_THINKING_BUDGETS: dict\\[str, int\\] = \\{[\\s\\S]*?\\}",
+      "pattern": "\"medium\": (\\d+),",
+      "prose": "map to 2,048, 8,192 and 16,384 thinking tokens"
+    },
+    {
+      "key": "thinking_budget_high",
+      "value": "16384",
+      "source": "app/agent/runner.py",
+      "scope": "_THINKING_BUDGETS: dict\\[str, int\\] = \\{[\\s\\S]*?\\}",
+      "pattern": "\"high\": (\\d+),",
+      "prose": "map to 2,048, 8,192 and 16,384 thinking tokens"
+    },
+    {
+      "key": "reasoning_effort_ladder",
+      "value": "low, medium, high, xhigh, max",
+      "mode": "tokens",
+      "source": "app/agent/runner.py",
+      "pattern": "_FULL_LADDER = \\(([^)]*)\\)",
+      "prose": "`reasoningEffort` accepts `default`, `none`, `low`, `medium`, `high`, `xhigh` and `max`"
+    },
+    {
+      "key": "anthropic_models",
+      "value": "claude-fable-5, claude-mythos-5, claude-sonnet-5, claude-sonnet-4-6, claude-opus-5, claude-opus-4-8, claude-opus-4-7, claude-opus-4-6",
+      "mode": "tokens",
+      "source": "app/agent/runner.py",
+      "pattern": "_ANTHROPIC_MODELS: tuple\\[str, \\.\\.\\.\\] = \\(([^)]*)\\)"
+    },
+    {
+      "key": "openai_models",
+      "value": "gpt-5.6-sol, gpt-5.6-terra, gpt-5.6-luna",
+      "mode": "tokens",
+      "source": "app/agent/runner.py",
+      "pattern": "_OPENAI_MODELS: tuple\\[str, \\.\\.\\.\\] = \\(([^)]*)\\)"
+    },
+    {
+      "key": "long_context_model_suffix",
+      "value": "[1m]",
+      "source": "app/agent/runner.py",
+      "pattern": "key\\.endswith\\(\"(\\[1m\\])\"\\)",
+      "prose": "accepts a `[1m]` suffix"
+    },
+    {
+      "key": "invalid_model_error_message",
+      "value": "is not a valid model",
+      "source": "app/agent/runner.py",
+      "pattern": "raise ValueError\\(f\"'\\{key\\}' (is not a valid model)\\.\"\\)",
+      "prose": "`'x' is not a valid model`"
+    },
+    {
+      "key": "reasoning_cannot_be_disabled_error_message",
+      "value": "reasoning cannot be disabled on",
+      "source": "app/agent/runner.py",
+      "pattern": "f\"(reasoning cannot be disabled on) \\{model\\}\\. \"",
+      "prose": "reject it with `reasoning cannot be disabled on claude-fable-5`"
+    },
+    {
+      "key": "missing_provider_key_error_message",
+      "value": "needs OPENAI_API_KEY",
+      "source": "app/agent/runner.py",
+      "pattern": "f\"Model '\\{model\\}' (needs OPENAI_API_KEY), which is not configured\"",
+      "prose": "launch with `needs OPENAI_API_KEY`"
+    },
+    {
+      "key": "default_effort_claude_sonnet_5",
+      "value": "high",
+      "source": "app/agent/runner.py",
+      "pattern": "\"claude-sonnet-5\": ModelReasoning\\([^,]+, \"(\\w+)\"",
+      "prose": "| `claude-sonnet-5` | `low` to `max` | `high` |"
+    },
+    {
+      "key": "default_effort_claude_opus_5",
+      "value": "high",
+      "source": "app/agent/runner.py",
+      "pattern": "\"claude-opus-5\": ModelReasoning\\([^,]+, \"(\\w+)\"",
+      "prose": "| `claude-opus-5` | `low` to `max` | `high` |"
+    },
+    {
+      "key": "default_effort_claude_fable_5",
+      "value": "high",
+      "source": "app/agent/runner.py",
+      "pattern": "\"claude-fable-5\": ModelReasoning\\([^,]+, \"(\\w+)\"",
+      "prose": "| `claude-fable-5` | `low` to `max` | `high` |"
+    },
+    {
+      "key": "default_effort_claude_mythos_5",
+      "value": "high",
+      "source": "app/agent/runner.py",
+      "pattern": "\"claude-mythos-5\": ModelReasoning\\([^,]+, \"(\\w+)\"",
+      "prose": "| `claude-mythos-5` | `low` to `max` | `high` |"
+    },
+    {
+      "key": "default_effort_claude_opus_4_8",
+      "value": "none",
+      "source": "app/agent/runner.py",
+      "pattern": "\"claude-opus-4-8\": ModelReasoning\\([^,]+, \"(\\w+)\"",
+      "prose": "| `claude-opus-4.8` | `low` to `max` | `none` |"
+    },
+    {
+      "key": "default_effort_claude_opus_4_7",
+      "value": "none",
+      "source": "app/agent/runner.py",
+      "pattern": "\"claude-opus-4-7\": ModelReasoning\\(\\([^)]*\\), \"(\\w+)\"",
+      "prose": "| `claude-opus-4.7` | `low`, `medium`, `high` | `none` |"
+    },
+    {
+      "key": "default_effort_claude_opus_4_6",
+      "value": "none",
+      "source": "app/agent/runner.py",
+      "pattern": "\"claude-opus-4-6\": ModelReasoning\\(\\([^)]*\\), \"(\\w+)\"",
+      "prose": "| `claude-opus-4.6` | `low`, `medium`, `high` | `none` |"
+    },
+    {
+      "key": "default_effort_claude_sonnet_4_6",
+      "value": "none",
+      "source": "app/agent/runner.py",
+      "pattern": "\"claude-sonnet-4-6\": ModelReasoning\\(\\([^)]*\\), \"(\\w+)\"",
+      "prose": "| `claude-sonnet-4.6` | `low`, `medium`, `high` | `none` |"
+    },
+    {
+      "key": "default_effort_gpt_5_6_terra",
+      "value": "medium",
+      "source": "app/agent/runner.py",
+      "pattern": "\"gpt-5\\.6-terra\": ModelReasoning\\([^,]+, \"(\\w+)\"",
+      "prose": "| `gpt-5.6-terra` | `none` to `max` | `medium` |"
+    },
+    {
+      "key": "default_effort_gpt_5_6_sol",
+      "value": "medium",
+      "source": "app/agent/runner.py",
+      "pattern": "\"gpt-5\\.6-sol\": ModelReasoning\\([^,]+, \"(\\w+)\"",
+      "prose": "| `gpt-5.6-sol` | `none` to `max` | `medium` |"
+    },
+    {
+      "key": "default_effort_gpt_5_6_luna",
+      "value": "medium",
+      "source": "app/agent/runner.py",
+      "pattern": "\"gpt-5\\.6-luna\": ModelReasoning\\([^,]+, \"(\\w+)\"",
+      "prose": "| `gpt-5.6-luna` | `none` to `max` | `medium` |"
+    },
+    {
+      "key": "efforts_claude_opus_4_7",
+      "value": "low, medium, high",
+      "mode": "tokens",
+      "source": "app/agent/runner.py",
+      "pattern": "\"claude-opus-4-7\": ModelReasoning\\(\\(([^)]*)\\)",
+      "prose": "| `claude-opus-4.7` | `low`, `medium`, `high` |"
+    },
+    {
+      "key": "efforts_claude_opus_4_6",
+      "value": "low, medium, high",
+      "mode": "tokens",
+      "source": "app/agent/runner.py",
+      "pattern": "\"claude-opus-4-6\": ModelReasoning\\(\\(([^)]*)\\)",
+      "prose": "| `claude-opus-4.6` | `low`, `medium`, `high` |"
+    },
+    {
+      "key": "efforts_claude_sonnet_4_6",
+      "value": "low, medium, high",
+      "mode": "tokens",
+      "source": "app/agent/runner.py",
+      "pattern": "\"claude-sonnet-4-6\": ModelReasoning\\(\\(([^)]*)\\)",
+      "prose": "| `claude-sonnet-4.6` | `low`, `medium`, `high` |"
+    },
+    {
+      "key": "step_timeout_feed_message",
+      "value": "Step timed out and was cancelled before completing",
+      "source": "app/agent/runner.py",
+      "pattern": "\"(Step timed out and was cancelled before completing)\""
+    },
+    {
+      "key": "completeness_gate_pass_message",
+      "value": "Completeness check passed",
+      "source": "app/agent/runner.py",
+      "pattern": "summary=\\(\"(Completeness check passed) \u2014"
+    },
+    {
+      "key": "cost_cap_message",
+      "value": "exceeded budget",
+      "source": "app/agent/runner.py",
+      "pattern": "f\"Cost \\$\\{total_cost:\\.4f\\} (exceeded budget) \\$\\{max_cost:\\.2f\\}\"",
+      "prose": "`Stopped: Cost $X exceeded budget $Y`"
+    },
+    {
+      "key": "read_pages_result_shape",
+      "value": "{url, title, text, jsonld, links}",
+      "source": "app/agent/runner.py",
+      "pattern": "\"(\\{url, title, text, jsonld, links\\}) per page to pages\\.json"
+    },
+    {
+      "key": "read_pages_page_file",
+      "value": "pages.json",
+      "source": "app/agent/runner.py",
+      "pattern": "per page to (pages\\.json) AND prefills"
+    },
+    {
+      "key": "read_pages_draft_file",
+      "value": "rows_draft.json",
+      "source": "app/agent/runner.py",
+      "pattern": "\"(rows_draft\\.json) with one schema row per page"
+    },
+    {
+      "key": "answer_store_mirror_file",
+      "value": "output.json",
+      "source": "app/agent/runner.py",
+      "pattern": "write_file\\(\"(output\\.json)\", store\\.read_output\\(\\)\\)"
+    },
+    {
+      "key": "clipboard_start_url_key",
+      "value": "startUrl",
+      "source": "app/agent/runner.py",
+      "pattern": "clipboard\\[\"(startUrl)\"\\] = start_url"
+    },
+    {
+      "key": "message_type_planning",
+      "value": "planning",
+      "source": "app/agent/runner.py",
+      "pattern": "msg_type=\"(planning)\"",
+      "prose": "| `planning` | Run start"
+    },
+    {
+      "key": "message_type_browser_action",
+      "value": "browser_action",
+      "source": "app/agent/runner.py",
+      "pattern": "msg_type = \"(browser_action)\"",
+      "prose": "| `browser_action` | A completed step"
+    },
+    {
+      "key": "message_type_result",
+      "value": "result",
+      "source": "app/agent/runner.py",
+      "pattern": "msg_type = \"(result)\"",
+      "prose": "| `result` | A step whose action returned content"
+    },
+    {
+      "key": "message_type_browser_action_error",
+      "value": "browser_action_error",
+      "source": "app/agent/runner.py",
+      "pattern": "msg_type=\"(browser_action_error)\"",
+      "prose": "| `browser_action_error` | A step that failed"
+    },
+    {
+      "key": "message_type_event",
+      "value": "event",
+      "source": "app/agent/runner.py",
+      "pattern": "msg_type=\"(event)\"",
+      "prose": "| `event` | Annotations that are not steps"
+    },
+    {
+      "key": "message_type_completion",
+      "value": "completion",
+      "source": "app/agent/runner.py",
+      "pattern": "msg_type=\"(completion)\"",
+      "prose": "| `completion` | The final outcome line"
+    },
+    {
+      "key": "event_category_goal",
+      "value": "goal",
+      "source": "app/agent/runner.py",
+      "pattern": "\\{\"category\": \"(goal)\"",
+      "prose": "| `goal` | The derived goal sentence at the start"
+    },
+    {
+      "key": "event_category_memory",
+      "value": "memory",
+      "source": "app/agent/runner.py",
+      "pattern": "\\{\"category\": \"(memory)\"",
+      "prose": "| `memory` | Clipboard writes"
+    },
+    {
+      "key": "event_category_read",
+      "value": "read",
+      "source": "app/agent/runner.py",
+      "pattern": "\\{\"category\": \"(read)\"",
+      "prose": "| `read` | `read_pages` progress, wave by wave"
+    },
+    {
+      "key": "event_category_code",
+      "value": "code",
+      "source": "app/agent/runner.py",
+      "pattern": "\\{\"category\": \"(code)\"",
+      "prose": "| `code` | Sandbox script starts"
+    },
+    {
+      "key": "event_category_schema",
+      "value": "schema",
+      "source": "app/agent/runner.py",
+      "pattern": "\\{\"category\": \"(schema)\"",
+      "prose": "| `schema` | Completeness gate activity"
+    },
+    {
+      "key": "event_category_judge",
+      "value": "judge",
+      "source": "app/agent/runner.py",
+      "pattern": "\\{\"category\": \"(judge)\"",
+      "prose": "| `judge` | Reviewer verdicts"
+    },
+    {
+      "key": "event_category_system",
+      "value": "system",
+      "source": "app/agent/runner.py",
+      "pattern": "\\{\"category\": \"(system)\"",
+      "prose": "| `system` | Host pressure warnings"
+    },
+    {
+      "key": "session_status_running",
+      "value": "running",
+      "source": "app/agent/runner.py",
+      "pattern": "(?m)^\\s+status=\"(running)\",$",
+      "prose": "| `running` | A task is executing |"
+    },
+    {
+      "key": "session_status_keep_alive_terminal",
+      "value": "idle",
+      "source": "app/agent/runner.py",
+      "pattern": "final_status = \"(idle)\" if session\\.get\\(\"keep_alive\"\\)",
+      "prose": "| `idle` | The last task finished and `keepAlive` was set"
+    },
+    {
+      "key": "session_status_terminal",
+      "value": "stopped",
+      "source": "app/agent/runner.py",
+      "pattern": "if session\\.get\\(\"keep_alive\"\\) else \"(stopped)\"",
+      "prose": "| `stopped` | Terminal: the task finished (without `keepAlive`)"
+    },
+    {
+      "key": "read_pages_max_urls",
+      "value": "48",
+      "source": "app/agent/tools.py",
+      "pattern": "(?m)^_READ_PAGES_MAX = (\\d+)$",
+      "prose": "opens up to 48 URLs in parallel tab waves"
+    },
+    {
+      "key": "read_pages_budget_seconds",
+      "value": "420",
+      "source": "app/agent/tools.py",
+      "pattern": "(?m)^_READ_PAGES_BUDGET_S = (\\d+)\\.0$",
+      "prose": "the bulk page reader has a 420-second budget"
+    },
+    {
+      "key": "read_pages_wave_size",
+      "value": "6",
+      "mode": "all",
+      "source": "app/agent/tools.py",
+      "pattern": "concurrency: int = (\\d+),",
+      "prose": "waves of up to six real foreground tabs"
+    },
+    {
+      "key": "sandbox_timeout_seconds",
+      "value": "300",
+      "source": "app/agent/tools.py",
+      "pattern": "asyncio\\.wait_for\\(_run\\(\\), timeout=(\\d+)\\.0\\)",
+      "prose": "a sandbox script has 300"
+    },
+    {
+      "key": "max_unvisited_stubs",
+      "value": "2",
+      "source": "app/agent/tools.py",
+      "pattern": "(?m)^_MAX_UNVISITED_STUBS = (\\d+)$",
+      "prose": "The store holds at most two of those"
+    },
+    {
+      "key": "find_links_match_message",
+      "value": "link(s) matched",
+      "source": "app/agent/tools.py",
+      "pattern": "f\"find_links: \\{len\\(links\\)\\} (link\\(s\\) matched) from",
+      "prose": "`0 link(s) matched`"
+    },
+    {
+      "key": "shell_read_message",
+      "value": "read the embedding shell, not this page's real content",
+      "source": "app/agent/tools.py",
+      "pattern": "\"(read the embedding shell, not this page's real content): sibling \""
+    },
+    {
+      "key": "tool_find_links",
+      "value": "find_links",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (find_links)\\("
+    },
+    {
+      "key": "tool_read_pages",
+      "value": "read_pages",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (read_pages)\\("
+    },
+    {
+      "key": "tool_run_code_file",
+      "value": "run_code_file",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (run_code_file)\\("
+    },
+    {
+      "key": "tool_remember",
+      "value": "remember",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (remember)\\(",
+      "prose": "A session **clipboard** (`remember`/`recall`)"
+    },
+    {
+      "key": "tool_recall",
+      "value": "recall",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (recall)\\(",
+      "prose": "A session **clipboard** (`remember`/`recall`)"
+    },
+    {
+      "key": "tool_http_fetch",
+      "value": "http_fetch",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (http_fetch)\\("
+    },
+    {
+      "key": "tool_solve_captcha",
+      "value": "solve_captcha",
+      "source": "app/agent/captcha/tools.py",
+      "pattern": "(?:async )?def (solve_captcha)\\("
+    },
+    {
+      "key": "store_action_add_item",
+      "value": "add_item",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (add_item)\\(",
+      "prose": "| `add_item` | Appends one item to the answer array |"
+    },
+    {
+      "key": "store_action_update_item",
+      "value": "update_item",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (update_item)\\(",
+      "prose": "| `update_item` / `update_items` |"
+    },
+    {
+      "key": "store_action_update_items",
+      "value": "update_items",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (update_items)\\(",
+      "prose": "| `update_item` / `update_items` |"
+    },
+    {
+      "key": "store_action_set_field",
+      "value": "set_field",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (set_field)\\(",
+      "prose": "| `set_field` | Sets a top-level, non-list field |"
+    },
+    {
+      "key": "store_action_remove_items",
+      "value": "remove_items",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (remove_items)\\(",
+      "prose": "| `remove_items` | Deletes items by index"
+    },
+    {
+      "key": "store_action_mark_absent",
+      "value": "mark_absent",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (mark_absent)\\(",
+      "prose": "| `mark_absent` | Settles a field the source genuinely does not publish"
+    },
+    {
+      "key": "store_action_read_output",
+      "value": "read_output",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (read_output)\\(",
+      "prose": "| `read_output` / `search_output` |"
+    },
+    {
+      "key": "store_action_search_output",
+      "value": "search_output",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (search_output)\\(",
+      "prose": "| `read_output` / `search_output` |"
+    },
+    {
+      "key": "store_action_add_items_from_file",
+      "value": "add_items_from_file",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (add_items_from_file)\\(",
+      "prose": "| `add_items_from_file` / `update_items_from_file` |"
+    },
+    {
+      "key": "store_action_update_items_from_file",
+      "value": "update_items_from_file",
+      "source": "app/agent/tools.py",
+      "pattern": "(?:async )?def (update_items_from_file)\\(",
+      "prose": "| `add_items_from_file` / `update_items_from_file` |"
+    },
+    {
+      "key": "enum_evidence_rejection_reason",
+      "value": "rejected: no read page states it",
+      "source": "app/agent/output_store.py",
+      "pattern": "f\"'\\{key\\}' = '\\{value\\}' (rejected: no read page states it)\\. Enum values \""
+    },
+    {
+      "key": "enum_evidence_rule",
+      "value": "must be observed on a page, never inferred or defaulted",
+      "source": "app/agent/output_store.py",
+      "pattern": "\"(must be observed on a page, never inferred or defaulted) \u2014 leave the \""
+    },
+    {
+      "key": "openai_long_context_token_threshold",
+      "value": "272_000",
+      "source": "app/agent/cost.py",
+      "pattern": "(?m)^_OPENAI_LONG_THRESHOLD = ([\\d_]+)$",
+      "prose": "prompt exceeds 272,000 tokens"
+    },
+    {
+      "key": "sessions_api_route_prefix",
+      "value": "/v3/sessions",
+      "source": "app/api/sessions.py",
+      "pattern": "APIRouter\\(prefix=\"(/v3/sessions)\", tags=\\[\"sessions\"\\]\\)"
+    },
+    {
+      "key": "profiles_api_route_prefix",
+      "value": "/v3/profiles",
+      "source": "app/api/profiles.py",
+      "pattern": "APIRouter\\(prefix=\"(/v3/profiles)\", tags=\\[\"profiles\"\\]\\)"
+    },
+    {
+      "key": "request_default_model",
+      "value": "claude-sonnet-5",
+      "source": "app/api/sessions.py",
+      "pattern": "(?m)^    model: str = \"([^\"]+)\"$",
+      "prose": "`model` defaults to `claude-sonnet-5` if you send nothing"
+    },
+    {
+      "key": "legacy_effort_fields_rejected",
+      "value": "thinkingEffort, modelThinkingEffort",
+      "mode": "tokens",
+      "source": "app/api/sessions.py",
+      "pattern": "for legacy in \\(([^)]*)\\):",
+      "prose": "the retired spellings `thinkingEffort` and `modelThinkingEffort`"
+    },
+    {
+      "key": "thinking_level_accepted_values",
+      "value": "disabled, low, medium, high",
+      "mode": "all",
+      "source": "app/api/sessions.py",
+      "scope": "_THINKING_LEVEL_MAP = \\{[\\s\\S]*?\\}",
+      "pattern": "\"(\\w+)\": \"\\w+\",",
+      "prose": "`disabled`, `low`, `medium` and `high` map onto `reasoningEffort`"
+    },
+    {
+      "key": "thinking_level_disabled_maps_to",
+      "value": "none",
+      "source": "app/api/sessions.py",
+      "scope": "_THINKING_LEVEL_MAP = \\{[\\s\\S]*?\\}",
+      "pattern": "\"disabled\": \"(\\w+)\",",
+      "prose": "(`disabled` becomes `none`)"
+    },
+    {
+      "key": "unmapped_thinking_level_error_message",
+      "value": "is not a supported thinkingLevel",
+      "source": "app/api/sessions.py",
+      "pattern": "f\"'\\{level\\}' (is not a supported thinkingLevel); use 'reasoningEffort'\\.\"",
+      "prose": "`'None' is not a supported thinkingLevel`"
+    },
+    {
+      "key": "effort_validation_http_status",
+      "value": "422",
+      "source": "app/api/sessions.py",
+      "pattern": "raise HTTPException\\(status_code=(\\d+), detail=str\\(e\\)\\)",
+      "prose": "An invalid value is rejected with a 422 naming the valid set for that model."
+    },
+    {
+      "key": "rerun_allowed_statuses",
+      "value": "idle, created",
+      "mode": "tokens",
+      "source": "app/api/sessions.py",
+      "pattern": "if existing\\[\"status\"\\] not in \\(([^)]*)\\):",
+      "prose": "the session must be `idle` or `created`"
+    },
+    {
+      "key": "rerun_wrong_status_error_message",
+      "value": "not idle",
+      "source": "app/api/sessions.py",
+      "pattern": "detail=f\"Session is \\{existing\\['status'\\]\\}, (not idle)\"",
+      "prose": "`Session is running, not idle`"
+    },
+    {
+      "key": "rerun_missing_task_error_message",
+      "value": "Task is required when targeting an existing session",
+      "source": "app/api/sessions.py",
+      "pattern": "detail=\"(Task is required when targeting an existing session)\""
+    },
+    {
+      "key": "stop_default_strategy",
+      "value": "session",
+      "source": "app/api/sessions.py",
+      "pattern": "(?m)^    strategy: str = \"(\\w+)\"$",
+      "prose": "while the default `session` stops it outright"
+    },
+    {
+      "key": "stop_task_strategy",
+      "value": "task",
+      "source": "app/api/sessions.py",
+      "pattern": "if body\\.strategy == \"(task)\":",
+      "prose": "takes a strategy: `task` cancels the current task"
+    },
+    {
+      "key": "messages_pagination_params",
+      "value": "after, before, limit",
+      "mode": "all",
+      "source": "app/api/sessions.py",
+      "pattern": "(?m)^    (after|before|limit): [^=]+= Query\\(",
+      "prose": "paginated with `after`, `before` and `limit`"
+    },
+    {
+      "key": "inert_request_field_proxy_country_code",
+      "value": "proxyCountryCode",
+      "source": "app/api/sessions.py",
+      "pattern": "(?m)^    (proxyCountryCode): str \\| None = None$",
+      "prose": "| `proxyCountryCode` | Ignored, as above |"
+    },
+    {
+      "key": "inert_request_field_enable_recording",
+      "value": "enableRecording",
+      "source": "app/api/sessions.py",
+      "pattern": "(?m)^    (enableRecording): bool = False$",
+      "prose": "| `enableRecording` | Ignored. Sessions are not recorded"
+    },
+    {
+      "key": "inert_request_field_skills",
+      "value": "skills",
+      "source": "app/api/sessions.py",
+      "pattern": "(?m)^    (skills): bool = True$",
+      "prose": "| `skills` | Ignored. There is no skills or marketplace equivalent |"
+    },
+    {
+      "key": "undeclared_cloud_field_agentmail",
+      "value": "agentmail",
+      "mode": "absent",
+      "source": "app/api/sessions.py",
+      "pattern": "(?m)^\\s+agentmail\\s*:",
+      "prose": "| `agentmail` |"
+    },
+    {
+      "key": "undeclared_cloud_field_code_mode",
+      "value": "codeMode",
+      "mode": "absent",
+      "source": "app/api/sessions.py",
+      "pattern": "(?m)^\\s+codeMode\\s*:",
+      "prose": "| `codeMode` |"
+    },
+    {
+      "key": "undeclared_cloud_field_enable_scheduled_tasks",
+      "value": "enableScheduledTasks",
+      "mode": "absent",
+      "source": "app/api/sessions.py",
+      "pattern": "(?m)^\\s+enableScheduledTasks\\s*:",
+      "prose": "| `enableScheduledTasks` |"
+    },
+    {
+      "key": "undeclared_cloud_field_cache_script",
+      "value": "cacheScript",
+      "mode": "absent",
+      "source": "app/api/sessions.py",
+      "pattern": "(?m)^\\s+cacheScript\\s*:",
+      "prose": "| `cacheScript` |"
+    },
+    {
+      "key": "undeclared_cloud_field_auto_heal",
+      "value": "autoHeal",
+      "mode": "absent",
+      "source": "app/api/sessions.py",
+      "pattern": "(?m)^\\s+autoHeal\\s*:",
+      "prose": "| `autoHeal` |"
+    },
+    {
+      "key": "undeclared_cloud_field_use_own_key",
+      "value": "useOwnKey",
+      "mode": "absent",
+      "source": "app/api/sessions.py",
+      "pattern": "(?m)^\\s+useOwnKey\\s*:",
+      "prose": "| `useOwnKey` |"
+    },
+    {
+      "key": "environment_variables",
+      "value": "CLOUD_MAX_COST_FACTOR, API_KEY, DASHBOARD_USER, DASHBOARD_PASSWORD, ALLOW_INSECURE_NO_AUTH, ANTHROPIC_API_KEY, OPENAI_API_KEY, CAPSOLVER_API_KEY, CAPTCHA_MAX_COST_USD, MAX_CONCURRENT_SESSIONS",
+      "mode": "all",
+      "source": "app/config.py",
+      "pattern": "os\\.environ\\.get\\(\"([A-Z_]+)\""
+    },
+    {
+      "key": "browser_action_timeout_env_var",
+      "value": "BROWSER_USE_ACTION_TIMEOUT_S",
+      "source": "app/main.py",
+      "pattern": "os\\.environ\\.setdefault\\(\"(BROWSER_USE_ACTION_TIMEOUT_S)\", \"\\d+\"\\)"
+    },
+    {
+      "key": "default_port",
+      "value": "8420",
+      "source": "app/config.py",
+      "pattern": "(?m)^    port: int = (\\d+)$",
+      "prose": "the whole thing listens on port 8420"
+    },
+    {
+      "key": "default_host",
+      "value": "0.0.0.0",
+      "source": "app/config.py",
+      "pattern": "(?m)^    host: str = \"([\\d.]+)\"$",
+      "prose": "Server ready on 0.0.0.0:8420"
+    },
+    {
+      "key": "stale_session_minutes",
+      "value": "15",
+      "source": "app/config.py",
+      "pattern": "(?m)^    stale_session_minutes: int = (\\d+)$",
+      "prose": "was expired after 15 minutes"
+    },
+    {
+      "key": "novnc_base_port",
+      "value": "6080",
+      "source": "app/config.py",
+      "pattern": "(?m)^    novnc_base_port: int = (\\d+)$",
+      "prose": "noVNC ports at `6080`"
+    },
+    {
+      "key": "vnc_base_port",
+      "value": "5900",
+      "source": "app/config.py",
+      "pattern": "(?m)^    vnc_base_port: int = (\\d+)$",
+      "prose": "VNC ports at `5900` plus the display number"
+    },
+    {
+      "key": "xvfb_base_display",
+      "value": "10",
+      "source": "app/config.py",
+      "pattern": "(?m)^    xvfb_base_display: int = (\\d+)$",
+      "prose": "displays start at `:10`"
+    },
+    {
+      "key": "cdp_base_port",
+      "value": "9222",
+      "source": "app/config.py",
+      "pattern": "(?m)^    cdp_base_port: int = (\\d+)$",
+      "prose": "CDP ports at `9222`"
+    },
+    {
+      "key": "sqlite_database_filename",
+      "value": "browser_use.db",
+      "source": "app/config.py",
+      "pattern": "db_path: Path = field\\(default_factory=lambda: _BASE / \"data\" / \"([^\"]+)\"\\)",
+      "prose": "State lives in SQLite at `data/browser_use.db`"
+    },
+    {
+      "key": "profiles_directory_name",
+      "value": "profiles",
+      "source": "app/config.py",
+      "pattern": "profiles_dir: Path = field\\(default_factory=lambda: _BASE / \"data\" / \"(\\w+)\"\\)",
+      "prose": "profiles under `data/profiles/`"
+    },
+    {
+      "key": "max_concurrent_sessions_default",
+      "value": "1",
+      "source": "app/config.py",
+      "pattern": "os\\.environ\\.get\\(\"MAX_CONCURRENT_SESSIONS\", \"(\\d+)\"\\)",
+      "prose": "`MAX_CONCURRENT_SESSIONS` (default 1)"
+    },
+    {
+      "key": "dashboard_user_default",
+      "value": "admin",
+      "source": "app/config.py",
+      "pattern": "os\\.environ\\.get\\(\"DASHBOARD_USER\", \"([^\"]*)\"\\)",
+      "prose": "Dashboard username, default `admin`"
+    },
+    {
+      "key": "cloud_max_cost_factor_default",
+      "value": "1.0",
+      "source": "app/config.py",
+      "pattern": "if not raw\\.strip\\(\\):\\n        return ([\\d.]+)",
+      "prose": "Default `1.0`"
+    },
+    {
+      "key": "cloud_max_cost_factor_upper_bound",
+      "value": "at most 1",
+      "source": "app/config.py",
+      "pattern": "limits = \"must be a number greater than 0 and (at most 1)\"",
+      "prose": "Above 0 and at most 1"
+    },
+    {
+      "key": "health_endpoint_path",
+      "value": "/health",
+      "source": "app/main.py",
+      "pattern": "@app\\.get\\(\"(/health)\"\\)",
+      "prose": "`/health` is unauthenticated"
+    },
+    {
+      "key": "health_details_endpoint_path",
+      "value": "/health/details",
+      "source": "app/main.py",
+      "pattern": "@app\\.get\\(\"(/health/details)\"\\)",
+      "prose": "`/health/details` requires the API key"
+    },
+    {
+      "key": "health_status_value",
+      "value": "ok",
+      "source": "app/main.py",
+      "pattern": "return \\{\"status\": \"(ok)\"\\}$",
+      "prose": "{ \"status\": \"ok\" }"
+    },
+    {
+      "key": "startup_database_log_line",
+      "value": "Initializing database...",
+      "source": "app/main.py",
+      "pattern": "logger\\.info\\(\"(Initializing database\\.\\.\\.)\"\\)"
+    },
+    {
+      "key": "startup_ready_log_line",
+      "value": "Server ready on",
+      "source": "app/main.py",
+      "pattern": "logger\\.info\\(\"(Server ready on) %s:%d\""
+    },
+    {
+      "key": "api_unconfigured_error_message",
+      "value": "Server authentication is not configured",
+      "source": "app/auth.py",
+      "pattern": "status_code=401, detail=\"(Server authentication is not configured)\""
+    },
+    {
+      "key": "api_invalid_key_error_message",
+      "value": "Invalid API key",
+      "source": "app/auth.py",
+      "pattern": "status_code=401, detail=\"(Invalid API key)\""
+    },
+    {
+      "key": "dashboard_unconfigured_status_code",
+      "value": "503",
+      "source": "app/auth.py",
+      "pattern": "status_code=(503),",
+      "prose": "Dashboard returns `503` telling you to open `/setup`"
+    },
+    {
+      "key": "sdk_api_key_header",
+      "value": "x_browser_use_api_key",
+      "source": "app/auth.py",
+      "pattern": "(x_browser_use_api_key): str \\| None = Header\\(default=None\\)"
+    },
+    {
+      "key": "auth_throttle_free_attempts",
+      "value": "5",
+      "source": "app/auth_throttle.py",
+      "pattern": "(?m)^FREE_ATTEMPTS = (\\d+)$",
+      "prose": "five free failures"
+    },
+    {
+      "key": "auth_throttle_base_lockout_seconds",
+      "value": "1",
+      "source": "app/auth_throttle.py",
+      "pattern": "(?m)^BASE_LOCKOUT_SECONDS = (\\d+)\\.0$",
+      "prose": "then 1s doubling up to 15 minutes"
+    },
+    {
+      "key": "auth_throttle_status_code",
+      "value": "429",
+      "source": "app/auth_throttle.py",
+      "pattern": "status_code=(429),",
+      "prose": "a `429` and a `Retry-After` header"
+    },
+    {
+      "key": "auth_throttle_retry_after_header",
+      "value": "Retry-After",
+      "source": "app/auth_throttle.py",
+      "pattern": "headers=\\{\"(Retry-After)\": str\\(int\\(remaining\\) \\+ 1\\)\\}"
+    },
+    {
+      "key": "client_ip_forwarding_header",
+      "value": "x-forwarded-for",
+      "source": "app/auth_throttle.py",
+      "pattern": "conn\\.headers\\.get\\(\"(x-forwarded-for)\", \"\"\\)",
+      "prose": "The throttle honours `X-Forwarded-For`"
+    },
+    {
+      "key": "interrupted_session_summary",
+      "value": "Interrupted by server restart",
+      "source": "app/db/crud.py",
+      "pattern": "last_step_summary = '(Interrupted by server restart)',"
+    },
+    {
+      "key": "expired_session_status",
+      "value": "expired",
+      "source": "app/db/crud.py",
+      "pattern": "SET status = '(expired)',",
+      "prose": "| `expired` | Terminal: a `created` session was never given a task"
+    },
+    {
+      "key": "session_status_column_default",
+      "value": "created",
+      "source": "app/db/models.py",
+      "pattern": "(?m)^    status TEXT NOT NULL DEFAULT '(\\w+)',$",
+      "prose": "| `created` | The session row exists but no task has been submitted yet |"
+    },
+    {
+      "key": "xvfb_screen_resolution",
+      "value": "1920x1080",
+      "source": "app/browser/factory.py",
+      "pattern": "\"-screen\", \"0\", \"(\\d+x\\d+)x\\d+\",",
+      "prose": "a fresh Xvfb virtual display at 1920x1080"
+    },
+    {
+      "key": "stealth_binary_call",
+      "value": "cloakbrowser.ensure_binary()",
+      "source": "app/browser/factory.py",
+      "pattern": "binary_path = (cloakbrowser\\.ensure_binary\\(\\))"
+    },
+    {
+      "key": "display_stack_binaries",
+      "value": "Xvfb, x11vnc, websockify",
+      "mode": "all",
+      "source": "app/browser/factory.py",
+      "pattern": "(?m)^\\s+\"(Xvfb|x11vnc|websockify)\",$"
+    },
+    {
+      "key": "openai_long_effort_tiers",
+      "value": "high, xhigh, max",
+      "mode": "tokens",
+      "source": "app/agent/runner.py",
+      "pattern": "_OPENAI_LONG_EFFORTS = \\(([^)]*)\\)",
+      "prose": "90 for OpenAI, rising to 240 at reasoning `high`, `xhigh` and `max`"
+    },
+    {
+      "key": "cost_stop_summary_prefix",
+      "value": "Stopped: ",
+      "source": "app/agent/runner.py",
+      "pattern": "summary=f\"(Stopped: )\\{e\\}",
+      "prose": "Stopped: Cost $X exceeded budget $Y"
+    },
+    {
+      "key": "request_body_omits_workspace_id",
+      "value": "workspaceId",
+      "mode": "absent",
+      "scope": "class RunTaskRequest\\(BaseModel\\):[\\s\\S]*?\\n\\n",
+      "source": "app/api/sessions.py",
+      "pattern": "^\\s+workspaceId\\s*:",
+      "prose": "No workspaces exist. `workspaceId` comes back null"
+    },
+    {
+      "key": "response_screenshot_url_is_always_null",
+      "value": "screenshotUrl",
+      "source": "app/api/sessions.py",
+      "pattern": "(screenshotUrl)=None",
+      "prose": "`recordingUrls`, `screenshotUrl`, `workspaceId`, `proxyCountryCode`"
+    }
+  ]
+}

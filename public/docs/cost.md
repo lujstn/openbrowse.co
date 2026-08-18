@@ -1,0 +1,55 @@
+# Cost control
+
+> What a run costs, how the real-cost engine prices it from actual token usage, and how maxCostUsd and CLOUD_MAX_COST_FACTOR enforce a hard stop-loss.
+
+*Source: https://openbrowse.co/docs/cost*
+
+OpenBrowse charges nothing itself. A run's cost is the LLM tokens it consumes at your provider's list prices, plus the per-solve fee of any CAPTCHA sent to CapSolver. The published [benchmark](https://openbrowse.co/benchmarks) puts a full 14-record extraction between $0.22 and $1.62 depending on model and reasoning effort.
+
+## How cost is computed
+
+After every step, the run's cost is recomputed from the **real token usage the provider reported**, priced per model: uncached input, cache reads, cache writes and output are each priced at their own rate, so the figure tracks what your provider bills rather than an estimate. Screenshots, tool schemas, fetched page content and sandbox output are all inside the API-returned token totals, so nothing needs adding on top.
+
+Prompt caching is always on and provider-managed: the system prompt and the latest state message are cache-marked for Anthropic, and OpenAI caches automatically server-side. This is a large part of why like-for-like token counts come out well under the hosted service's; the benchmark's matched pairing (same model, same reasoning) used 3.55x fewer tokens.
+
+Two pricing details the engine gets right that a naive estimate would not:
+
+- OpenAI's `gpt-5.6` models have a higher tariff for requests whose prompt exceeds 272,000 tokens; the engine applies the long-context rate exactly when the provider does.
+- CapSolver solves are priced from the cost field CapSolver itself returns per task, not a flat guess, and are folded into `totalCostUsd`.
+
+Costs surface in three places: the session record's `llmCostUsd`, `totalCostUsd` and token counts (updated after every step, not just at the end), the per-step costs in the dashboard, and the run exports. Displayed dashboard figures round up to the whole cent, the amount actually charged.
+
+## The hard cap: maxCostUsd
+
+```ts
+const session = await client.sessions.create({
+  task: "Capture every open vacancy and return the full schema for each.",
+  model: "gpt-5.6-terra",
+  reasoningEffort: "none",
+  maxCostUsd: 3.0,
+  outputSchema: mySchema,
+});
+```
+
+`maxCostUsd` must be a finite number above zero. The cap is checked at the end of every step against the running total; when it is reached the session stops with status `stopped` and a completion message of the form `Stopped: Cost $3.0121 exceeded budget $3.00`. It is a stop-loss, not a pre-flight reservation: the step that crosses the line completes, so the final figure can exceed the cap by up to one step's cost. Whatever the answer store held at that moment is preserved and exportable.
+
+## Scaling caps written for hosted pricing
+
+If your callers were written against Browser Use Cloud, their `maxCostUsd` values are priced for a service that charges platform fees on top of tokens. `CLOUD_MAX_COST_FACTOR` scales every incoming cap without touching the clients: set it above 0 and at most 1, and an incoming `$6` cap with a factor of `0.5` becomes a local `$3` budget. The scaled value is rounded up to the whole cent so a small cap can never collapse to zero, which would read as no budget at all. The session record echoes the local, scaled budget in `maxCostUsd`.
+
+The variable is validated at startup; an out-of-range or non-numeric value stops the server with a clear error rather than being silently ignored.
+
+## What actually moves the bill
+
+In benchmark order of leverage:
+
+1. **Reasoning effort, on OpenAI models.** `gpt-5.6-terra` at `none` cost $0.24; the same model at `high` cost $0.66 for the same 14 records. Set `reasoningEffort` explicitly; see [choosing a model](https://openbrowse.co/docs/models).
+2. **Model choice.** The spread between the cheapest and dearest full extraction was 7.4x, with no difference in records recovered.
+3. **Prompt scope.** A tight prompt finishes in fewer steps, and steps are where tokens go. The 36-step budget run and the 11-step focused run recovered identical data.
+4. **Schema design.** Nullable fields and enums let the store settle absent data quickly instead of sending the agent hunting for values the site never publishes.
+
+Token-heavy behaviour inside a run is already managed for you: repeated large tool outputs are deduplicated into back-references, oversized dumps are capped to previews with the data saved to files, and steps that only do store or file work skip the screenshot and DOM re-serialisation entirely.
+
+## Concurrency is a cost control too
+
+`MAX_CONCURRENT_SESSIONS` (default 1) bounds how many runs can spend at once. At the cap, new session requests queue for a slot rather than failing, so a burst of submissions cannot multiply your worst-case spend; it serialises it.

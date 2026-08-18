@@ -1,0 +1,46 @@
+{
+  "name": "openbrowse-co",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "node scripts/generate-md-mirror.mjs && next build",
+    "preview": "npx serve out",
+    "typecheck": "next typegen && tsc --noEmit",
+    "openapi": "python3 scripts/generate-openapi.py --repo ../browser-use-raspberrypi -o data/openapi.json",
+    "openapi:check": "python3 scripts/generate-openapi.py --repo ../browser-use-raspberrypi -o data/openapi.json --check",
+    "check:upstream": "node scripts/check-upstream.mjs",
+    "check:export": "node scripts/check-export.mjs",
+    "check:facts": "node scripts/check-facts.mjs",
+    "md": "node scripts/generate-md-mirror.mjs",
+    "check:mirror": "node scripts/generate-md-mirror.mjs && node scripts/check-mirror.mjs",
+    "check": "npm run typecheck && npm run check:facts && npm run build && npm run check:export && npm run check:mirror",
+    "sync:citation": "node scripts/sync-citation.mjs",
+    "check:citation": "node scripts/sync-citation.mjs --check"
+  },
+  "dependencies": {
+    "@astryxdesign/core": "^0.4.3",
+    "@stylexjs/stylex": "^0.19.0",
+    "fumadocs-core": "^16.14.4",
+    "fumadocs-mdx": "^15.2.3",
+    "fumadocs-openapi": "^11.2.4",
+    "fumadocs-ui": "^16.14.4",
+    "next": "^16.3.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "simple-icons": "^16.28.0"
+  },
+  "devDependencies": {
+    "@astryxdesign/cli": "^0.4.3",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/mdx": "^2.0.14",
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vercel/config": "^0.6.1",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^6.0.3"
+  }
+}

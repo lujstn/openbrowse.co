@@ -1,0 +1,134 @@
+---
+title: "Getting started"
+description: "Install OpenBrowse on a Raspberry Pi or any Debian machine, run your first browser agent, and point an existing browser-use-sdk client at it."
+---
+
+OpenBrowse is a self-hosted replacement for Browser Use Cloud. It serves the same v3 REST API that the `browser-use-sdk` client already speaks, so an existing integration moves across by changing two lines. Almost everything else, retry logic, polling, profile ids and output schemas, stays exactly as it is; the handful of things that do not are listed below.
+
+It was built and benchmarked on a Raspberry Pi 5 with 16GB of RAM, and runs on any Debian or Ubuntu machine, including a VPS. You pay only for LLM tokens; there is no per-task platform fee.
+
+## Before you start
+
+You need a Debian or Ubuntu machine with SSH access, and an API key from Anthropic or OpenAI, or both. Tailscale is optional but is the easiest way to reach the box from outside your network.
+
+## Install
+
+The agent drives a real browser on a virtual X display and streams it over VNC, so those packages have to be there before anything will run. A fresh Raspberry Pi OS image also has no `uv`.
+
+```bash
+sudo apt update
+sudo apt install -y xvfb x11vnc novnc websockify \
+  libnss3 libatk-bridge2.0-0 libdrm2 libxcomposite1 libxdamage1 \
+  libxrandr2 libgbm1 libpango-1.0-0 libasound2 libxshmfence1 libgtk-3-0
+
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Then clone and start it:
+
+```bash
+git clone https://github.com/lujstn/openbrowse.git
+cd openbrowse && uv sync
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8420
+```
+
+Open `http://<your-host>:8420`. A fresh install serves a one-time setup screen at `/setup` that generates your API bearer key, collects your provider keys, sets a dashboard password and a concurrency limit, and writes `.env` for you. Restart the server after the setup screen finishes so the new configuration is picked up; once any credential exists the setup routes disappear.
+
+Confirm the API is up:
+
+```bash
+curl http://<your-host>:8420/health
+```
+
+```json
+{ "status": "ok" }
+```
+
+## Run your first task
+
+Create a session with a task. The API accepts the key either as a bearer token or in the `X-Browser-Use-API-Key` header the SDK sends; both work everywhere.
+
+```bash
+curl -X POST http://<your-host>:8420/v3/sessions \
+  -H "Authorization: Bearer $OPENBROWSE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "task": "Open https://news.ycombinator.com and return the titles of the top five stories.",
+    "model": "claude-sonnet-5"
+  }'
+```
+
+The response carries the session `id` and a `status` of `created`. It does **not** yet carry a `liveUrl`: the instance still has to allocate a virtual display and launch Chromium, which takes a few seconds, and only then does the status become `running` and `liveUrl` get filled in. Poll the session until it reaches a terminal status:
+
+```bash
+curl http://<your-host>:8420/v3/sessions/<session-id> \
+  -H "Authorization: Bearer $OPENBROWSE_API_KEY"
+```
+
+A healthy run looks like this while it is working, then like this when it is done:
+
+```json
+{
+  "id": "5a2f...",
+  "status": "running",
+  "liveUrl": "/vnc/5a2f.../view?path=vnc/5a2f.../websockify",
+  "output": null
+}
+```
+
+```json
+{
+  "id": "5a2f...",
+  "status": "stopped",
+  "isTaskSuccessful": true,
+  "output": { "stories": ["...", "..."] },
+  "totalInputTokens": 38911,
+  "totalOutputTokens": 2322,
+  "totalCostUsd": "0.06",
+  "lastStepSummary": "Task completed successfully"
+}
+```
+
+Three details in there catch people out. `liveUrl` is a path on your own instance, not an absolute URL, and the `?path=` parameter is what points noVNC at the session's socket, so it has to survive whatever you do with it. `output` comes back already parsed when it is valid JSON, so there is nothing to `JSON.parse`. And the cost fields are strings rather than numbers, which is deliberate: they are exact decimal values, not floats.
+
+When `status` is `stopped` (or `idle`, if you set `keepAlive`), the result is in `output`, with `isTaskSuccessful`, token counts and the exact LLM cost alongside it.
+
+If `status` comes back `error`, open the dashboard at `http://<your-host>:8420/` and read that session's step feed. The failure is almost always stated there in plain text, which is faster than working backwards from the API response. The dashboard is also where you watch the live browser view while a run is in progress.
+
+## Point your client at it
+
+```ts
+import { BrowserUse } from "browser-use-sdk/v3";
+
+const client = new BrowserUse({
+  apiKey: process.env.OPENBROWSE_API_KEY,
+  baseUrl: "https://your-host/v3",
+});
+
+const session = await client.sessions.create({
+  task: "Find every product on this page and return the structured list.",
+  model: "claude-sonnet-5",
+  outputSchema: mySchema,
+});
+```
+
+Everything downstream of that survives untouched: retry logic, polling, profile ids, output schemas and cost caps. The instance also understands the cloud's `thinkingLevel` field and maps it onto its own [`reasoningEffort`](/docs/models), so a client that sets a reasoning depth keeps working too.
+
+## What does not carry over
+
+Most of a Browser Use Cloud integration survives the move untouched. A handful of things do not, and one of them will change your results silently rather than erroring, so it is worth five minutes before you migrate anything:
+
+<Callout type="warn">
+Browser Use Cloud routes sessions through a managed US residential proxy by default, so the sites your agent visits currently see a residential IP. Here they will see your server. If your jobs touch anything geo-gated, rate-limited by IP, or fussy about datacentre ranges, test that first. Nothing will error; the pages will just come back different.
+</Callout>
+
+Alongside the proxy, ten request fields are accepted and then ignored, fourteen of the cloud's model names are rejected outright, omitting `model` gets you a different one than it does on the cloud, and `liveUrl` arrives a few seconds later here than it does there. [Migrating from Browser Use Cloud](/docs/migrating) is the complete list, with what to do about each.
+
+## Where to next
+
+- [Migrating from Browser Use Cloud](/docs/migrating) is the page to read before you move an existing integration.
+- [Installation](/docs/installation) covers system packages, the live view, and running under systemd.
+- [How OpenBrowse works](/docs/concepts) explains the machinery: the step loop, the answer store, and the reviewer.
+- [Writing tasks](/docs/tasks) is the highest-leverage page here; prompt shape changes results more than model choice does.
+- [Structured output](/docs/structured-output) covers `outputSchema` and the validated answer store.
+- The complete v3 surface is in the [API reference](/docs/api).

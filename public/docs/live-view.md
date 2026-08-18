@@ -1,0 +1,75 @@
+# The live view and debugging
+
+> Watching a run over VNC, reading the step feed's entry types, following sandbox code in the code tab, and exporting a run as JSON for diagnosis.
+
+*Source: https://openbrowse.co/docs/live-view*
+
+Every session is watchable while it runs and inspectable after it ends. The dashboard at `http://<your-host>:8420/` (HTTP Basic auth, user `admin` unless you changed `DASHBOARD_USER`) shows a live session list; each session page combines the browser view, the step feed and the export controls.
+
+## The browser view
+
+The stream is a noVNC client attached to the actual X display the agent's Chromium is running on, so what you see is the browser itself, not a reconstruction. Parallel tab waves from `read_pages` are visible as tabs opening, being focused one by one, and closing. The session's `liveUrl` field carries the same view as a path on your instance, served through the dashboard's authentication, so you can link an operator straight to a running session.
+
+When the agent runs a sandbox script, it opens a dedicated **code tab** on the same display: an IDE-style page into which the script's source streams token by token as the model writes it, with its status and the file name. The tab closes when the script finishes. This makes the run's code layer as observable as its clicking layer.
+
+## The step feed
+
+Each feed row is one message from the run. The row's badge tells you which layer produced it:
+
+| Type | Meaning |
+| --- | --- |
+| `planning` | Run start: which model the session launched with |
+| `browser_action` | A completed step: the primary action, its key parameter, and the step duration |
+| `result` | A step whose action returned content, such as a page read or a store write summary |
+| `browser_action_error` | A step that failed; the row shows the first sentence and the expandable card carries the full error text |
+| `event` | Annotations that are not steps: goal reminders, coverage checks, read progress, reviewer verdicts |
+| `completion` | The final outcome line |
+
+Those six are what a run itself produces. A seventh, `user_message`, records a follow-up task sent to a keep-alive session. `GET /v3/sessions/{id}/messages` applies no type filter at all, so match on all seven if you are filtering programmatically.
+
+Two names people reach for do not exist. There is no `error` type; failures are `browser_action_error`. And `done` is not a type either: it is an action name carried in a row's `data.action` when the agent submits its result for review, and that row is typed `result` rather than `browser_action`, because any step whose action returns content is recorded as a result.
+
+Steps expand to show the agent's three cards, **see** (what is on the page), **plan** (how it gets from here to the goal) and **next** (the next single move), plus the model's own chain-of-thought summary when the provider exposes one. That reasoning arrives as its own `event` row per step, with category `reasoning`.
+
+Events carry a category that tells you which subsystem is speaking:
+
+| Category | What it reports |
+| --- | --- |
+| `goal` | The derived goal sentence at the start, then a reminder every ten steps |
+| `reasoning` | The provider's own chain-of-thought summary for the step, when the model exposes one |
+| `memory` | Clipboard writes, including the auto-captured `startUrl` |
+| `read` | `read_pages` progress, wave by wave: `read_pages wave 2/3: 12 of 12 pages ok, 12 read inside their embedded panel (38s)` |
+| `code` | Sandbox script starts, such as `Running map_rows.py` |
+| `schema` | Completeness gate activity: the bounce with its deficiency list, then `Completeness check passed` with the final coverage |
+| `judge` | Reviewer verdicts, change requests, and any dissent between the judge and the recorded outcome |
+| `system` | Host pressure warnings when the CPU is saturated at launch, which degrade timing-sensitive embed reads |
+
+## Diagnosing a run from the feed
+
+The feed usually shows the problem directly. Things worth scanning for:
+
+- **`find_links` matched 0 links, or a frame filter matched 0 frames.** The listing lives in an embedded panel that had not attached yet, or the selector was wrong. The tool's own error text says which, and lists the attached frame hosts to target instead.
+- **`read_pages` reporting shell reads.** Rows like `read the embedding shell, not this page's real content` mean the pages' content lives in a cross-origin embed; the retry inside the panel happens automatically and is logged, so check whether the recovery line follows.
+- **A completeness bounce.** The `schema` event lists exactly which fields were empty and on how many items. If the run then finished cleanly, nothing was wrong; the gate did its job. If it looped into `mark_absent` on data you know is there, the pages that show it probably never rendered; look for read failures above.
+- **`Stopped: Cost $X exceeded budget $Y`.** The cost cap fired; see [cost control](https://openbrowse.co/docs/cost).
+- **A `system` pressure warning at launch.** Failures in that run may be environmental (an overloaded host missing embed attach windows) rather than site changes. Re-run when the host is quiet before concluding anything.
+- **`Step timed out and was cancelled before completing`.** One step exceeded 520 seconds; the run continues, but repeated occurrences usually mean the host is underpowered for the page.
+
+## Exporting a run
+
+The session page exports JSON at three scopes, which are also plain authenticated GETs:
+
+```bash
+curl -u admin:$DASHBOARD_PASSWORD \
+  "http://<your-host>:8420/session/<session-id>/log?scope=full&download=true"
+```
+
+| Scope | Contents |
+| --- | --- |
+| `output` | Only the schema answer, as JSON |
+| `steps` | The session record and every step, with raw model thinking stripped |
+| `full` | Everything the feed shows, including reasoning text |
+
+The `full` export is the right attachment for a bug report: it contains the task, every action with its parameters and duration, every error in full, and the reviewer's reasoning.
+
+The v3 API exposes the same underlying feed programmatically at `GET /v3/sessions/{session_id}/messages`, paginated with `after`, `before` and `limit`, which is what you want for driving your own progress UI.

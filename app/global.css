@@ -1,0 +1,235 @@
+@layer reset, theme, base, astryx-base, astryx-theme, components, utilities;
+
+@import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+@import "@astryxdesign/core/reset.css";
+@import "@astryxdesign/core/astryx.css";
+@import "fumadocs-openapi/css/preset.css";
+@import "../theme/openbrowse.css";
+
+@theme {
+  --color-page: #0a0a0a;
+  --color-raised: #111111;
+  --color-panel: #1a1a1a;
+  --color-panel-hi: #2a2a2a;
+
+  --color-line-faint: #1a1a1a;
+  --color-line: #222222;
+  --color-line-strong: #333333;
+
+  --color-ink: #ffffff;
+  --color-body: #e5e5e5;
+  --color-muted: #9ca3af;
+  --color-dim: #888888;
+  --color-label: #666666;
+
+  --color-accent: #60a5fa;
+  --color-accent-hi: #7db8fb;
+
+  --color-ok: #34d399;
+  --color-warn: #f59e0b;
+  --color-bad: #f87171;
+  --color-idle: #2dd4bf;
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --text-display: clamp(2.125rem, 1.45rem + 2.7vw, 3.5rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.032em;
+
+  --text-title: clamp(1.5rem, 1.24rem + 1.05vw, 2.125rem);
+  --text-title--line-height: 1.12;
+  --text-title--letter-spacing: -0.024em;
+
+  --text-lede: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+  --text-lede--line-height: 1.6;
+}
+
+:root,
+.dark,
+.dark #nd-sidebar {
+  color-scheme: dark;
+
+  --color-fd-background: #0a0a0a;
+  --color-fd-foreground: #e5e5e5;
+  --color-fd-card: #111111;
+  --color-fd-card-foreground: #e5e5e5;
+  --color-fd-popover: #1a1a1a;
+  --color-fd-popover-foreground: #e5e5e5;
+  --color-fd-primary: #60a5fa;
+  --color-fd-primary-foreground: #0a0a0a;
+  --color-fd-secondary: #1a1a1a;
+  --color-fd-secondary-foreground: #e5e5e5;
+  --color-fd-muted: #111111;
+  --color-fd-muted-foreground: #888888;
+  --color-fd-accent: #1a1a1a;
+  --color-fd-accent-foreground: #ffffff;
+  --color-fd-border: #222222;
+  --color-fd-ring: #60a5fa;
+  --color-fd-overlay: rgba(0, 0, 0, 0.6);
+
+  --color-fd-info: #60a5fa;
+  --color-fd-success: #34d399;
+  --color-fd-warning: #f59e0b;
+  --color-fd-error: #f87171;
+  --color-fd-idea: #2dd4bf;
+
+  --color-fd-diff-add: rgba(52, 211, 153, 0.1);
+  --color-fd-diff-add-symbol: #34d399;
+  --color-fd-diff-remove: rgba(248, 113, 113, 0.1);
+  --color-fd-diff-remove-symbol: #f87171;
+}
+
+html {
+  background: var(--color-page);
+  scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-body);
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 28%, transparent);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@utility label {
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-label);
+}
+
+@utility rule {
+  border-bottom: 1px solid var(--color-line-faint);
+}
+
+@utility numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* @nonobvious(must-hold) one semantic <table> stays in the DOM and CSS restacks it below 48rem: duplicating a card layout alongside the table would put every figure in the HTML twice, and horizontal scroll hid the cost and records columns entirely on a phone */
+@media (max-width: 47.99rem) {
+  .stack-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .stack-table,
+  .stack-table tbody,
+  .stack-table tr,
+  .stack-table th,
+  .stack-table td {
+    display: block;
+    width: auto;
+    min-width: 0;
+    text-align: left !important;
+  }
+
+  .stack-table tr {
+    border-bottom: 1px solid var(--color-line);
+    padding: 0.25rem 0 0.75rem;
+  }
+
+  .stack-table tr:last-child {
+    border-bottom: 0;
+  }
+
+  .stack-table td,
+  .stack-table th {
+    border-bottom: 0 !important;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.25rem;
+    padding: 0.3rem 1rem;
+  }
+
+  .stack-table td[data-label]::before {
+    content: attr(data-label);
+    flex: none;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-label);
+  }
+
+  .stack-table th[scope="row"] {
+    padding-top: 0.85rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+.footer-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: var(--color-ink);
+}
+
+@keyframes ob-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.ob-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: ob-draw 900ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-draw {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

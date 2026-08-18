@@ -1,0 +1,73 @@
+---
+title: "How OpenBrowse works"
+description: "What actually happens between POST /v3/sessions and a finished result: the display slots, the step loop, the goal pre-flight, the answer store, and the reviewer."
+---
+
+This page is the map. Everything on it is observable in the live view, and each section links to the page that covers it in depth.
+
+## One session, one real browser
+
+When you create a session with a task, the instance allocates a **display slot**: a fresh Xvfb virtual display at 1920x1080, an `x11vnc` server attached to it, and a `websockify` bridge serving noVNC to your browser. It then launches a stealth-configured Chromium on that display, supplied by CloakBrowser, the library that provides the patched browser binary with its own user-data directory and a Chrome DevTools Protocol port, and connects the agent to it over CDP. This is why the live view shows a real browser rather than a replay: the stream is the actual X display the agent is working on.
+
+Port allocation is deterministic per slot: displays start at `:10`, VNC ports at `5900` plus the display number, noVNC ports at `6080`, and CDP ports at `9222`. The number of slots is `MAX_CONCURRENT_SESSIONS` (default 1). When every slot is busy, a new session request waits for a slot rather than failing, so callers see latency at capacity, not errors.
+
+If a `profileId` was given, the profile's storage state (cookies plus per-origin `localStorage` and `sessionStorage`) is loaded into the browser before the run, and written back when the session ends. See [profiles](/docs/profiles).
+
+## The goal pre-flight
+
+Before the agent takes its first step, a separate, cheap LLM call reduces your task to a single sentence stating what a complete and correct result looks like. That call asks for reasoning `none` where the model supports disabling it, and falls back to the model's own default where it does not, so on `claude-fable-5` and `claude-mythos-5` the pre-flight runs at their default of `high`. That sentence is pinned under the task as `GOAL:`, appears in the feed as a `goal` entry, and is re-injected into the conversation every ten steps. Long browser runs drift; the periodic reminder is what pulls a model back out of a rabbit hole. If the pre-flight call fails, the first sentence of your task is used instead.
+
+This is also why the first line of your task matters more than the rest; [writing tasks](/docs/tasks) covers how to use that.
+
+## The step loop
+
+Each step, the agent receives the page state (a serialised DOM element list plus a screenshot), reasons, and replies with prose fields and an `action` list of up to eight actions. The chain executes in order and is cut short at the first action that changes the page, so a step can batch several store or file writes but never acts on a stale view.
+
+OpenBrowse extends the stock browser-use step in a few measurable ways:
+
+- **The three cards.** The reply schema is patched to require three one-sentence fields before the action: `what_i_see`, `plan_to_goal` and `next_move`. They render as the see, plan and next cards in the feed, and they are required in the emitted schema but optional at validation, so a model that omits one never fails the step.
+- **Lean state between writes.** When a step did nothing but store, file or sandbox work and the URL has not changed, the next step receives a stub state, the URL, title and tab list, but no fresh DOM serialisation and no screenshot, labelled as code mode. This keeps long extraction phases from re-paying the cost of re-serialising an unchanged page on every step. Element indices from the last full state remain valid.
+- **Action repair.** A reply that carries no executable `action` field, or types an argument wrongly (a list sent as a quoted string, for instance), is retried up to twice with a corrective message naming the actual defect, and only then abandoned with a short instructive error rather than a raw validation dump. Anthropic responses additionally get an action-leak repair pass, parallel tool calls are merged back into one structured call, and truncated outputs are retried once with streaming and a 64,000-token ceiling. OpenAI models run against the Responses API, which accepts the full reasoning ladder; the output schema rides in the system prompt and the reply is parsed tolerantly.
+- **Timeouts that nest correctly.** The agent gives each LLM call 180 seconds, a sandbox script has 300, the bulk page reader has a 420-second budget, and the whole step has 520 seconds, so an outer timeout can never kill a well-behaved inner operation mid-flight. Underneath that, each provider client carries its own timeout: 180 seconds for Anthropic, and 90 for OpenAI, rising to 240 at reasoning `high`, `xhigh` and `max`.
+
+## Purpose-built tools
+
+The agent's registry is extended with tools tuned for visual, tab-based extraction, all of which you can watch working in the live view:
+
+- `find_links` collects a page's links by selector, and is the only tool that can read links inside an embedded, cross-origin panel. It scrolls the page (and any matching panel) until the link count stops growing before collecting, so lazily-populating lists are counted once, completely.
+- `read_pages` opens up to 48 URLs in parallel tab waves, waits for each page (and, when asked, its embedded panel) to genuinely render, and returns `{url, title, text, jsonld, links}` per page, retrying failures and detecting shell reads. It also prefills a draft row per page against your output schema. Covered in depth in [structured output](/docs/structured-output).
+- `run_code_file` saves and runs a Python script in one step against the live page, in a persistent sandbox namespace with a `browser` handle that can evaluate JavaScript inside cross-origin frames. The script's source streams into the code tab of the live view as the model writes it.
+- A session **clipboard** (`remember`/`recall`) persists small values across steps, and is pre-seeded with `startUrl` (the first URL found in your task) and the goal sentence.
+- `http_fetch` makes one server-side HTTP request; large responses are saved to a file and previewed rather than dumped into context.
+- `solve_captcha` is registered only when `CAPSOLVER_API_KEY` is configured, and each solve's real cost is folded into the session's total.
+
+A guard layer wraps the noisy tools so a run's context cannot balloon: any large output already seen this session is replaced with a short back-reference, and genuinely huge dumps are capped to a preview with the full data saved to a file.
+
+## The answer store
+
+If the task has an `outputSchema`, the schema is converted to a validation model and an empty **answer store** is built before the agent starts, so the finished shape is visible from turn zero. The agent fills it in place with validated writes rather than assembling one blob at the end; every write is checked live, coverage is tracked per field, and `done` is gated on the **completeness gate**: every field the schema requires must be either filled or explicitly marked absent before the agent is allowed to finish. This is the machinery behind the anti-hallucination behaviour, and it has its own page: [structured output](/docs/structured-output).
+
+## The reviewer
+
+When a run finishes with `done` and looks successful, a judge assesses the submitted result. If it requests changes, the review re-enters the agent as a continuation turn: the agent may apply the changes and resubmit, or push back with a justification (it gets two of those before the message demands the changes). The conversation is bounded at three rounds, and every verdict is recorded in the feed as an `event` whose category is `judge`, including a dissent note whenever the judge's verdict differs from the recorded outcome.
+
+One deliberate asymmetry: a run that dies before calling `done` but leaves behind a complete, schema-valid answer store is recorded as a success, with a feed entry saying so. The completeness gate is the arbiter, not the ceremony of finishing.
+
+## Session lifecycle
+
+| Status | Meaning |
+| --- | --- |
+| `created` | The session row exists but no task has been submitted yet |
+| `running` | A task is executing |
+| `idle` | The last task finished and `keepAlive` was set, or the task was stopped with strategy `task`; the session accepts a follow-up task |
+| `stopped` | Terminal: the task finished (without `keepAlive`), was stopped, or hit its cost cap |
+| `error` | Terminal: the run failed, or the server restarted mid-run |
+| `expired` | Terminal: a `created` session was never given a task and was expired after 15 minutes |
+
+A follow-up task targets an existing session by passing `sessionId` (the session must be `idle` or `created`, and `task` is required). Only the fields you actually send are overwritten, so a follow-up that names just a `task` keeps the session's model, schema and budget. Note that between runs the browser itself is torn down and relaunched; what persists across runs of a session is the session record, its output, and the profile's cookie jar, not the live browser tabs.
+
+`POST /v3/sessions/{id}/stop` takes a strategy: `task` cancels the current task and leaves the session `idle` for follow-ups, while the default `session` stops it outright.
+
+## What runs where
+
+Everything is one Python process plus per-session subprocesses (Xvfb, x11vnc, websockify, Chromium). State lives in SQLite at `data/browser_use.db`, profiles under `data/profiles/`, and the whole thing listens on port 8420. There is no queue service, no external database, and no cloud dependency beyond the LLM providers themselves.

@@ -1,0 +1,104 @@
+---
+title: "Choosing a model"
+description: "Which model and reasoning effort to use for browser tasks, the full per-model reasoning ladder, and why the two providers want opposite ends of the dial."
+---
+
+OpenBrowse puts Anthropic and OpenAI models behind one API, with a repair layer per provider for each family's failure modes. You pick the model per session; `model` defaults to `claude-sonnet-5` if you send nothing.
+
+## The short answer
+
+| Situation | Model | `reasoningEffort` |
+| --- | --- | --- |
+| Most work | `gpt-5.6-terra` or `gpt-5.6-sol` | `none` |
+| Most work, Anthropic | `claude-sonnet-5` | `high` |
+| Hard, multi-step workflows | `claude-opus-5` | `medium` |
+| Tight budget, focused prompt | `gpt-5.6-luna` | `max` |
+
+## The finding worth knowing
+
+On browser tasks, **the two families want opposite ends of the reasoning dial.**
+
+OpenAI models do better with *less* reasoning. They spend less time planning ahead and more time reacting to the page actually in front of them, which is the correct instinct when the environment is a live DOM that changes under you. Anthropic's 5-series models lean towards rabbit holes and need reasoning time to refocus on the goal.
+
+The measured effect is large. On the reference extraction task:
+
+- `gpt-5.6-terra` at `none` finished in **11 steps and 1m 47s**. The same model at `high` took **17 steps and 5m 05s**, burning 2.1x the tokens for 2.75x the cost, and produced the same 14 records.
+- `claude-sonnet-5` cost **$0.40 at `high`** and **$0.51 at `none`**, and was 1m 16s slower with reasoning switched off.
+
+So the default instinct, that more reasoning means better results, is wrong for half of the models here. Set `reasoningEffort` explicitly rather than inheriting a provider default, especially since those defaults differ per model (see the table below).
+
+Full numbers are on the [benchmarks page](/benchmarks).
+
+## Two things called thinking
+
+**Browser thinking** is how the platform works: the see, plan, next and thinking cards in the live feed. It describes the agent's step loop and cannot be switched off.
+
+**Model reasoning** is the chain-of-thought the LLM provider exposes, such as Anthropic extended thinking or OpenAI reasoning effort. This is the one you control, per session, with `reasoningEffort`.
+
+## The reasoning ladder, per model
+
+`reasoningEffort` accepts `default`, `none`, `low`, `medium`, `high`, `xhigh` and `max`, validated per model at request time. `default` (or omitting the field) means the per-model default in the table below, which OpenBrowse resolves and sends explicitly rather than leaving to the provider. It varies more than you would guess. An invalid value is rejected with a 422 naming the valid set for that model.
+
+| Model | Accepted levels | Behaviour when unset | Can reasoning be disabled? |
+| --- | --- | --- | --- |
+| `claude-sonnet-5` | `low` to `max` | `high` | yes |
+| `claude-opus-5` | `low` to `max` | `high` | yes |
+| `claude-fable-5` | `low` to `max` | `high` | no |
+| `claude-mythos-5` | `low` to `max` | `high` | no |
+| `claude-opus-4.8` | `low` to `max` | `none` | yes |
+| `claude-opus-4.7` | `low`, `medium`, `high` | `none` | yes |
+| `claude-opus-4.6` | `low`, `medium`, `high` | `none` | yes |
+| `claude-sonnet-4.6` | `low`, `medium`, `high` | `none` | yes |
+| `gpt-5.6-terra` | `none` to `max` | `medium` | yes |
+| `gpt-5.6-sol` | `none` to `max` | `medium` | yes |
+| `gpt-5.6-luna` | `none` to `max` | `medium` | yes |
+
+A few provider mechanics behind that table:
+
+- The Claude 5 family and Opus 4.8 use adaptive thinking, and on the 5-series models leaving the field unset means adaptive thinking at high. This is why `none` must be an explicit choice there, and why `claude-fable-5` and `claude-mythos-5`, which do not accept a disabled configuration, reject it with `reasoning cannot be disabled on claude-fable-5`.
+- The older Claude models (`opus-4.7`, `opus-4.6`, `sonnet-4.6`) use fixed thinking budgets: `low`, `medium` and `high` map to 2,048, 8,192 and 16,384 thinking tokens.
+- OpenAI models run against the Responses API, which accepts the full `none` to `max` ladder (the chat completions endpoint rejects `max`, which is why OpenBrowse does not use it).
+
+## Long context variants
+
+Every Anthropic model name accepts a `[1m]` suffix, for example `claude-opus-4.8[1m]` or `claude-sonnet-5[1m]`, which requests the provider's 1M-token context window for that session. The suffix is stripped before the model is resolved, so it works on the 5-series names as well as the 4.x ones. Useful for runs that read many large pages into a single conversation; the long-context tier is priced higher by the provider.
+
+Dotted and hyphenated spellings of the 4.x names are interchangeable, so `claude-opus-4.8` and `claude-opus-4-8` resolve to the same model.
+
+## Migrating from thinkingLevel
+
+Requests written for Browser Use Cloud's `thinkingLevel` field keep working: `disabled`, `low`, `medium` and `high` map onto `reasoningEffort` (`disabled` becomes `none`). Sending both fields in one request is rejected, as are the retired spellings `thinkingEffort` and `modelThinkingEffort`, each with an error naming `reasoningEffort` as the replacement.
+
+<Callout type="warn">
+One exception, and it is easy to hit. Browser Use Cloud documents `thinkingLevel: null` as the way to clear the setting. Here an explicit `null` is treated as a value rather than as an absence, so it fails with `'None' is not a supported thinkingLevel`. Omit the field entirely instead.
+</Callout>
+
+## Supported models
+
+**OpenAI:** `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`
+
+**Anthropic:** `claude-mythos-5`, `claude-fable-5`, `claude-opus-5`, `claude-sonnet-5`, `claude-opus-4.8`, `claude-opus-4.8[1m]`, `claude-opus-4.7`, `claude-opus-4.7[1m]`, `claude-opus-4.6`, `claude-opus-4.6[1m]`, `claude-sonnet-4.6`, `claude-sonnet-4.6[1m]`
+
+**Google:** not yet.
+
+Browser Use Cloud's v3 `model` enum has 22 names and OpenBrowse implements 8 of them, so a client that names a model explicitly may be naming one that fails here with a 422 rather than falling back. The cloud's default, `claude-opus-4.7`, is supported, so this only bites callers who set `model` themselves. See [migrating from Browser Use Cloud](/docs/migrating) for the mapping in both directions.
+
+Anthropic models need `ANTHROPIC_API_KEY` configured and OpenAI models need `OPENAI_API_KEY`; a session naming a model whose key is missing fails at launch with a message saying which variable to set.
+
+## Setting it
+
+```ts
+const session = await client.sessions.create({
+  task: "Capture every open vacancy and return the full schema for each.",
+  model: "gpt-5.6-terra",
+  reasoningEffort: "none",
+  maxCostUsd: 3.0,
+  outputSchema: mySchema,
+});
+```
+
+`maxCostUsd` is a hard cap checked after every step; [cost control](/docs/cost) covers it, along with `CLOUD_MAX_COST_FACTOR` for callers whose budgets were priced for a hosted service.
+
+## A note on budget models
+
+`gpt-5.6-luna` at `max` was the cheapest full extraction in the benchmark at $0.22, but it took 17 minutes and 36 steps. It is also the most prone to hallucination when the prompt is broad, though the answer-store guards refuse ungrounded values at the boundary either way. Pair it with a tightly scoped prompt and it is genuinely good value; point it at something vague and it will wander.

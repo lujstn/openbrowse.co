@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  # @nonobvious(must-hold) the benchmark figures live upstream, so the drift that matters happens while this repo is idle; without a schedule the guard only fires when someone touches the site
+  schedule:
+    - cron: "23 7 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Check out the application source the docs describe
+        uses: actions/checkout@v5
+        with:
+          repository: lujstn/openbrowse
+          path: .upstream
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build static export
+        run: npm run build
+
+      # @nonobvious(mirrors) this runs before the build because it is the cheapest failure to read: a
+      # drifted constant names the source line and the doc that publishes it, where a build failure does not
+      - name: Check the published constants against the application source
+        run: npm run check:facts
+        env:
+          OPENBROWSE_REPO: .upstream
+
+      - name: Verify the export still satisfies the citation contract
+        run: npm run check:export
+
+      # @nonobvious(mirrors) public/docs is committed but generated, so an MDX edit that never got a local
+      # build leaves the markdown an LLM fetches describing the previous version of the page
+      - name: Verify the committed markdown mirrors are current
+        run: npm run check:mirror
+
+  upstream-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+
+      - name: Check benchmark and model data against the upstream README
+        run: node scripts/check-upstream.mjs

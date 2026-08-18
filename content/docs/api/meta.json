@@ -1,0 +1,11 @@
+{
+  "pages": [
+    "v3/profiles",
+    "v3/profiles/profile_id",
+    "v3/profiles/profile_id/storage-state",
+    "v3/sessions",
+    "v3/sessions/session_id",
+    "v3/sessions/session_id/messages",
+    "v3/sessions/session_id/stop"
+  ]
+}
