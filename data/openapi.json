@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "OpenBrowse",
-    "version": "1.9.2"
+    "version": "1.9.3"
   },
   "servers": [
     {
