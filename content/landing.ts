@@ -3,7 +3,6 @@ import {
   baseline,
   champion,
   cheapest,
-  costRange,
   formatRatio,
   likeForLike,
   task,
@@ -35,7 +34,7 @@ export const site = {
 
 export const hero = {
   h1: "The open-source Browser Use Cloud alternative",
-  sub: "Describe a job in plain English. It drives a real browser and hands back structured data, on hardware you own.",
+  sub: "Describe a job in your own words. It drives a real browser and hands back structured data, on hardware you own.",
   primary: { label: "Get started", href: "/docs" },
   secondary: { label: "View source", href: site.repo },
   videoCaption:
@@ -94,23 +93,9 @@ export const benchmarkAnalysis = {
 } as const;
 
 export const dropIn = {
-  h2: "Two lines change.",
+  h2: "Just change two lines.",
   standfirst:
     "OpenBrowse serves the same v3 REST surface that browser-use-sdk already speaks. Point the client at your own box and everything downstream stays put.",
-  after: "Retry logic, polling, profile ids, output schemas and cost caps all carry over untouched. Three things do not: the managed proxy, session recording, and skills. Those fields are still accepted so your code compiles, and then do nothing.",
-  moreLabel: "The full comparison with Browser Use Cloud",
-  moreHref: "/vs/browser-use-cloud",
-  exampleLead: "The job itself stays exactly as it was, too.",
-  exampleBody:
-    "Same fields, same schema, same everything. Only the machine underneath it changed.",
-  example: [
-    "const session = await client.sessions.create({",
-    '  task: "Find every open role on this careers page and return them all.",',
-    '  model: "gpt-5.6-terra",',
-    "  outputSchema: roles,",
-    "});",
-  ],
-  // @nonobvious(must-hold) the import is browser-use-sdk/v3 and the method is sessions.create: the bare browser-use-sdk entry point is the v4 client, whose surface OpenBrowse does not implement, and baseUrl must carry the /v3 suffix because the SDK's own default base URL ends in /api/v3 and its request paths are relative to it
   diff: [
     { type: "context", text: 'import { BrowserUse } from "browser-use-sdk/v3";' },
     { type: "context", text: "" },
@@ -219,83 +204,69 @@ export const differentiators = {
   items: [
     {
       id: "tab-waves",
-      title: "Parallel tab waves",
-      body: "Most runners walk a listing one page at a time and pay for a fresh round of page context on every hop. read_pages opens the whole thing at once, in waves of up to six real foreground tabs, reading inside embedded panels from other domains as it goes.",
+      title: "Real tabs, not just code.",
+      body: "OpenBrowse focuses on visual content, driving the browser like a human with parallel tabs, then diving into background data like JSON files to make its response better.",
     },
     {
       id: "answer-store",
-      title: "A completeness gate",
-      body: "Every write is checked against your JSON Schema as it happens, with coverage tracked field by field. The agent cannot call itself finished until the gate passes.",
+      title: "Data completeness, guaranteed.",
+      body: "Every write is checked against your schema as it discovers data, with coverage tracked field by field.",
     },
     {
       id: "grounding",
-      title: "Grounding guards",
-      body: "Values with no evidence on the page are refused at the boundary. A field the site genuinely does not publish comes back marked absent, never guessed.",
+      title: "Separate \"missing\" from \"failed\".",
+      body: "Values with no evidence on the page are refused at the boundary, so you genuinely know if something's not there to see.",
     },
     {
       id: "live-view",
-      title: "A live view that is actually live",
-      body: "The real browser streamed over VNC while it works, beside a feed of the model's reasoning and the cost of each step, and a code tab where the agent's sandbox scripts appear line by line as it writes them.",
+      title: "See it work.",
+      body: "Drop into any browser session to see real-time costs, a feed of the model's reasoning, and a livestream of each browser working away.",
     },
   ],
 } as const;
 
-// @nonobvious(must-hold) every figure below is interpolated from data/benchmarks.json rather than typed: these answers are emitted as FAQPage JSON-LD and quoted verbatim by retrievers, so a hand-written number here contradicts the same number on /benchmarks the first time a run changes
-const matched = likeForLike
-  ? `Hold ${likeForLike.cloud.model} at reasoning ${likeForLike.cloud.reasoning} on both sides and OpenBrowse still costs $${likeForLike.openbrowse.costUsd.toFixed(2)} against $${likeForLike.cloud.costUsd.toFixed(2)} on ${formatRatio(likeForLike.tokenRatio)} fewer tokens, though it takes ${likeForLike.secondsSlower} seconds longer.`
-  : "";
-
+// @nonobvious(must-hold) the figures below are interpolated from data/benchmarks.json rather than typed: these answers are emitted as FAQPage JSON-LD and quoted verbatim by retrievers, so a hand-written number here contradicts the same number on /benchmarks the first time a run changes
 export const faq = [
   {
     q: "What is OpenBrowse?",
-    a: "OpenBrowse is a free, MIT-licensed, self-hosted alternative to Browser Use Cloud. You describe a job in plain English, an AI agent drives a real Chromium browser on hardware you own, and you get back structured data validated against your own schema. It serves the same v3 REST API that browser-use-sdk already speaks, so existing clients work against it unchanged, and you pay your LLM provider and nothing to OpenBrowse. Browser Use Cloud is the hosted service run by the authors of the open-source Browser Use library, which charges per task to do the same work on their machines.",
+    a: "A free, self-hosted alternative to Browser Use Cloud. Describe a job, an AI agent drives a real browser on hardware you own, and you get structured data back.",
   },
   {
-    q: "What does OpenBrowse cost to run?",
-    a: `LLM tokens, plus whatever the machine costs you. There is no per-task platform fee and nothing meters your usage. On the benchmark task a full ${task.recordsExpected}-record extraction cost between $${costRange.min.toFixed(2)} and $${costRange.max.toFixed(2)} in tokens, the spread coming entirely from which model and reasoning effort you picked. Every session also accepts maxCostUsd, which is a hard stop-loss, not an estimate.`,
+    q: "How does it compare to Browser Use Cloud?",
+    a: "Same v3 API, your hardware, your network, no per-task/platform/proxy fees. OpenBrowse does not currently support BU's v4 API though, nor does it have BU Cloud's recordings or workspaces features.",
+    link: { label: "Full comparison", href: "/vs/browser-use-cloud" },
   },
   {
-    q: "Is OpenBrowse cheaper than Browser Use Cloud?",
-    a: `On the benchmark task, yes: $${champion.costUsd.toFixed(2)} against $${baseline.costUsd.toFixed(2)} for the same ${task.recordsExpected} records, on ${champion.tokensDisplay} tokens instead of ${baseline.tokensDisplay}, finishing in ${champion.timeDisplay} against ${baseline.timeDisplay}. That headline changes model as well as runtime, so the conservative reading is the matched pair. ${matched} Neither figure includes Browser Use Cloud's own platform fee, which sits on top of its tokens.`,
-  },
-  {
-    q: "How long does it take to install, and what hardware does it need?",
-    a: "About ten minutes on a machine you already have, most of it apt installing Chromium's dependencies and the virtual display it draws into. Three commands clone, sync and start it, then a setup screen in the browser generates your API key and writes .env for you. It runs on any Debian or Ubuntu box, not just the Raspberry Pi 5 it was benchmarked on, and wants roughly 2GB of RAM per concurrent session. To reach it from outside your network, tailscale funnel --bg 8420 publishes the API over TLS without opening a port on your router.",
+    q: "What does it cost to run?",
+    a: `Just LLM tokens: no platform fee, and maxCostUsd hard-caps any session. Our benchmark job cost $${champion.costUsd.toFixed(2)} here against $${baseline.costUsd.toFixed(2)} on the cloud.`,
+    link: { label: "See the benchmark", href: "/benchmarks" },
   },
   {
     q: "How do I migrate from Browser Use Cloud?",
-    a: "Two lines: point apiKey at your instance's key and set baseUrl to https://your-host/v3, importing the client from browser-use-sdk/v3. Everything downstream survives the move: retries, polling, profile ids, output schemas, cost caps. One thing to settle before you cut over: Browser Use Cloud routes sessions through a managed US residential proxy by default, and OpenBrowse has no proxy layer, so target sites will see your server's own IP. Nothing errors when that happens, the pages simply come back different, so test anything geo-gated or rate-limited by IP first.",
+    a: "Change two lines: your apiKey and your baseUrl. Everything downstream carries over untouched.",
+    link: { label: "Migration guide", href: "/docs/migrating" },
   },
   {
-    q: "What does OpenBrowse do that Browser Use Cloud does not?",
-    a: "read_pages opens a whole listing in parallel waves of up to six real tabs, reading inside embedded cross-origin panels as it goes, which is where most of the token gap comes from. Structured output is a live answer store, not a final validation pass: every write is checked against your JSON Schema as it happens, coverage is tracked field by field, and the agent cannot call itself finished until the gate passes. The live view is the actual browser streamed over VNC while it works, with the model's reasoning and the sandbox scripts it writes appearing beside it. The run also stays on your hardware, with no dependency on any service beyond the LLM provider itself.",
-  },
-  {
-    q: "Does it hallucinate data the page never showed?",
-    a: `Not by design. Values with no evidence on the page are refused at the answer store boundary, and enum writes are checked against the text of the pages actually read in that session, so a plausible default like seniority Senior is rejected rather than filled in. A field the site genuinely does not publish is settled as absent, which is why a record occasionally comes back thinner than you hoped. On the benchmark task Browser Use Cloud returned all ${task.recordsExpected} records and also populated fields the page never displayed, job seniority among them.`,
+    q: "Can I bring my existing profiles?",
+    a: "Yes. Import your cloud profile export and existing profileId references keep working.",
+    link: { label: "Profiles", href: "/docs/profiles" },
   },
   {
     q: "Which model should I use?",
-    a: `For most work, gpt-5.6-terra or gpt-5.6-sol at reasoning effort none, or claude-sonnet-5 at high. The two families want opposite ends of the reasoning dial: OpenAI models do better reacting to the page in front of them with less planning, while Anthropic's 5-series need reasoning time to stay on the goal. Every OpenBrowse run in the benchmark recovered all ${task.recordsExpected} records whatever the effort, so treat reasoningEffort as a cost and latency control, never as a correctness one.`,
-  },
-  {
-    q: "Can I bring my existing Browser Use Cloud profiles?",
-    a: "Yes. OpenBrowse imports profiles in Playwright storage-state format, the cookie and localStorage jar a cloud profile export gives you. Import one with the CLI or the dashboard and the local profile id matches the cloud id, so your existing profileId references keep working.",
+    a: "Whichever suits the job. Worth knowing: OpenAI models do better with less reasoning, Anthropic's with more.",
+    link: { label: "Choosing a model", href: "/docs/models" },
   },
   {
     q: "Does it solve CAPTCHAs?",
-    a: "Optionally, through a CapSolver integration you configure with your own key, and each solve's real cost is folded into the session total. Without a key the tool is simply not registered.",
-  },
-  {
-    q: "What does Browser Use Cloud have that OpenBrowse does not?",
-    a: "A managed US residential proxy on by default, session recordings and screenshots, and skills, workspaces and hosted integrations. The three matching request fields, proxyCountryCode, enableRecording and skills, are still accepted so your code compiles, and are then ignored; the matching response fields come back empty or null. The proxy is the one to test before you migrate, because nothing errors, the pages just come back different. The machine is also yours to keep up, at roughly 2GB of RAM per concurrent session.",
+    a: "Optionally, with your own CapSolver key. Most common types are solved; the rest are named rather than silently attempted.",
+    link: { label: "Solving CAPTCHAs", href: "/docs/captchas" },
   },
   {
     q: "Does it work with the Browser Use v4 API?",
-    a: "No. OpenBrowse implements v3, which is what browser-use-sdk still ships at browser-use-sdk/v3 and what the benchmark on this site was run against. The v4 runs API has a different request shape and is out of scope.",
+    a: "Not yet. OpenBrowse implements v3; v4 support is planned.",
   },
   {
     q: "Is OpenBrowse affiliated with Browser Use, and how is it licensed?",
-    a: "No, it is an independent open-source project built on Browser Use's own open-source SDK, implementing the same v3 REST surface so existing clients work against it unchanged. It is MIT licensed, with a DOI through Zenodo and a CITATION.cff in the repository, so it can be cited directly in academic work.",
+    a: "No, it is independent, and built on Browser Use's own open-source SDK. MIT licensed, with a DOI so it can be cited.",
   },
 ];

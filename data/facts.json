@@ -267,7 +267,7 @@
       "key": "cost_cap_message",
       "value": "exceeded budget",
       "source": "app/agent/runner.py",
-      "pattern": "f\"Cost \\$\\{total_cost:\\.4f\\} (exceeded budget) \\$\\{max_cost:\\.2f\\}\"",
+      "pattern": "f\"Cost \\$\\{total_cost:\\.4f\\} (exceeded budget) \\$\\{budget:\\.2f\\}\"",
       "prose": "`Stopped: Cost $X exceeded budget $Y`"
     },
     {
@@ -402,15 +402,15 @@
       "key": "session_status_keep_alive_terminal",
       "value": "idle",
       "source": "app/agent/runner.py",
-      "pattern": "final_status = \"(idle)\" if session\\.get\\(\"keep_alive\"\\)",
-      "prose": "| `idle` | The last task finished and `keepAlive` was set"
+      "pattern": "status=\"(idle)\" if keep_alive else \"stopped\"",
+      "prose": "| `idle` | On a `keepAlive` session: the last task finished, or hit its cost cap"
     },
     {
       "key": "session_status_terminal",
       "value": "stopped",
       "source": "app/agent/runner.py",
-      "pattern": "if session\\.get\\(\"keep_alive\"\\) else \"(stopped)\"",
-      "prose": "| `stopped` | Terminal: the task finished (without `keepAlive`)"
+      "pattern": "status=\"idle\" if keep_alive else \"(stopped)\"",
+      "prose": "| `stopped` | Terminal: the task finished, was stopped, or hit its cost cap"
     },
     {
       "key": "read_pages_max_urls",
@@ -657,14 +657,14 @@
       "value": "idle, created",
       "mode": "tokens",
       "source": "app/api/sessions.py",
-      "pattern": "if existing\\[\"status\"\\] not in \\(([^)]*)\\):",
-      "prose": "the session must be `idle` or `created`"
+      "pattern": "if busy or \\(status not in \\(([^)]*)\\)",
+      "prose": "An ordinary session is addressable only while it is `idle` or `created`"
     },
     {
       "key": "rerun_wrong_status_error_message",
       "value": "not idle",
       "source": "app/api/sessions.py",
-      "pattern": "detail=f\"Session is \\{existing\\['status'\\]\\}, (not idle)\"",
+      "pattern": "detail=f\"Session is \\{status\\}, (not idle)\"",
       "prose": "`Session is running, not idle`"
     },
     {
@@ -684,7 +684,7 @@
       "key": "stop_task_strategy",
       "value": "task",
       "source": "app/api/sessions.py",
-      "pattern": "if body\\.strategy == \"(task)\":",
+      "pattern": "status=\"idle\" if body\\.strategy == \"(task)\" else \"stopped\"",
       "prose": "takes a strategy: `task` cancels the current task"
     },
     {
@@ -766,7 +766,7 @@
     },
     {
       "key": "environment_variables",
-      "value": "CLOUD_MAX_COST_FACTOR, API_KEY, DASHBOARD_USER, DASHBOARD_PASSWORD, ALLOW_INSECURE_NO_AUTH, ANTHROPIC_API_KEY, OPENAI_API_KEY, CAPSOLVER_API_KEY, CAPTCHA_MAX_COST_USD, MAX_CONCURRENT_SESSIONS",
+      "value": "CLOUD_MAX_COST_FACTOR, KEEP_ALIVE_IDLE_TIMEOUT, API_KEY, DASHBOARD_USER, DASHBOARD_PASSWORD, ALLOW_INSECURE_NO_AUTH, ANTHROPIC_API_KEY, OPENAI_API_KEY, CAPSOLVER_API_KEY, CAPTCHA_MAX_COST_USD, MAX_CONCURRENT_SESSIONS, CHROME_LIGHT_FLAGS",
       "mode": "all",
       "source": "app/config.py",
       "pattern": "os\\.environ\\.get\\(\"([A-Z_]+)\""
@@ -1030,6 +1030,103 @@
       "source": "app/api/sessions.py",
       "pattern": "(screenshotUrl)=None",
       "prose": "`recordingUrls`, `screenshotUrl`, `workspaceId`, `proxyCountryCode`"
+    },
+    {
+      "key": "keep_alive_idle_timeout_default",
+      "value": "600",
+      "source": "app/config.py",
+      "pattern": "if not raw:\\n        return (\\d+)",
+      "prose": "Default `600`"
+    },
+    {
+      "key": "captcha_cost_cap_default",
+      "value": "0.03",
+      "source": "app/config.py",
+      "pattern": "os\\.environ\\.get\\(\"CAPTCHA_MAX_COST_USD\"\\) or ([\\d.]+)",
+      "prose": "default `0.03`"
+    },
+    {
+      "key": "captcha_giveup_threshold",
+      "value": "2",
+      "source": "app/agent/captcha/pipeline.py",
+      "pattern": "giveups\\.get\\(host, 0\\) >= (\\d+)",
+      "prose": "two solves against the same host"
+    },
+    {
+      "key": "failure_kinds",
+      "mode": "all",
+      "value": "provider_rate_limit, provider_connection_error, provider_timeout, provider_server_error, provider_error, budget_exceeded, session_timeout, invalid_output, agent_failure",
+      "source": "app/agent/runner.py",
+      "pattern": "return \"([a-z_]+)\", (?:None|\\d+|status_code), \""
+    },
+    {
+      "key": "stagger_per_tab_max_seconds",
+      "value": "0.8",
+      "source": "app/agent/tools.py",
+      "pattern": "_STAGGER_PER_TAB_MAX_S = ([\\d.]+)",
+      "prose": "0.8 seconds each"
+    },
+    {
+      "key": "stagger_total_max_seconds",
+      "value": "8",
+      "source": "app/agent/tools.py",
+      "pattern": "_STAGGER_TOTAL_MAX_S = (\\d+)\\.0",
+      "prose": "8 seconds across the whole wave"
+    },
+    {
+      "key": "light_flags_max_cores",
+      "value": "4",
+      "source": "app/hostinfo.py",
+      "pattern": "_LIGHT_FLAGS_MAX_CORES = (\\d+)",
+      "prose": "four cores or fewer"
+    },
+    {
+      "key": "chrome_light_renderer_limit",
+      "value": "4",
+      "source": "app/browser/factory.py",
+      "pattern": "\"--renderer-process-limit=(\\d+)\"",
+      "prose": "renderer processes capped at four"
+    },
+    {
+      "key": "chrome_light_js_heap_mb",
+      "value": "256",
+      "source": "app/browser/factory.py",
+      "pattern": "--max-old-space-size=(\\d+)",
+      "prose": "256MB JavaScript heap"
+    },
+    {
+      "key": "host_tune_cpu_weight",
+      "value": "300",
+      "source": "scripts/host_tune.sh",
+      "pattern": "CPUWeight=(\\d+)"
+    },
+    {
+      "key": "share_preset_percentages",
+      "mode": "all",
+      "value": "90, 70, 40",
+      "source": "scripts/host_tune.sh",
+      "pattern": "SHARE_PCT=(\\d+)"
+    },
+    {
+      "key": "systemd_unit_name",
+      "value": "openbrowse.service",
+      "source": "scripts/host_tune.sh",
+      "pattern": "^SERVICE=\"([a-z.-]+)\"",
+      "prose": "written under `openbrowse.service.d`"
+    },
+    {
+      "key": "concurrency_hard_ceiling",
+      "value": "8",
+      "source": "app/hostinfo.py",
+      "pattern": "_HARD_MAX_CEILING = (\\d+)",
+      "prose": "stops at **8 sessions**"
+    },
+    {
+      "key": "busy_load_per_core",
+      "value": "0.5",
+      "source": "app/hostinfo.py",
+      "pattern": "_BUSY_LOAD_PER_CORE = ([\\d.]+)",
+      "prose": "above 0.5 of load per core"
     }
   ]
 }

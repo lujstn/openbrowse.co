@@ -89,7 +89,7 @@ export default function Page() {
         ])}
       />
 
-      <Section wide className="border-t-0 pt-14">
+      <Section className="border-t-0 pt-14">
         <SectionHead
           level={1}
           title={TITLE}
@@ -135,7 +135,7 @@ export default function Page() {
         </p>
       </Section>
 
-      <Section id="dimensions" wide>
+      <Section id="dimensions">
         <SectionHead
           title={headings.dimensions}
           standfirst={comparison.standfirst}
@@ -225,9 +225,6 @@ export default function Page() {
             </code>
           </pre>
         </Panel>
-        <p className="mt-6 max-w-[70ch] text-[14px] leading-relaxed text-muted">
-          {dropIn.after}
-        </p>
       </Section>
 
       <Section id="faqs">

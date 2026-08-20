@@ -24,9 +24,9 @@ export const marketingPages: MarketingPage[] = [
       "What OpenBrowse is, the measured comparison against Browser Use Cloud, what it does that a hosted runner does not, the two-line SDK migration, and the FAQ.",
     headings: [
       hero.h1,
+      dropIn.h2,
       benchmark.h2,
       differentiators.h2,
-      dropIn.h2,
       headings.faqs,
     ],
   },

@@ -52,6 +52,13 @@ jobs:
       - name: Regenerate the reference pages
         run: node scripts/generate-api-docs.mjs
 
+      # @nonobvious(must-hold) read from the checkout rather than the default raw.githubusercontent URL,
+      # so the version this PR publishes is the one from the very tree the spec above was generated from
+      - name: Refresh the published release metadata
+        run: node scripts/sync-citation.mjs
+        env:
+          OPENBROWSE_CFF: .upstream/CITATION.cff
+
       # @nonobvious(mirrors) the reference pages have just changed, and public/docs is a committed build
       # product of content/docs; leaving it out of this PR lands a tree that fails check:mirror on main
       - name: Regenerate the markdown mirrors
@@ -73,5 +80,6 @@ jobs:
           delete-branch: true
           add-paths: |
             data/openapi.json
+            data/release.json
             content/docs/api
             public/docs

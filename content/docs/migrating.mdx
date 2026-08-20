@@ -24,11 +24,17 @@ Retry logic, polling, profile ids, output schemas and cost caps all carry over u
 
 ## 1. There is no proxy
 
+Browser Use Cloud runs a managed US residential proxy by default, so target sites see a residential IP. OpenBrowse has no proxy layer at all: requests leave from your machine's own address.
+
+For most people that is a saving rather than a loss. A box on your home broadband **already has a residential IP**, which is the thing the cloud's proxy exists to give you, and residential egress is one of the more expensive parts of what you are paying a hosted runner for. Self-hosting on a Pi at home gets it as a side effect of where the machine is, at no extra cost and with no per-gigabyte meter running.
+
+The case where it genuinely bites is a VPS. A datacentre IP is exactly what sites blocking automated traffic look for first, and moving from the cloud's residential pool onto one is the change most likely to alter your results.
+
 <Callout type="warn">
-This is the one that changes your results without erroring. Browser Use Cloud runs a managed US residential proxy by default, so target sites currently see a residential IP. OpenBrowse has no proxy layer at all: requests leave from your machine's own address. Test anything geo-gated, rate-limited by IP, or fussy about datacentre ranges before you migrate the rest.
+Whichever you run on, this is the difference that changes results without erroring. Nothing throws; the pages simply come back different. Test anything geo-gated, rate-limited by IP, or fussy about datacentre ranges before you migrate the rest.
 </Callout>
 
-`proxyCountryCode` is accepted so your code still compiles, and does nothing. If you need a proxy, put one in front of the instance at the network level, or keep those particular jobs on the cloud. There is no per-session proxy selection to reach for.
+`proxyCountryCode` is accepted so your code still compiles, and does nothing: there is no per-session proxy selection to reach for. If you do need one, put it in front of the instance at the network level, or keep those particular jobs on the cloud. Note that geo-targeting is the one thing a home connection cannot substitute for, since your IP is wherever you are.
 
 ## 2. Ten request fields are accepted and ignored
 
@@ -96,9 +102,15 @@ That is a few seconds. If your integration reads `liveUrl` straight off the crea
 
 A session created without a task and never given one is expired after fifteen minutes and moves to `expired`, which is not in the cloud's status enum. If your code switches exhaustively over the cloud's set, add a branch for it.
 
-Going the other way, the cloud has `timed_out` and OpenBrowse does not: a run that exceeds its limits here ends as `stopped` or `error`, with the reason in `lastStepSummary` or the step feed.
+`timed_out` exists on both, but reaches you differently: here it means the run exceeded *its own* time limit, and a run stopped by its cost cap ends as `stopped` rather than timing out, or as `idle` if it was created with `keepAlive`.
 
-## 7. There is nothing else running the machine
+## 7. Two response fields the cloud does not have
+
+A failed session here carries `failureKind` and `failureStatusCode`, which the cloud's v3 response model does not define. They distinguish a provider rate limit, a provider 5xx, a connection error and a provider timeout from a session timeout, invalid output, budget exhaustion and ordinary agent failure, so a retrying caller can tell a transient blip apart from an agent that will fail the same way again. Both are null on success.
+
+They are additive, so a client that ignores them behaves exactly as it did. See [how OpenBrowse works](/docs/concepts) for the full set of values.
+
+## 8. There is nothing else running the machine
 
 The cloud absorbs uptime, capacity and upgrades. Here a box has to stay up, and concurrency is bounded by memory: budget roughly 2GB of RAM per concurrent session. [Installation](/docs/installation) covers running it under systemd so it survives a reboot, and [exposing it safely](/docs/exposing) covers reaching it from outside your network.
 
@@ -108,6 +120,6 @@ Worth stating plainly, because the list above is longer than the list of things 
 
 - The whole `sessions` surface: create, get, list, stop, and follow-up tasks against an existing session.
 - `outputSchema` and structured output, with stricter validation here than on the cloud.
-- `maxCostUsd`, enforced as a hard stop-loss. If your caps were priced for a service charging platform fees on top of tokens, `CLOUD_MAX_COST_FACTOR` scales incoming caps down without touching your clients; see [cost control](/docs/cost).
+- `maxCostUsd`, enforced as a hard stop-loss, though on a `keepAlive` session it is the pot for one dispatch rather than for the conversation; [cost control](/docs/cost) sets out how it tops up. If your caps were priced for a service charging platform fees on top of tokens, `CLOUD_MAX_COST_FACTOR` scales incoming caps down without touching your clients; see [cost control](/docs/cost).
 - Profiles. OpenBrowse imports the Playwright storage-state format a cloud profile export gives you, cookies plus per-origin `localStorage`, and an imported profile keeps its cloud id, so existing `profileId` references keep working. See [profiles](/docs/profiles).
 - Both authentication styles: `Authorization: Bearer <key>` and the `X-Browser-Use-API-Key` header the SDK sends.

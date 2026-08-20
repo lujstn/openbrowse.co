@@ -82,10 +82,12 @@ To configure by hand instead, create `.env` in the repository root. These are th
 | `ANTHROPIC_API_KEY` | Anthropic key, for `claude-*` models |
 | `OPENAI_API_KEY` | Optional. OpenAI key, for `gpt-*` models |
 | `CAPSOLVER_API_KEY` | Optional. [CapSolver](https://capsolver.com/) key for CAPTCHA solving. Without it the CAPTCHA tool is simply not registered |
-| `CAPTCHA_MAX_COST_USD` | Optional. Ceiling on what one CAPTCHA solve may cost, default `0.03`. Solves above it are refused, and each solve's real cost is added to the session total |
+| `CAPTCHA_MAX_COST_USD` | Optional. Ceiling on what one **run** may spend on CAPTCHA solving in total, default `0.03`. Once a run's solves have reached it, further solves are refused rather than attempted. Each solve's real cost is added to the session total |
 | `DASHBOARD_USER` | Optional. Dashboard username, default `admin` |
 | `DASHBOARD_PASSWORD` | Optional. Dashboard password. Defaults to `API_KEY` |
-| `MAX_CONCURRENT_SESSIONS` | Optional. Concurrent sessions, default 1. Budget roughly 2GB RAM and one core each. When every slot is busy, new session requests wait for a free slot rather than failing |
+| `MAX_CONCURRENT_SESSIONS` | Optional. Concurrent sessions, default 1. Budget roughly 2GB RAM and one core each. Over the cap a session is accepted and queued rather than refused, and the create call returns straight away |
+| `KEEP_ALIVE_IDLE_TIMEOUT` | Optional. Seconds a finished `keepAlive` session waits, browser still open, for its next follow-up before closing itself. Default `600`; `0` parks indefinitely, until the session is stopped or its display slot is claimed by a new one |
+| `CHROME_LIGHT_FLAGS` | Optional. Set to `1` to start every browser in the lighter profile described under [sizing it for your machine](#sizing-it-for-your-machine). Default off |
 | `CLOUD_MAX_COST_FACTOR` | Optional. Scales an incoming `maxCostUsd` to local cost, for callers whose budgets were priced for a hosted service. Above 0 and at most 1; `0.5` turns a `$6` cap into `$3`. Default `1.0`. An out-of-range value stops the server at startup with a clear error |
 | `ALLOW_INSECURE_NO_AUTH` | Optional. Set to `1` to run without any authentication. Development only; never expose an instance configured this way |
 
@@ -168,6 +170,47 @@ sudo systemctl status openbrowse
 Follow the logs with `journalctl -u openbrowse -f`.
 
 If the server is killed mid-run, sessions that were executing are marked as errored with the note `Interrupted by server restart` at the next startup, so nothing is ever left claiming to run forever.
+
+## Sizing it for your machine
+
+Concurrency that suits a Raspberry Pi strands a sixteen-core VPS, and the reverse thrashes the Pi, so the setup screen reads the machine before it asks you anything: cores, total and available memory, current load, whether the kernel exposes pressure stall information, whether this is a Raspberry Pi, whether systemd is in charge, whether the cgroup memory controller is available, whether the root filesystem is on an SD card, and whether the capacity drop-in below has already been written. The last three drive checklist rows rather than the slider. You then choose how much of the device OpenBrowse may have, and a slider recommends a session count bounded by what the hardware can hold.
+
+| Share | Meaning | Fraction of memory |
+| --- | --- | --- |
+| All of it | The machine's only job | 90% |
+| Most of it | A machine that also does something else occasionally | 70% |
+| A fair share | A machine with another real job | 40% |
+
+The same card is in Settings, so you can retune later without reinstalling, and a checklist alongside it shows which host-level steps are done and which remain. Probing degrades to a safe default anywhere it cannot read the machine, and nothing is recommended off a guess.
+
+<Callout type="info">
+The slider stops at **8 sessions** however large the machine is, and the recommendation drops by one on a host already running above 0.5 of load per core. Both are bounds on the *recommendation*, not on the software: `MAX_CONCURRENT_SESSIONS` set by hand in `.env` is not clamped, so a large VPS can go past 8 if you have the memory for it.
+</Callout>
+
+### The host-level half
+
+Two of those steps are outside the application: systemd does not know OpenBrowse should win a contended CPU, and on a Raspberry Pi the kernel ships with pressure stall information compiled out. `scripts/host_tune.sh` applies both in one idempotent command:
+
+```bash
+sudo bash scripts/host_tune.sh --share most --dry-run   # show the plan
+sudo bash scripts/host_tune.sh --share most             # apply it
+```
+
+It writes a systemd drop-in that weights the service's CPU share and caps its memory at the fraction you chose, appends the `psi=1` boot flag where PSI is missing and this is a Pi, and adds a sudoers entry so the dashboard's one-click tuning button works without a password. Every action prints what it did, repeats are skipped rather than rewritten, and `--dry-run` touches nothing. The memory cap applies from the next service restart; the PSI flag needs a reboot.
+
+The drop-in is written under `openbrowse.service.d`, matching the unit name the application itself restarts by. If you run OpenBrowse under a differently-named unit, pass `--service <name>` so the two agree; otherwise the dashboard will keep reporting the tuning as still to do.
+
+<Callout type="info">
+PSI matters because load average counts runnable processes, which mistakes a healthy burst of tabs for trouble and misses real starvation behind modest numbers. Where PSI is available, OpenBrowse instead measures the fraction of time runnable work sat waiting for a CPU, which is the thing that actually hurts. Hosts without it fall back to per-core load, and the telemetry names which signal it used.
+</Callout>
+
+### The lighter browser profile
+
+`CHROME_LIGHT_FLAGS=1` starts every browser without a GPU process, with renderer processes capped at four, a 256MB JavaScript heap per renderer, Chromium's low-end device mode, and no background networking. On hardware with no real GPU, drawing into a virtual display, those are close to free, and they lower the memory floor of every session.
+
+Setup pre-selects it where it earns its keep, meaning a Raspberry Pi, four cores or fewer, or 8GB of memory or less, and leaves it alone on a large host. It stays a checkbox either way.
+
+Site isolation is deliberately left intact. Collapsing it would save more memory again, and it would also break reading pages inside cross-origin frames, which is precisely the case the benchmark task exists to prove. The one trade-off to watch is the JavaScript heap: if a single heavy site misbehaves only with the profile on, that 256MB ceiling is the first thing to suspect.
 
 ## Next
 

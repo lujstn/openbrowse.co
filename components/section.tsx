@@ -1,24 +1,26 @@
 import type { ReactNode } from "react";
 
+// @nonobvious(must-hold) every full-width band on the site measures its content against
+// this one value: the section wrapper, the hero, the header nav and the footer. Two bands
+// a few pixels apart do not read as two widths, they read as one width drawn badly, and
+// the only defence against that is having a single place to change.
+export const CONTAINER = "mx-auto w-full max-w-[1180px]";
+
 export function Section({
   id,
   children,
   className = "",
-  wide = false,
 }: {
   id?: string;
   children: ReactNode;
   className?: string;
-  wide?: boolean;
 }) {
   return (
     <section
       id={id}
       className={`border-t border-line px-5 py-16 sm:px-8 sm:py-24 ${className}`}
     >
-      <div className={`mx-auto w-full ${wide ? "max-w-[1180px]" : "max-w-[1100px]"}`}>
-        {children}
-      </div>
+      <div className={CONTAINER}>{children}</div>
     </section>
   );
 }

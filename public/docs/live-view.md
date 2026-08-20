@@ -10,6 +10,8 @@ Every session is watchable while it runs and inspectable after it ends. The dash
 
 The stream is a noVNC client attached to the actual X display the agent's Chromium is running on, so what you see is the browser itself, not a reconstruction. Parallel tab waves from `read_pages` are visible as tabs opening, being focused one by one, and closing. The session's `liveUrl` field carries the same view as a path on your instance, served through the dashboard's authentication, so you can link an operator straight to a running session.
 
+> The view starts when somebody looks. A session allocates only the virtual framebuffer it needs to run; the VNC server and the websocket bridge spawn on the first request to view it, from either the sessions grid or the session page. Runs therefore start faster, and an unwatched run does not stream pixels to nobody. The first frame after you open a view can take a moment longer than the ones after it.
+
 When the agent runs a sandbox script, it opens a dedicated **code tab** on the same display: an IDE-style page into which the script's source streams token by token as the model writes it, with its status and the file name. The tab closes when the script finishes. This makes the run's code layer as observable as its clicking layer.
 
 ## The step feed
@@ -42,7 +44,18 @@ Events carry a category that tells you which subsystem is speaking:
 | `code` | Sandbox script starts, such as `Running map_rows.py` |
 | `schema` | Completeness gate activity: the bounce with its deficiency list, then `Completeness check passed` with the final coverage |
 | `judge` | Reviewer verdicts, change requests, and any dissent between the judge and the recorded outcome |
-| `system` | Host pressure warnings when the CPU is saturated at launch, which degrade timing-sensitive embed reads |
+| `system` | Host pressure warnings when the processor is stalling at launch, which degrade timing-sensitive embed reads |
+
+## Reading what is happening right now
+
+Above the feed, one activity surface answers "what is the run doing at this instant?". A phase declares which kind it is, and the two kinds look different on purpose:
+
+- **A phase that thinks shimmers**, and the model's reasoning streams underneath it as it is generated, rather than as a truncated tail of it. A finished thought collapses to how long it took, with a chevron to read it again.
+- **A phase that acts spins.** Running actions, preparing the next step, reading pages, running code and solving a CAPTCHA all turn a spinner. Nothing wears both, so a shimmer means the model is reasoning rather than merely that something is happening.
+
+Adaptive thinking can open a block and then say nothing for tens of seconds, so the label goes up on the block itself and the streaming card takes over the moment real text arrives. The elapsed time a finished thought reports is the same figure the durable feed row beneath it carries, so reopening a session later says what the live view said at the time.
+
+On a keep-alive session, each finished turn's completion folds away under its own title as the next begins, newest on top and open, and a reload rebuilds that stack. Every turn's answer stays reachable rather than being overwritten by the next one.
 
 ## Diagnosing a run from the feed
 
@@ -51,7 +64,8 @@ The feed usually shows the problem directly. Things worth scanning for:
 - **`find_links` matched 0 links, or a frame filter matched 0 frames.** The listing lives in an embedded panel that had not attached yet, or the selector was wrong. The tool's own error text says which, and lists the attached frame hosts to target instead.
 - **`read_pages` reporting shell reads.** Rows like `read the embedding shell, not this page's real content` mean the pages' content lives in a cross-origin embed; the retry inside the panel happens automatically and is logged, so check whether the recovery line follows.
 - **A completeness bounce.** The `schema` event lists exactly which fields were empty and on how many items. If the run then finished cleanly, nothing was wrong; the gate did its job. If it looped into `mark_absent` on data you know is there, the pages that show it probably never rendered; look for read failures above.
-- **`Stopped: Cost $X exceeded budget $Y`.** The cost cap fired; see [cost control](https://openbrowse.co/docs/cost).
+- **`Stopped: Cost $X exceeded budget $Y`.** The cost cap fired, and the session carries `failureKind: "budget_exceeded"`. Whatever the run had produced is kept; see [cost control](https://openbrowse.co/docs/cost).
+- **A failed session's `failureKind`.** Before reading the feed at all, check it. A `provider_rate_limit` or `provider_server_error` says the run failed for a reason that has nothing to do with your task or the site, and is worth simply retrying. [How OpenBrowse works](https://openbrowse.co/docs/concepts) lists the full set.
 - **A `system` pressure warning at launch.** Failures in that run may be environmental (an overloaded host missing embed attach windows) rather than site changes. Re-run when the host is quiet before concluding anything.
 - **`Step timed out and was cancelled before completing`.** One step exceeded 520 seconds; the run continues, but repeated occurrences usually mean the host is underpowered for the page.
 

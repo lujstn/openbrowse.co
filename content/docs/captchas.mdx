@@ -1,0 +1,59 @@
+---
+title: "Solving CAPTCHAs"
+description: "How OpenBrowse detects and solves CAPTCHAs through CapSolver: which challenge types are solved, which are only recognised, what a solve costs, and why a solved checkbox never visibly ticks."
+---
+
+A browser agent that cannot get past a challenge page cannot finish the task behind it. OpenBrowse detects CAPTCHAs itself and solves the ones a solving service can actually solve, through [CapSolver](https://capsolver.com/).
+
+Set `CAPSOLVER_API_KEY` to turn it on. Without it the `solve_captcha` tool is not registered at all, so an agent on a challenge page fails honestly rather than pretending.
+
+## Detection is not the agent's job
+
+The agent never has to name the challenge it is looking at, because it is a poor judge of one: a model asked "what CAPTCHA is this?" will guess from a screenshot, and guess wrong on anything that does not carry a visible logo.
+
+Instead one page probe harvests the structural facts, the site key, the widget's own configuration, the challenge parameters the page's JavaScript received, and a registry of strategies classifies from that snapshot. Detection is authoritative. The agent calls `solve_captcha` and is told what was found.
+
+The consequence worth knowing is that a solve missing a runtime parameter is refused **before** a task is created, so nothing is spent, and the error names the field that was absent rather than failing opaquely after you have paid.
+
+## What is solved and what is only named
+
+Coverage follows CapSolver's published service list, and a test refuses any task type that list does not offer, so this table cannot quietly drift from what the service accepts.
+
+| Challenge | Status |
+| --- | --- |
+| reCAPTCHA v2, and v2 Enterprise | Solved |
+| reCAPTCHA v3, and v3 Enterprise | Solved |
+| Cloudflare Turnstile | Solved |
+| GeeTest v3 and v4 | Solved |
+| MTCaptcha | Solved |
+| AWS WAF token | Solved |
+| Image-to-text | Solved |
+| hCaptcha | Recognised and named. CapSolver offers no hCaptcha task, so nothing is attempted and nothing is charged |
+| DataDome | Recognised and named, for the same reason |
+| reCAPTCHA v2 image grid | Recognised. The ordinary token solve already clears the grid, so the click-the-grid path is unproven and not offered |
+| AWS WAF image grid | Recognised. The image path has never been proven against a live challenge, so it is not offered |
+
+A challenge in the lower half of that table is a real answer, not a failure to detect. The agent is told what the page is and can route around it.
+
+## The solved checkbox does not tick
+
+<Callout type="warn">
+A solved challenge is written straight into the page, so the widget's checkbox does not visibly tick and the live view still shows an unsolved-looking CAPTCHA. This is normal. Success is judged only by the page moving on, never by how the widget looks.
+</Callout>
+
+If you are watching a run in the [live view](/docs/live-view) this is the single most confusing moment in it. The token is injected where the page expects it, the form submits, and the widget's own rendering never catches up.
+
+## What it costs
+
+Every solve is priced from the cost field CapSolver returns for that task, not a flat guess, and folded into the session's `totalCostUsd` alongside the LLM spend. Failed solves are billed by the service too, so they are recorded as well; a solve that cost money and did not work still shows up in the total.
+
+Two bounds keep that from running away:
+
+- **`CAPTCHA_MAX_COST_USD`**, default `$0.03`, caps what a single **run** may spend on solving in total. It is a per-run ceiling, not a per-solve one: once a run's solves have reached it, further solves are refused with an error telling the agent to find another path.
+- **Two failures end it for that host.** If two solves against the same host in one session do not clear an interstitial, a third is refused rather than paid for. A challenge that is not yielding twice is not going to yield on a third identical attempt.
+
+Both refusals are ordinary tool errors, so the agent reads them and can try something else, rather than the run dying.
+
+## Adding a challenge type
+
+Worth knowing if you are reading the source: a challenge type is one strategy class plus a `@register` decorator, and nothing else in the tree changes. Detection runs every strategy's pure `detect` over the same probe snapshot and ranks whatever claims it, so adding a type never means another branch in a growing chain.

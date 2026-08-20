@@ -2,10 +2,11 @@ import Link from "next/link";
 import { siGithub } from "simple-icons";
 import { Mark } from "@/components/wordmark";
 import { site } from "@/content/landing";
+import { CONTAINER } from "@/components/section";
 
 const LINKS = [
-  { label: "Docs", href: "/docs" },
   { label: "Benchmarks", href: "/benchmarks" },
+  { label: "Docs", href: "/docs" },
 ];
 
 export function SiteHeader() {
@@ -13,7 +14,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-line bg-raised/85 px-5 backdrop-blur-md sm:px-8">
       <nav
         aria-label="Primary"
-        className="mx-auto flex h-14 w-full max-w-[1180px] items-center gap-7"
+        className={`${CONTAINER} flex h-14 items-center gap-7`}
       >
         <Link
           href="/"
