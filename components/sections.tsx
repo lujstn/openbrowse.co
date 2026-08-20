@@ -113,7 +113,13 @@ export function DropInSection() {
   );
 }
 
-function FaqItem({ item }: { item: { q: string; a: string } }) {
+type FaqEntry = {
+  q: string;
+  a: string;
+  link?: { label: string; href: string };
+};
+
+function FaqItem({ item }: { item: FaqEntry }) {
   return (
     <details className="group border-b border-line-faint [&_summary::-webkit-details-marker]:hidden">
       <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-5 text-[15px] font-medium text-ink transition-colors hover:text-accent">
@@ -125,7 +131,23 @@ function FaqItem({ item }: { item: { q: string; a: string } }) {
           +
         </span>
       </summary>
-      <p className="pb-6 text-[15px] leading-relaxed text-muted">{item.a}</p>
+      <p className="text-[15px] leading-relaxed text-muted">{item.a}</p>
+      {item.link ? (
+        <Link
+          href={item.link.href}
+          className="group/link mt-4 inline-flex items-center gap-1.5 rounded-full border border-line-strong px-3.5 py-1.5 text-[13px] font-medium text-body transition-colors hover:border-dim hover:text-ink active:translate-y-px"
+        >
+          {item.link.label}
+          {/* @nonobvious(means) the arrow carries the motion rather than the button moving, so a row of these does not reflow the answer above when one is hovered */}
+          <span
+            aria-hidden="true"
+            className="transition-transform duration-200 group-hover/link:translate-x-0.5"
+          >
+            &rarr;
+          </span>
+        </Link>
+      ) : null}
+      <div className="pb-6" />
     </details>
   );
 }
@@ -136,7 +158,7 @@ function FaqItem({ item }: { item: { q: string; a: string } }) {
 export function FaqList({
   items,
 }: {
-  items: readonly { q: string; a: string }[];
+  items: readonly FaqEntry[];
 }) {
   const half = Math.ceil(items.length / 2);
   const columns = [items.slice(0, half), items.slice(half)];
