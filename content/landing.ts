@@ -41,6 +41,15 @@ export const hero = {
     "One real run of the benchmark task, at full speed. The agent works across parallel tabs on the left while the sandbox scripts it writes stream into the panel on the right.",
 } as const;
 
+// @nonobvious(mirrors) these are the quick start from the upstream README, kept identical to it because someone who reads one and then the other has to be told the same thing twice, not two things once. The uv bootstrap line is deliberately left to the docs: this card is for the reader who already has uv, and the alternatives cover the reader who does not.
+export const install = {
+  label: "Install",
+  commands: ["uv tool install openbrowse", "openbrowse start"],
+  note: "Runs now, and again on every boot.",
+  alternativesLead: "Without uv",
+  alternatives: ["pipx install openbrowse", "pip install openbrowse"],
+} as const;
+
 // @nonobvious(must-hold) every section heading rendered on a marketing page is named here exactly once, and content/pages.ts assembles them into the page map that llms.txt publishes. A heading typed inline in a component would be invisible to that map, and scripts/check-export.mjs compares the published map against the exported HTML in both directions, so an unlisted heading fails the build rather than silently making llms.txt wrong.
 export const headings = {
   faqs: "FAQs",
