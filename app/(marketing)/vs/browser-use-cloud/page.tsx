@@ -7,6 +7,7 @@ import { BenchmarkTable } from "@/components/benchmark-table";
 import { FaqList } from "@/components/sections";
 import { JsonLd } from "@/components/json-ld";
 import { breadcrumb, faqPage, techArticle } from "@/lib/schema";
+import { articleOpenGraph } from "@/lib/metadata";
 import { comparison, dropIn, headings, site } from "@/content/landing";
 import {
   baseline,
@@ -60,10 +61,10 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: "/vs/browser-use-cloud" },
   openGraph: {
+    ...articleOpenGraph,
     title: TITLE,
     description: DESCRIPTION,
     url: `${site.url}/vs/browser-use-cloud`,
-    type: "article",
   },
 };
 

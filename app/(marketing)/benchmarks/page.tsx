@@ -7,6 +7,7 @@ import { CompareStat } from "@/components/compare-stat";
 import { RunsTable } from "@/components/runs-table";
 import { JsonLd } from "@/components/json-ld";
 import { benchmarkDataset, breadcrumb, techArticle } from "@/lib/schema";
+import { articleOpenGraph } from "@/lib/metadata";
 import { benchmarkAnalysis, evidence, headings, site } from "@/content/landing";
 import {
   baseline,
@@ -31,10 +32,10 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: "/benchmarks" },
   openGraph: {
+    ...articleOpenGraph,
     title: SEO_TITLE,
     description: DESCRIPTION,
     url: `${site.url}/benchmarks`,
-    type: "article",
   },
 };
 

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
+import { OG_SIZE } from "./shared";
 
-export const OG_SIZE = { width: 1200, height: 630 };
-export const OG_CONTENT_TYPE = "image/png";
+export { OG_CONTENT_TYPE, OG_SIZE } from "./shared";
 
 const MARK_PATHS = [
   "M290.705 369.914C290.705 369.914 210.213 396.956 210.213 396.956C206.233 398.293 201.92 398.257 197.962 396.856C148.001 379.164 115.992 340.272 102.051 289.137C88.11 238.002 100.116 183.282 134.184 142.681",
