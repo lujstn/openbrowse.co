@@ -50,7 +50,7 @@ openbrowse check-update
 openbrowse update
 ```
 
-`check-update` reports the installed version against the latest on PyPI and exits non-zero only if the check itself failed, so "already up to date" is a success. `update` runs the upgrade appropriate to how this copy was installed and then tells you to restart; unlike the dashboard's button, it does not restart the server for you.
+`check-update` reports the installed version against the latest on PyPI and exits non-zero only if the check itself failed, so "already up to date" is a success. `update` runs the upgrade through whichever manager owns this copy, `uv tool upgrade`, `pipx upgrade`, pip inside its virtual environment or a `git pull`, and then tells you to restart; unlike the dashboard's button, it does not restart the server for you. Where the owning manager cannot be reached it names the install method and declines rather than running something that would fail. [Updating](https://openbrowse.co/docs/installation#updating) has the full table.
 
 The dashboard does the same two things without a shell: a badge in the navigation when a release is waiting, and a one-click **Install and restart** on the Settings page that is refused while any session is running. [Updating](https://openbrowse.co/docs/installation#updating) covers both paths and the one thing to do afterwards.
 

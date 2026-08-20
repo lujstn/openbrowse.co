@@ -14,7 +14,7 @@ You need a Debian or Ubuntu machine with SSH access, and an API key from Anthrop
 
 ## Install
 
-The agent drives a real browser on a virtual X display and streams it over VNC, so those packages have to be there before anything will run. A fresh Raspberry Pi OS image also has no `uv`.
+The agent drives a real browser on a virtual X display and streams it over VNC, so those packages have to be there before anything will run. A fresh Raspberry Pi OS image also has no `uv`, so the last line installs it; skip that line if you would rather use pipx or a virtual environment below.
 
 ```bash
 sudo apt update
@@ -25,10 +25,21 @@ sudo apt install -y xvfb x11vnc novnc websockify \
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Then install OpenBrowse and start it:
+Then install OpenBrowse with whichever package manager you prefer, and start it:
 
 ```bash
+# uv
 uv tool install openbrowse
+
+# pipx
+pipx install openbrowse
+
+# venv
+source <path-to-venv>/bin/activate
+pip install openbrowse
+```
+
+```bash
 openbrowse start
 ```
 

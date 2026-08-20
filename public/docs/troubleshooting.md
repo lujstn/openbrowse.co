@@ -158,9 +158,9 @@ Run it after every upgrade. It rewrites the grant for the new path, covering bot
 
 If it refused rather than failed, a session was running: the install is deliberately blocked while any browser is live. Wait for the session to finish, or stop it, and try again.
 
-Otherwise the upgrade command itself failed, and which command that was depends on how this copy was installed. `uv tool upgrade openbrowse` for a uv tool, `pip install --upgrade openbrowse` for a virtual environment or user-site install, `git pull --ff-only` for a checkout. Running it by hand shows you the real error, which for a checkout is usually a local commit or a dirty tree that a fast-forward cannot pass. Restart afterwards.
+Otherwise the upgrade command itself failed, and which command that was depends on which manager owns this copy: `uv tool upgrade openbrowse`, `pipx upgrade openbrowse`, `pip install --upgrade openbrowse` inside its virtual environment, or `git pull --ff-only` for a checkout. Running it by hand shows you the real error, which for a checkout is usually a local commit or a dirty tree that a fast-forward cannot pass. Restart afterwards.
 
-If instead it reports no automatic upgrade path at all, OpenBrowse is installed into the system Python, where an unattended upgrade could disturb packages it does not own. Upgrade it yourself and restart.
+If instead it names an install method but offers no command, the manager that owns this copy is not on the server's `PATH`. That is common under systemd, which hands the service a minimal `PATH` that often omits `~/.local/bin`, where both uv and pipx install themselves. Upgrade from a shell instead. The same message appears for a copy in the system Python, where no unattended upgrade is safe.
 
 If the badge never appears at all, `UPDATE_CHECK_HOURS` may be `0`, which switches the background check off. `openbrowse check-update` asks immediately regardless.
 

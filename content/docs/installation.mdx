@@ -34,15 +34,27 @@ sudo apt install -y \
 
 ## Install OpenBrowse
 
-OpenBrowse is published to PyPI as `openbrowse`, and installing it as a [uv](https://docs.astral.sh/uv/) tool puts the `openbrowse` command on your `PATH` in its own isolated environment:
+OpenBrowse is published to PyPI as `openbrowse`. Three installers are equally supported, and each puts the `openbrowse` command on your `PATH`:
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
+# uv
 uv tool install openbrowse
+
+# pipx
+pipx install openbrowse
+
+# venv
+source <path-to-venv>/bin/activate
+pip install openbrowse
 ```
 
-`pipx install openbrowse` and `pip install openbrowse` both work too; the rest of this page assumes only that `openbrowse` runs.
+[uv](https://docs.astral.sh/uv/) and [pipx](https://pipx.pypa.io/) each keep the app in an isolated environment they manage for you, and both know how to upgrade it later. If you have neither, `curl -LsSf https://astral.sh/uv/install.sh | sh` installs uv.
+
+<Callout type="warn">
+The pip route needs a virtual environment, and the activation line above is not optional. Raspberry Pi OS and Debian mark the system Python as externally managed, so `pip install` outside a virtual environment is refused by the distribution rather than by us.
+</Callout>
+
+The rest of this page assumes only that `openbrowse` runs.
 
 To work on OpenBrowse rather than only run it, clone the repository instead and run it out of the checkout. Everything below behaves the same, except that the checkout is its own home directory:
 
@@ -212,7 +224,19 @@ openbrowse check-update
 openbrowse update
 ```
 
-The upgrade command matches how this copy was installed: `uv tool upgrade` for a uv tool, `pip install --upgrade` for anything inside a virtual environment or a user-site install, and `git pull --ff-only` followed by `uv sync` for a checkout. A copy installed into the system Python itself has no command safe enough to run unattended, so it says so and leaves the upgrade to you. That detection follows the package itself, not `OPENBROWSE_HOME`, so pointing the home directory at some other folder cannot aim a `git pull` at an unrelated repository. From the shell the restart is yours to do; from the dashboard it happens for you.
+The upgrade runs through whichever manager owns this copy, rather than through a single command that happens to work most of the time:
+
+| How it was installed | What the upgrade runs |
+| --- | --- |
+| `uv tool install` | `uv tool upgrade openbrowse` |
+| `pipx install` | `pipx upgrade openbrowse` |
+| pip, in a virtual environment | `pip install --upgrade openbrowse`, or `uv pip install --upgrade` where the environment has no pip of its own |
+| pip, into your user site | The same, with `--user`, so it upgrades the copy that is actually running |
+| A git checkout | `git pull --ff-only`, then `uv sync` |
+
+A uv tool and a pipx app both live in a virtual environment, so both are recognised before the plain pip case; upgrading either with a bare pip would reach around the manager that owns it and leave its records describing a version that is no longer installed. Where the manager's own binary cannot be found, or a copy sits in the system Python where no upgrade is safe to run unattended, OpenBrowse names the install method and declines to invent a command rather than offering one that would fail on use.
+
+That detection follows the package itself, not `OPENBROWSE_HOME`, so pointing the home directory at some other folder cannot aim a `git pull` at an unrelated repository. From the shell the restart is yours to do; from the dashboard it happens for you.
 
 <Callout type="warn">
 Run `openbrowse tune --share <preset>` once after upgrading. The sudoers entry that lets the dashboard tune the host and restart the service names `host_tune.sh` by its full path, and that path moves with the package, so an upgrade silently leaves those buttons unable to do anything. The Settings page says so when it detects it, and re-running the command rewrites the entry.
