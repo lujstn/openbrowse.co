@@ -77,6 +77,10 @@ export function InstallCard() {
           </span>
           <span aria-hidden="true" className="h-3 w-px bg-line-strong" />
           <span
+            // @nonobvious(forced-by) inline-flex, so this wrapper collapses to the button's own box rather
+            // than keeping the parent's larger line box, which would baseline-drop the 11px button below the
+            // version label beside it.
+            className="inline-flex items-center"
             // @nonobvious(must-hold) the hold is on the copy control alone. The button sends whatever is on
             // screen, so it must not change between deciding and clicking, but holding the whole card would
             // strand the carousel for anyone whose pointer merely comes to rest anywhere near it.
