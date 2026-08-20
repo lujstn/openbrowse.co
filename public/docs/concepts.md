@@ -10,7 +10,7 @@ This page is the map. Everything on it is observable in the live view, and each 
 
 When you create a session with a task, the instance allocates a **display slot**: a fresh Xvfb virtual display at 1920x1080, an `x11vnc` server attached to it, and a `websockify` bridge serving noVNC to your browser. It then launches a stealth-configured Chromium on that display, supplied by CloakBrowser, the library that provides the patched browser binary with its own user-data directory and a Chrome DevTools Protocol port, and connects the agent to it over CDP. This is why the live view shows a real browser rather than a replay: the stream is the actual X display the agent is working on.
 
-Port allocation is deterministic per slot: displays start at `:10`, VNC ports at `5900` plus the display number, noVNC ports at `6080`, and CDP ports at `9222`. The number of slots is `MAX_CONCURRENT_SESSIONS` (default 1). When every slot is busy, a new session request waits for a slot rather than failing, so callers see latency at capacity, not errors.
+Port allocation is deterministic per slot: displays start at `:10`, VNC ports at `5900` plus the display number, noVNC ports at `6080`, and CDP ports at `9222`. The number of slots is `MAX_CONCURRENT_SESSIONS` (default 1). Over the cap the create call still returns straight away: the session is accepted and its run waits for a slot inside its own task, so a burst of submissions queues rather than blocking the caller or failing. A keep-alive session parked between follow-ups gives its slot up to a newly started run, oldest first, so a browser nobody is using cannot hold a one-slot host indefinitely. Two runs can never claim the same browser profile. The claim is taken inside the run rather than at request time, so the second session is accepted, reaches `running`, and then ends `error` with a message naming the session that holds the profile.
 
 If a `profileId` was given, the profile's storage state (cookies plus per-origin `localStorage` and `sessionStorage`) is loaded into the browser before the run, and written back when the session ends. See [profiles](https://openbrowse.co/docs/profiles).
 
@@ -36,7 +36,7 @@ OpenBrowse extends the stock browser-use step in a few measurable ways:
 The agent's registry is extended with tools tuned for visual, tab-based extraction, all of which you can watch working in the live view:
 
 - `find_links` collects a page's links by selector, and is the only tool that can read links inside an embedded, cross-origin panel. It scrolls the page (and any matching panel) until the link count stops growing before collecting, so lazily-populating lists are counted once, completely.
-- `read_pages` opens up to 48 URLs in parallel tab waves, waits for each page (and, when asked, its embedded panel) to genuinely render, and returns `{url, title, text, jsonld, links}` per page, retrying failures and detecting shell reads. It also prefills a draft row per page against your output schema. Covered in depth in [structured output](https://openbrowse.co/docs/structured-output).
+- `read_pages` opens up to 48 URLs in parallel tab waves, waits for each page (and, when asked, its embedded panel) to genuinely render, and returns `{url, title, text, jsonld, links}` per page, retrying failures and detecting shell reads. It also prefills a draft row per page against your output schema. A wave paces itself only when the host is genuinely struggling, meaning two or more sessions active *and* the processor actually stalling, spacing tabs by up to 0.8 seconds each and no more than 8 seconds across the whole wave; a solo run never pays the gap. Covered in depth in [structured output](https://openbrowse.co/docs/structured-output).
 - `run_code_file` saves and runs a Python script in one step against the live page, in a persistent sandbox namespace with a `browser` handle that can evaluate JavaScript inside cross-origin frames. The script's source streams into the code tab of the live view as the model writes it.
 - A session **clipboard** (`remember`/`recall`) persists small values across steps, and is pre-seeded with `startUrl` (the first URL found in your task) and the goal sentence.
 - `http_fetch` makes one server-side HTTP request; large responses are saved to a file and previewed rather than dumped into context.
@@ -60,12 +60,46 @@ One deliberate asymmetry: a run that dies before calling `done` but leaves behin
 | --- | --- |
 | `created` | The session row exists but no task has been submitted yet |
 | `running` | A task is executing |
-| `idle` | The last task finished and `keepAlive` was set, or the task was stopped with strategy `task`; the session accepts a follow-up task |
-| `stopped` | Terminal: the task finished (without `keepAlive`), was stopped, or hit its cost cap |
+| `idle` | On a `keepAlive` session: the last task finished, or hit its cost cap. Also where any session lands when stopped with strategy `task`. The session accepts a follow-up |
+| `timed_out` | Terminal: the run exceeded its own time limit |
+| `stopped` | Terminal: the task finished, was stopped, or hit its cost cap, in each case without `keepAlive` |
 | `error` | Terminal: the run failed, or the server restarted mid-run |
 | `expired` | Terminal: a `created` session was never given a task and was expired after 15 minutes |
 
-A follow-up task targets an existing session by passing `sessionId` (the session must be `idle` or `created`, and `task` is required). Only the fields you actually send are overwritten, so a follow-up that names just a `task` keeps the session's model, schema and budget. Note that between runs the browser itself is torn down and relaunched; what persists across runs of a session is the session record, its output, and the profile's cookie jar, not the live browser tabs.
+A follow-up task targets an existing session by passing `sessionId`, with `task` required. Only the fields you actually send are overwritten, so a follow-up that names just a `task` keeps the session's model, schema and budget.
+
+An ordinary session is addressable only while it is `idle` or `created`. A **keep-alive session is a conversation**, so it takes follow-ups after its browser has been released too, and that is the one exception to the rule.
+
+## A keep-alive session is one worker
+
+Setting `keepAlive` changes what persists between turns. The browser, the agent and its history stay alive, so a follow-up answers from what the session already knows rather than starting cold and re-reading the page. A session whose browser has since been released or evicted still works: the conversation so far is replayed into a fresh run.
+
+A parked browser holds real memory and a display slot, so a session nobody comes back to closes itself after `KEEP_ALIVE_IDLE_TIMEOUT` seconds, 600 by default, or never if you set it to `0`.
+
+Without `keepAlive`, the browser is torn down and relaunched between runs; what persists is the session record, its output, and the profile's cookie jar, not the live tabs.
+
+## Why a run failed
+
+A run that fails inside the agent loop carries a typed classification rather than leaving you to parse prose. `failureKind` names the cause and `failureStatusCode` carries the provider's HTTP status where there was one. An ordinary successful turn clears whatever an earlier failed run left behind.
+
+| `failureKind` | Meaning |
+| --- | --- |
+| `provider_rate_limit` | The model provider rate-limited the request; `failureStatusCode` is usually 429 |
+| `provider_server_error` | The provider returned a 5xx |
+| `provider_connection_error` | The request never reached the provider |
+| `provider_timeout` | The provider accepted the request and did not answer in time |
+| `provider_error` | Some other error the provider returned a status code with |
+| `session_timeout` | The run exceeded its own time limit rather than the provider's |
+| `invalid_output` | The model's reply was truncated or otherwise unusable |
+| `budget_exceeded` | The run hit `maxCostUsd`; see [cost control](https://openbrowse.co/docs/cost), which explains what is kept |
+| `agent_failure` | The agent gave up, **or the run never started**: a missing provider key and a session row with no task both land here before a single step runs |
+
+The classification reads the original exception and unwraps a wrapped provider error to its cause, which is what makes the first four distinguishable at all. That distinction is the point: a retrying caller can tell a transient provider blip apart from an agent that will fail again on the next attempt.
+
+Two things the table does not cover, both of which matter if you are treating `failureKind` as exhaustive:
+
+- **`failureKind` can be null on a failure.** A session errored by a server restart, or by a profile another running session already holds, is failed outside the classified path and carries no kind. `lastStepSummary` and the feed are the source of truth there.
+- **`failureKind` can be set on a success.** A run stopped by its cost cap that salvaged a complete, valid answer store is recorded successful *and* still carries `budget_exceeded`, because it did not finish on its own terms. Read `isTaskSuccessful` and `failureKind` together rather than treating either as the verdict on its own.
 
 `POST /v3/sessions/{id}/stop` takes a strategy: `task` cancels the current task and leaves the session `idle` for follow-ups, while the default `session` stops it outright.
 

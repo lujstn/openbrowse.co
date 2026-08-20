@@ -93,9 +93,15 @@ That is a few seconds. If your integration reads `liveUrl` straight off the crea
 
 A session created without a task and never given one is expired after fifteen minutes and moves to `expired`, which is not in the cloud's status enum. If your code switches exhaustively over the cloud's set, add a branch for it.
 
-Going the other way, the cloud has `timed_out` and OpenBrowse does not: a run that exceeds its limits here ends as `stopped` or `error`, with the reason in `lastStepSummary` or the step feed.
+`timed_out` exists on both, but reaches you differently: here it means the run exceeded *its own* time limit, and a run stopped by its cost cap ends as `stopped` rather than timing out, or as `idle` if it was created with `keepAlive`.
 
-## 7. There is nothing else running the machine
+## 7. Two response fields the cloud does not have
+
+A failed session here carries `failureKind` and `failureStatusCode`, which the cloud's v3 response model does not define. They distinguish a provider rate limit, a provider 5xx, a connection error and a provider timeout from a session timeout, invalid output, budget exhaustion and ordinary agent failure, so a retrying caller can tell a transient blip apart from an agent that will fail the same way again. Both are null on success.
+
+They are additive, so a client that ignores them behaves exactly as it did. See [how OpenBrowse works](https://openbrowse.co/docs/concepts) for the full set of values.
+
+## 8. There is nothing else running the machine
 
 The cloud absorbs uptime, capacity and upgrades. Here a box has to stay up, and concurrency is bounded by memory: budget roughly 2GB of RAM per concurrent session. [Installation](https://openbrowse.co/docs/installation) covers running it under systemd so it survives a reboot, and [exposing it safely](https://openbrowse.co/docs/exposing) covers reaching it from outside your network.
 
@@ -105,6 +111,6 @@ Worth stating plainly, because the list above is longer than the list of things 
 
 - The whole `sessions` surface: create, get, list, stop, and follow-up tasks against an existing session.
 - `outputSchema` and structured output, with stricter validation here than on the cloud.
-- `maxCostUsd`, enforced as a hard stop-loss. If your caps were priced for a service charging platform fees on top of tokens, `CLOUD_MAX_COST_FACTOR` scales incoming caps down without touching your clients; see [cost control](https://openbrowse.co/docs/cost).
+- `maxCostUsd`, enforced as a hard stop-loss, though on a `keepAlive` session it is the pot for one dispatch rather than for the conversation; [cost control](https://openbrowse.co/docs/cost) sets out how it tops up. If your caps were priced for a service charging platform fees on top of tokens, `CLOUD_MAX_COST_FACTOR` scales incoming caps down without touching your clients; see [cost control](https://openbrowse.co/docs/cost).
 - Profiles. OpenBrowse imports the Playwright storage-state format a cloud profile export gives you, cookies plus per-origin `localStorage`, and an imported profile keeps its cloud id, so existing `profileId` references keep working. See [profiles](https://openbrowse.co/docs/profiles).
 - Both authentication styles: `Authorization: Bearer <key>` and the `X-Browser-Use-API-Key` header the SDK sends.

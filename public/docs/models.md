@@ -6,6 +6,8 @@
 
 OpenBrowse puts Anthropic and OpenAI models behind one API, with a repair layer per provider for each family's failure modes. You pick the model per session; `model` defaults to `claude-sonnet-5` if you send nothing.
 
+> Version numbers may be spelled with dots or dashes, and both reach the same model: `gpt-5.6-terra` and `gpt-5-6-terra` resolve identically, as do `claude-sonnet-4.6` and `claude-sonnet-4-6`. Names are resolved through one index keyed on version punctuation, so a client that normalises identifiers on the way out does not get a 422 for it.
+
 ## The short answer
 
 | Situation | Model | `reasoningEffort` |
@@ -76,7 +78,9 @@ Requests written for Browser Use Cloud's `thinkingLevel` field keep working: `di
 
 **OpenAI:** `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`
 
-**Anthropic:** `claude-mythos-5`, `claude-fable-5`, `claude-opus-5`, `claude-sonnet-5`, `claude-opus-4.8`, `claude-opus-4.8[1m]`, `claude-opus-4.7`, `claude-opus-4.7[1m]`, `claude-opus-4.6`, `claude-opus-4.6[1m]`, `claude-sonnet-4.6`, `claude-sonnet-4.6[1m]`
+**Anthropic:** `claude-mythos-5`, `claude-fable-5`, `claude-opus-5`, `claude-sonnet-5`, `claude-opus-4.8`, `claude-opus-4.7`, `claude-opus-4.6`, `claude-sonnet-4.6`.
+
+Every one of those also accepts the `[1m]` suffix, so `claude-sonnet-5[1m]` and `claude-opus-4.6[1m]` are both valid. The suffix is stripped before the name is resolved and the long-context beta is requested for whichever Anthropic model it resolved to, so there is no per-model exception list to check.
 
 **Google:** not yet.
 

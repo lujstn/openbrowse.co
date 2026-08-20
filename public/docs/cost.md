@@ -15,7 +15,7 @@ Prompt caching is always on and provider-managed: the system prompt and the late
 Two pricing details the engine gets right that a naive estimate would not:
 
 - OpenAI's `gpt-5.6` models have a higher tariff for requests whose prompt exceeds 272,000 tokens; the engine applies the long-context rate exactly when the provider does.
-- CapSolver solves are priced from the cost field CapSolver itself returns per task, not a flat guess, and are folded into `totalCostUsd`.
+- CapSolver solves are priced from the cost field CapSolver itself returns per task, not a flat guess, and are folded into `totalCostUsd`. `CAPTCHA_MAX_COST_USD` (default `$0.03`) caps what a single **run** may spend on solving in total, not what one solve may cost; see [solving CAPTCHAs](https://openbrowse.co/docs/captchas).
 
 Costs surface in three places: the session record's `llmCostUsd`, `totalCostUsd` and token counts (updated after every step, not just at the end), the per-step costs in the dashboard, and the run exports. Displayed dashboard figures round up to the whole cent, the amount actually charged.
 
@@ -31,7 +31,21 @@ const session = await client.sessions.create({
 });
 ```
 
-`maxCostUsd` must be a finite number above zero. The cap is checked at the end of every step against the running total; when it is reached the session stops with status `stopped` and a completion message of the form `Stopped: Cost $3.0121 exceeded budget $3.00`. It is a stop-loss, not a pre-flight reservation: the step that crosses the line completes, so the final figure can exceed the cap by up to one step's cost. Whatever the answer store held at that moment is preserved and exportable.
+`maxCostUsd` must be a finite number above zero. The cap is checked at the end of every step against the running total; when it is reached the run stops with `failureKind` `budget_exceeded` and a completion message of the form `Stopped: Cost $3.0121 exceeded budget $3.00`. The status is `stopped`, or `idle` on a `keepAlive` session, which stays addressable for follow-ups rather than ending. A caller polling a budgeted keep-alive session for `stopped` will wait for ever. It is a stop-loss, not a pre-flight reservation: the step that crosses the line completes, so the final figure can exceed the cap by up to one step's cost.
+
+### A capped run keeps what it produced
+
+A budget stop resolves its output the same way an ordinary finish does, rather than discarding the work and charging you for nothing. The answer store's contents stand when the store holds them, `result.json` otherwise, and the run is recorded a success only when that output both validates against the schema and passes the completeness gate. Either way the output is written, so a partial is visible instead of vanishing, and a caller can see what was recovered before deciding whether to escalate.
+
+The salvage never calls the LLM. The budget that ended the run is the same budget schema repair would spend.
+
+One consequence worth knowing: a capped run whose store was complete is recorded successful **and** still carries `failureKind: "budget_exceeded"`. The two fields answer different questions, so read them together.
+
+### On a keep-alive session, the cap is per dispatch
+
+Holding one agent across turns makes `maxCostUsd` a session-lifetime total, which would let a long conversation slowly strangle itself. Each dispatch therefore tops the pot back up by the allowance the session was created with. A session created with `maxCostUsd: 3` that has spent $2.40 runs its next task with a $5.40 ceiling, rounded up to the whole cent.
+
+Naming `maxCostUsd` on the follow-up itself overrides that for one dispatch, as an absolute ceiling rather than an increment. A session created without a budget stays unbudgeted. The bound is per task, not per conversation.
 
 ## Scaling caps written for hosted pricing
 
@@ -52,4 +66,4 @@ Token-heavy behaviour inside a run is already managed for you: repeated large to
 
 ## Concurrency is a cost control too
 
-`MAX_CONCURRENT_SESSIONS` (default 1) bounds how many runs can spend at once. At the cap, new session requests queue for a slot rather than failing, so a burst of submissions cannot multiply your worst-case spend; it serialises it.
+`MAX_CONCURRENT_SESSIONS` (default 1) bounds how many runs can spend at once. At the cap a session is still accepted, and its run queues for a slot rather than failing, so a burst of submissions cannot multiply your worst-case spend; it serialises it.

@@ -130,4 +130,6 @@ Alongside the proxy, ten request fields are accepted and then ignored, fourteen 
 - [How OpenBrowse works](https://openbrowse.co/docs/concepts) explains the machinery: the step loop, the answer store, and the reviewer.
 - [Writing tasks](https://openbrowse.co/docs/tasks) is the highest-leverage page here; prompt shape changes results more than model choice does.
 - [Structured output](https://openbrowse.co/docs/structured-output) covers `outputSchema` and the validated answer store.
+- [Cost control](https://openbrowse.co/docs/cost) explains what a run costs, and what `maxCostUsd` does on a conversation.
+- [Solving CAPTCHAs](https://openbrowse.co/docs/captchas) lists which challenge types are solved, which are only recognised, and what solving costs.
 - The complete v3 surface is in the [API reference](https://openbrowse.co/docs/api).

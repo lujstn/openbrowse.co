@@ -94,6 +94,16 @@ const session = await client.sessions.create({
 
 For credentials the agent must type rather than carry as cookies, use `sensitiveData` alongside the profile; see [writing tasks](/docs/tasks).
 
+<Callout type="warn">
+**One profile, one running session.** Two runs cannot hold the same profile at once, because both would write their cookie jar back over the other's. The claim is taken inside the run rather than at request time, so the second session is accepted by the API, reaches `running`, and only then ends `error` with a message naming the session that holds the profile. If you need two jobs against one login running together, give them separate profiles.
+</Callout>
+
+## Listing and organising profiles
+
+`GET /v3/profiles` returns an envelope rather than a bare array: `{items, totalItems, pageNumber, pageSize}`, with `page` and `pageSize` to walk it and `query` to search by name. A profile also carries an optional `userId`, settable on create and on update, which is there to tag whose login a jar represents when one instance serves several people. Nothing in the runtime reads it; it is yours to filter on.
+
+The [API reference](/docs/api) has the full field list for each endpoint.
+
 ## Next
 
 [Choosing a model](/docs/models) covers which model and reasoning effort to pair with the work, and [troubleshooting](/docs/troubleshooting) covers what to do when a session fails.

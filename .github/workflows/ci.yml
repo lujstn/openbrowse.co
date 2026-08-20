@@ -60,3 +60,9 @@ jobs:
 
       - name: Check benchmark and model data against the upstream README
         run: node scripts/check-upstream.mjs
+
+      # @nonobvious(must-hold) the site publishes softwareVersion and the DOI as machine-readable
+      # claims, so this repository asserting one release while the upstream CITATION.cff names another
+      # is a wrong answer to a machine, not a stale label a reader would forgive
+      - name: Check the published release metadata against the upstream CITATION.cff
+        run: npm run check:citation

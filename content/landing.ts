@@ -284,7 +284,15 @@ export const faq = [
   },
   {
     q: "Does it solve CAPTCHAs?",
-    a: "Optionally, through a CapSolver integration you configure with your own key, and each solve's real cost is folded into the session total. Without a key the tool is simply not registered.",
+    a: "Optionally, through a CapSolver integration you configure with your own key. reCAPTCHA v2 and v3 including Enterprise, Cloudflare Turnstile, GeeTest v3 and v4, MTCaptcha, AWS WAF tokens and image-to-text are solved. hCaptcha and DataDome have no CapSolver task at all, so they are recognised and named rather than silently attempted, and cost nothing. Detection reads the page's own structure rather than asking the model what it is looking at, each solve's real cost is folded into the session total, and a per-run ceiling stops a stubborn challenge draining the budget. Without a key the tool is simply not registered."
+  },
+  {
+    q: "Can one session hold a conversation?",
+    a: "Yes. Set keepAlive and the browser, the agent and its history stay alive between turns, so a follow-up answers from what the session already knows instead of starting cold and re-reading the page. maxCostUsd then bounds each dispatch rather than the whole conversation: the pot tops back up by the allowance the session was created with, so a long exchange cannot slowly strangle itself. A session nobody comes back to closes itself rather than holding memory for ever.",
+  },
+  {
+    q: "How do I tell a provider outage apart from a task that will never work?",
+    a: "A failed session carries failureKind, so you do not have to parse prose to find out. Provider rate limits, provider 5xx responses, connection errors and provider timeouts are each named separately from session timeouts, invalid output, budget exhaustion and ordinary agent failure, with the provider's status code alongside where there was one. The first group is worth retrying unchanged; the last is not.",
   },
   {
     q: "What does Browser Use Cloud have that OpenBrowse does not?",

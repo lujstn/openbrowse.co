@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "OpenBrowse",
-    "version": "0.1.0"
+    "version": "1.8.1"
   },
   "servers": [
     {
@@ -1571,6 +1571,28 @@
             "type": "string",
             "title": "Reasoningeffort",
             "default": "default"
+          },
+          "failureKind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failurekind"
+          },
+          "failureStatusCode": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failurestatuscode"
           },
           "agentmailEmail": {
             "anyOf": [
