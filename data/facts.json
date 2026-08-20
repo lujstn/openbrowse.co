@@ -972,7 +972,14 @@
       "value": "/setup",
       "source": "openbrowse/auth.py",
       "pattern": "SETUP_PATH = \"(/setup)\"",
-      "prose": "a one-time setup screen at `/setup`"
+      "prose": "a one-time setup wizard at `/setup`"
+    },
+    {
+      "key": "setup_min_password_length",
+      "value": "8",
+      "source": "openbrowse/dashboard/setup_routes.py",
+      "pattern": "(?m)^MIN_PASSWORD_LENGTH = (\\d+)$",
+      "prose": "The password you will sign in with, at least 8 characters"
     },
     {
       "key": "sdk_api_key_header",

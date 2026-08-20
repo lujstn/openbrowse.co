@@ -93,7 +93,18 @@ The command prints the path to the binary and exits. Every later session starts 
 
 ## Configuration
 
-The simplest path is to start the server and let it configure itself. An unconfigured instance sends any visit to the dashboard on to a one-time setup screen at `/setup`, which generates your API bearer key, collects your provider keys, sets a dashboard password and a concurrency limit, and writes `.env` for you. The screen refuses to overwrite a non-empty `.env`, and once any credential exists it redirects to the dashboard instead, so a configured instance never exposes it.
+The simplest path is to start the server and let it configure itself. An unconfigured instance sends any visit to the dashboard on to a one-time setup wizard at `/setup`, which takes four steps and then writes `.env` for you:
+
+| Step | What it asks for |
+| --- | --- |
+| Dashboard password | The password you will sign in with, at least 8 characters. The username is `admin` |
+| Model provider | An Anthropic or OpenAI key, and optionally a CapSolver one. At least one of the two model providers is required; CapSolver does not count towards that |
+| Capacity | How much of this machine OpenBrowse may have, which sets the concurrency limit and the lighter browser profile |
+| API key | The bearer token it generates for your v3 clients |
+
+Each provider key is checked against the provider itself before the wizard accepts it, so a typo is caught here rather than at your first session. A key the provider rejects blocks the step; a provider that cannot be reached from this machine is reported as exactly that, because an unreachable API says nothing about whether the key is good.
+
+The wizard refuses to overwrite a non-empty `.env`, and once any credential exists it redirects to the dashboard instead, so a configured instance never exposes it. It needs JavaScript; without it, write `.env` by hand as below.
 
 The redirect exists because no default password ships. There is deliberately never a working credential that you did not choose, which means a fresh install has nothing to check a password against and asking for one would pose a question nothing could answer. The v3 API is left out of this: a programmatic call to an unconfigured instance still fails closed with a `401` rather than being sent to an HTML wizard.
 
@@ -112,7 +123,7 @@ To configure by hand instead, create `.env` in [the home directory above](#where
 | `CAPSOLVER_API_KEY` | Optional. [CapSolver](https://capsolver.com/) key for CAPTCHA solving. Without it the CAPTCHA tool is simply not registered |
 | `CAPTCHA_MAX_COST_USD` | Optional. Ceiling on what one **run** may spend on CAPTCHA solving in total, default `0.03`. Once a run's solves have reached it, further solves are refused rather than attempted. Each solve's real cost is added to the session total |
 | `DASHBOARD_USER` | Optional. Dashboard username, default `admin` |
-| `DASHBOARD_PASSWORD` | Optional. Dashboard password. Defaults to `API_KEY` |
+| `DASHBOARD_PASSWORD` | Optional. Dashboard password. Defaults to `API_KEY`. The setup wizard requires at least 8 characters; a value you write here by hand is not measured |
 | `MAX_CONCURRENT_SESSIONS` | Optional. Concurrent sessions, default 1. Budget roughly 2GB RAM and one core each. Over the cap a session is accepted and queued rather than refused, and the create call returns straight away |
 | `KEEP_ALIVE_IDLE_TIMEOUT` | Optional. Seconds a finished `keepAlive` session waits, browser still open, for its next follow-up before closing itself. Default `600`; `0` parks indefinitely, until the session is stopped or its display slot is claimed by a new one |
 | `CHROME_LIGHT_FLAGS` | Optional. Set to `1` to start every browser in the lighter profile described under [sizing it for your machine](#sizing-it-for-your-machine). Default off |

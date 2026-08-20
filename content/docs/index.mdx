@@ -52,7 +52,7 @@ cd openbrowse && uv sync
 uv run openbrowse serve
 ```
 
-Open `http://<your-host>:8420`. A fresh install takes you straight to a one-time setup screen at `/setup` that generates your API bearer key, collects your provider keys, sets a dashboard password and a concurrency limit, and writes `.env` for you. Restart the server after the setup screen finishes so the new configuration is picked up; once any credential exists the setup routes disappear and the dashboard asks for the password you chose.
+Open `http://<your-host>:8420`. A fresh install takes you straight to a one-time setup wizard at `/setup`, which walks you through a dashboard password, a model provider key, how much of the machine OpenBrowse may use, and the API bearer key it generates for you, then writes `.env`. Restart the server after it finishes so the new configuration is picked up; once any credential exists the setup routes disappear and the dashboard asks for the password you chose.
 
 That `.env`, and the database and profiles beside it, live in `~/.openbrowse` for an installed copy and in the repository root for a checkout. [Where OpenBrowse keeps its files](/docs/installation#where-openbrowse-keeps-its-files) covers the difference and the variable that overrides it.
 
