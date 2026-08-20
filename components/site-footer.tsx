@@ -2,6 +2,7 @@ import Link from "next/link";
 import { machineReadable, site } from "@/content/landing";
 import { Mark } from "@/components/wordmark";
 import { CopyLink } from "@/components/copy-link";
+import { CONTAINER } from "@/components/section";
 
 const COLUMNS = [
   {
@@ -60,7 +61,7 @@ function LlmsCard() {
 export function SiteFooter() {
   return (
     <footer className="border-t border-line px-5 py-14 sm:px-8">
-      <div className="mx-auto w-full max-w-[1180px]">
+      <div className={CONTAINER}>
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,0.9fr))_minmax(0,1.5fr)]">
           <div>
             <span className="inline-flex items-center gap-1.5 text-[14px] font-bold tracking-[-0.02em] text-ink">

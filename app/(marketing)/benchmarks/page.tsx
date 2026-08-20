@@ -58,7 +58,7 @@ export default function Page() {
         ])}
       />
 
-      <Section wide className="border-t-0 pt-14">
+      <Section className="border-t-0 pt-14">
         <SectionHead level={1} title={TITLE} standfirst={evidence.intro(shape)} />
 
         <div className="mb-8 grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -100,7 +100,7 @@ export default function Page() {
         </div>
       </Section>
 
-      <Section id="reading" wide>
+      <Section id="reading">
         <SectionHead title={benchmarkAnalysis.h2} />
         <dl className="border-t border-line">
           {benchmarkAnalysis.points.map((point) => (
@@ -119,7 +119,7 @@ export default function Page() {
         </dl>
       </Section>
 
-      <Section id="reasoning" wide>
+      <Section id="reasoning">
         <SectionHead
           title={headings.reasoning}
           standfirst={models.finding.summary}
@@ -155,7 +155,7 @@ export default function Page() {
         </p>
       </Section>
 
-      <Section id="picking" wide>
+      <Section id="picking">
         <SectionHead
           title={headings.picking}
           standfirst="Three starting points, depending on what you are optimising for."
@@ -219,7 +219,7 @@ export default function Page() {
         </div>
       </Section>
 
-      <Section id="method" wide>
+      <Section id="method">
         <SectionHead title={headings.method} />
         <p className="max-w-[76ch] text-[15px] leading-relaxed text-muted">
           OpenBrowse runs on any Debian or Ubuntu machine, from a Raspberry Pi

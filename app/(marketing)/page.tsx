@@ -22,9 +22,9 @@ export default function Page() {
       <JsonLd data={softwareSourceCode()} />
       <JsonLd data={faqPage(faq)} />
       <Hero />
+      <DropInSection />
       <BenchmarkSection />
       <CapabilitiesSection />
-      <DropInSection />
       <FaqSection />
     </>
   );

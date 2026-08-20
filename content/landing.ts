@@ -94,23 +94,9 @@ export const benchmarkAnalysis = {
 } as const;
 
 export const dropIn = {
-  h2: "Two lines change.",
+  h2: "Just change two lines.",
   standfirst:
     "OpenBrowse serves the same v3 REST surface that browser-use-sdk already speaks. Point the client at your own box and everything downstream stays put.",
-  after: "Retry logic, polling, profile ids, output schemas and cost caps all carry over untouched. Three things do not: the managed proxy, session recording, and skills. Those fields are still accepted so your code compiles, and then do nothing.",
-  moreLabel: "The full comparison with Browser Use Cloud",
-  moreHref: "/vs/browser-use-cloud",
-  exampleLead: "The job itself stays exactly as it was, too.",
-  exampleBody:
-    "Same fields, same schema, same everything. Only the machine underneath it changed.",
-  example: [
-    "const session = await client.sessions.create({",
-    '  task: "Find every open role on this careers page and return them all.",',
-    '  model: "gpt-5.6-terra",',
-    "  outputSchema: roles,",
-    "});",
-  ],
-  // @nonobvious(must-hold) the import is browser-use-sdk/v3 and the method is sessions.create: the bare browser-use-sdk entry point is the v4 client, whose surface OpenBrowse does not implement, and baseUrl must carry the /v3 suffix because the SDK's own default base URL ends in /api/v3 and its request paths are relative to it
   diff: [
     { type: "context", text: 'import { BrowserUse } from "browser-use-sdk/v3";' },
     { type: "context", text: "" },
@@ -219,23 +205,23 @@ export const differentiators = {
   items: [
     {
       id: "tab-waves",
-      title: "Parallel tab waves",
-      body: "Most runners walk a listing one page at a time and pay for a fresh round of page context on every hop. read_pages opens the whole thing at once, in waves of up to six real foreground tabs, reading inside embedded panels from other domains as it goes.",
+      title: "Real tabs, not just code.",
+      body: "OpenBrowse focuses on visual content, driving the browser like a human with parallel tabs, then diving into background data like JSON files to make its response better.",
     },
     {
       id: "answer-store",
-      title: "A completeness gate",
-      body: "Every write is checked against your JSON Schema as it happens, with coverage tracked field by field. The agent cannot call itself finished until the gate passes.",
+      title: "Data completeness, guaranteed.",
+      body: "Every write is checked against your schema as it discovers data, with coverage tracked field by field.",
     },
     {
       id: "grounding",
-      title: "Grounding guards",
-      body: "Values with no evidence on the page are refused at the boundary. A field the site genuinely does not publish comes back marked absent, never guessed.",
+      title: "Separate \"missing\" from \"failed\".",
+      body: "Values with no evidence on the page are refused at the boundary, so you genuinely know if something's not there to see.",
     },
     {
       id: "live-view",
-      title: "A live view that is actually live",
-      body: "The real browser streamed over VNC while it works, beside a feed of the model's reasoning and the cost of each step, and a code tab where the agent's sandbox scripts appear line by line as it writes them.",
+      title: "See it work.",
+      body: "Drop into any browser session to see real-time costs, a feed of the model's reasoning, and a livestream of each browser working away.",
     },
   ],
 } as const;

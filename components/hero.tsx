@@ -2,6 +2,7 @@ import Link from "next/link";
 import { hero } from "@/content/landing";
 import { HeroVideo } from "@/components/hero-video";
 import { Mark } from "@/components/wordmark";
+import { CONTAINER } from "@/components/section";
 
 export function Hero() {
   return (
@@ -13,7 +14,7 @@ export function Hero() {
         href="/media/poster-1600.webp"
         fetchPriority="high"
       />
-      <div className="mx-auto w-full max-w-[1180px]">
+      <div className={CONTAINER}>
         <div className="max-w-[24ch]">
           <Mark size={40} animate className="mb-7 text-accent" />
         </div>
@@ -37,10 +38,8 @@ export function Hero() {
             {hero.secondary.label}
           </a>
         </div>
-        {/* @nonobvious(means) a reader arriving from a Browser Use Cloud invoice needs the price before anything else, and "open source" is not the same claim as "no fee": the first mention of cost was otherwise four screens down */}
         <p className="mt-7 font-mono text-[12px] text-dim">
-          MIT licensed · self-hosted · no per-task fee · same v3 API as
-          browser-use-sdk
+          MIT licensed · self-hosted · no platform or proxy fees
         </p>
 
         <div className="mt-14 sm:mt-20">
