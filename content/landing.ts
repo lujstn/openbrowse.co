@@ -46,7 +46,13 @@ export const hero = {
 // the only part that differs between the three installers, which is why it is the only part that rotates.
 export const install = {
   label: "Install",
-  tools: ["uv tool", "pipx", "pip"],
+  // @nonobvious(must-hold) a prefix is prompt furniture rather than part of the command, which is why it
+  // is a separate field: (venv) says where you are standing, and pasting it would break the line it sits on.
+  tools: [
+    { prefix: "", name: "pipx" },
+    { prefix: "", name: "uv tool" },
+    { prefix: "(venv)", name: "pip" },
+  ],
   installArgs: "install openbrowse",
   start: "openbrowse start",
 } as const;
