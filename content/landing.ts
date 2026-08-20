@@ -34,7 +34,7 @@ export const site = {
 
 export const hero = {
   h1: "The open-source Browser Use Cloud alternative",
-  sub: "Describe a job in plain English. It drives a real browser and hands back structured data, on hardware you own.",
+  sub: "Describe a job in your own words. It drives a real browser and hands back structured data, on hardware you own.",
   primary: { label: "Get started", href: "/docs" },
   secondary: { label: "View source", href: site.repo },
   videoCaption:
