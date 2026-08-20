@@ -1,6 +1,6 @@
 # Troubleshooting
 
-> Fixes for the failures that actually happen: Chromium not launching, a blank VNC view, authentication errors, sessions stopping early, and running out of memory.
+> Fixes for the failures that actually happen: Chromium not launching, a blank VNC view, authentication errors, sessions stopping early, running out of memory, and updates that will not install.
 
 *Source: https://openbrowse.co/docs/troubleshooting*
 
@@ -123,7 +123,7 @@ Before reaching for swap, try the lighter browser profile, which lowers the per-
 CHROME_LIGHT_FLAGS=1
 ```
 
-`sudo bash scripts/host_tune.sh --share most` additionally caps the service's memory through systemd, so a runaway session is bounded rather than taking the machine down with it. Both are covered under [sizing it for your machine](https://openbrowse.co/docs/installation#sizing-it-for-your-machine).
+`openbrowse tune --share most` additionally caps the service's memory through systemd, so a runaway session is bounded rather than taking the machine down with it. Both are covered under [sizing it for your machine](https://openbrowse.co/docs/installation#sizing-it-for-your-machine).
 
 If you would rather trade speed for headroom, add swap:
 
@@ -137,6 +137,30 @@ sudo dphys-swapfile swapon
 Swap on an SD card is slow and will wear it. On a Raspberry Pi, prefer an SSD or lower concurrency.
 
 Related: the server samples host CPU pressure and posts a `system` warning into a run's feed when it launches under saturation, because an overloaded host misses the timing windows in which embedded panels attach. If a run's failures coincide with that warning, re-run when the box is quiet before concluding the site changed. Where the kernel exposes pressure stall information that reading is stall time rather than load average, which is markedly the better signal; on a Raspberry Pi PSI is compiled out by default and `host_tune.sh` adds the boot flag that enables it.
+
+## The dashboard's tuning or restart buttons do nothing
+
+**Symptom:** a machine that was tuned once no longer responds to the Settings page's tuning button, or a restart from the dashboard drops the process instead of restarting the service cleanly.
+
+Both of those work through a sudoers entry, and that entry names the tuning script by its full path. An upgrade moves the package, so the path changes and the grant stops matching. The Settings page detects the mismatch and names the command, but the fix is the same either way:
+
+```bash
+openbrowse tune --share most
+```
+
+Run it after every upgrade. It rewrites the grant for the new path, covering both the tuning script and the `systemctl restart` the dashboard's restart button needs.
+
+## An update will not install
+
+**Symptom:** the Settings page reports the update as failed, or `openbrowse update` exits non-zero.
+
+If it refused rather than failed, a session was running: the install is deliberately blocked while any browser is live. Wait for the session to finish, or stop it, and try again.
+
+Otherwise the upgrade command itself failed, and which command that was depends on how this copy was installed. `uv tool upgrade openbrowse` for a uv tool, `pip install --upgrade openbrowse` for a virtual environment or user-site install, `git pull --ff-only` for a checkout. Running it by hand shows you the real error, which for a checkout is usually a local commit or a dirty tree that a fast-forward cannot pass. Restart afterwards.
+
+If instead it reports no automatic upgrade path at all, OpenBrowse is installed into the system Python, where an unattended upgrade could disturb packages it does not own. Upgrade it yourself and restart.
+
+If the badge never appears at all, `UPDATE_CHECK_HOURS` may be `0`, which switches the background check off. `openbrowse check-update` asks immediately regardless.
 
 ## Tailscale Funnel is not answering
 

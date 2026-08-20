@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "OpenBrowse",
-    "version": "1.8.2"
+    "version": "1.8.3"
   },
   "servers": [
     {
@@ -1233,7 +1233,7 @@
           "model": {
             "type": "string",
             "title": "Model",
-            "default": "claude-sonnet-5"
+            "description": "Optional. Omit it and the session runs on whatever the instance's DEFAULT_MODEL names, which is gpt-5.6-terra unless its operator changed it."
           },
           "sessionId": {
             "anyOf": [
@@ -1344,7 +1344,8 @@
                 "type": "null"
               }
             ],
-            "title": "Reasoningeffort"
+            "title": "Reasoningeffort",
+            "description": "Optional. One of default, none, low, medium, high, xhigh or max, validated against the chosen model. Omit it, or send default, and the session runs at the level recommended for that model, which is deliberately not always the provider's own: on gpt-5.6-terra it is none where the provider would use medium."
           }
         },
         "type": "object",

@@ -32,7 +32,7 @@ Each profile in the response includes its `cookieDomains`, the domains the jar c
 
 A cloud profile export is the same storage-state shape, cookies plus per-origin `localStorage`, so it imports directly. Import one and **the local profile id matches the cloud id**, so every `profileId` already in your code keeps working.
 
-The import CLI is the recommended route. It creates the profile if it does not exist, normalises the cookies, and backs up any existing jar to `.import-bak`:
+From a source checkout, the import script is the shortest route. It creates the profile if it does not exist, normalises the cookies, and backs up any existing jar to `.import-bak`:
 
 ```bash
 .venv/bin/python -m scripts.import_profiles personal_profile.storage_state.json \
@@ -45,7 +45,7 @@ A bundle (a JSON list of profile entries, or `{"profiles": [...]}` wrapping one)
 .venv/bin/python -m scripts.import_profiles bundle.json
 ```
 
-The same thing over the API, which is what the dashboard importer calls. This endpoint also creates the profile if the id does not exist yet:
+That script ships with the repository rather than with the published package, so an installed copy uses the dashboard's **Profiles** importer or the API below instead. Both do the same work, and the endpoint also creates the profile if the id does not exist yet:
 
 ```bash
 curl -X PUT https://your-host/v3/profiles/<profile-id>/storage-state \
@@ -78,7 +78,7 @@ Verify with `GET /v3/profiles/<id>`, or the **Profiles** page in the dashboard, 
 
 `origins` carries each origin's `localStorage` and `sessionStorage`, which the browser restores on load. When a session ends, the full storage state is written back to the same file, so cookies acquired or refreshed during the run persist, with `localStorage` preserved. The write-back is locked per profile and shielded against shutdown, so two sessions ending at once, or a restart mid-save, cannot truncate a jar.
 
-> **Warning:** These files are live session credentials. Anyone holding one is logged in as you on every site it covers. Never commit them; `data/` is git-ignored for this reason. Treat a profile export with the same care as a password manager export.
+> **Warning:** These files are live session credentials. Anyone holding one is logged in as you on every site it covers. Never commit them; a source checkout git-ignores `data/` for this reason, and an installed copy keeps it out of the repository altogether by writing under `~/.openbrowse` instead. Treat a profile export with the same care as a password manager export.
 
 ## Using a profile
 

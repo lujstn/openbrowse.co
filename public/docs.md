@@ -25,15 +25,26 @@ sudo apt install -y xvfb x11vnc novnc websockify \
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Then clone and start it:
+Then install OpenBrowse and start it:
+
+```bash
+uv tool install openbrowse
+openbrowse start
+```
+
+`openbrowse start` registers it as a systemd service, so it is running now and comes back after every reboot. `openbrowse stop --disable` undoes that, and `openbrowse status` and `openbrowse restart` manage it in between. On a machine without systemd it runs in the foreground instead.
+
+To work on OpenBrowse rather than only run it, clone the repository and run it out of the checkout:
 
 ```bash
 git clone https://github.com/lujstn/openbrowse.git
 cd openbrowse && uv sync
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8420
+uv run openbrowse serve
 ```
 
 Open `http://<your-host>:8420`. A fresh install serves a one-time setup screen at `/setup` that generates your API bearer key, collects your provider keys, sets a dashboard password and a concurrency limit, and writes `.env` for you. Restart the server after the setup screen finishes so the new configuration is picked up; once any credential exists the setup routes disappear.
+
+That `.env`, and the database and profiles beside it, live in `~/.openbrowse` for an installed copy and in the repository root for a checkout. [Where OpenBrowse keeps its files](https://openbrowse.co/docs/installation#where-openbrowse-keeps-its-files) covers the difference and the variable that overrides it.
 
 Confirm the API is up:
 
@@ -126,7 +137,8 @@ Alongside the proxy, ten request fields are accepted and then ignored, fourteen 
 ## Where to next
 
 - [Migrating from Browser Use Cloud](https://openbrowse.co/docs/migrating) is the page to read before you move an existing integration.
-- [Installation](https://openbrowse.co/docs/installation) covers system packages, the live view, and running under systemd.
+- [Installation](https://openbrowse.co/docs/installation) covers system packages, the live view, running under systemd, and how updates arrive.
+- [The `openbrowse` command](https://openbrowse.co/docs/cli) is the reference for every subcommand.
 - [How OpenBrowse works](https://openbrowse.co/docs/concepts) explains the machinery: the step loop, the answer store, and the reviewer.
 - [Writing tasks](https://openbrowse.co/docs/tasks) is the highest-leverage page here; prompt shape changes results more than model choice does.
 - [Structured output](https://openbrowse.co/docs/structured-output) covers `outputSchema` and the validated answer store.

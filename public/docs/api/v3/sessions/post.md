@@ -24,7 +24,7 @@ curl -X POST "https://your-host/v3/sessions" \
 | Field | Type | Description |
 | --- | --- | --- |
 | `task` | string |  |
-| `model` | string |  |
+| `model` | string | Optional. Omit it and the session runs on whatever the instance's DEFAULT_MODEL names, which is gpt-5.6-terra unless its operator changed it. |
 | `sessionId` | string |  |
 | `keepAlive` | boolean |  |
 | `maxCostUsd` | number |  |
@@ -35,7 +35,7 @@ curl -X POST "https://your-host/v3/sessions" \
 | `skills` | boolean | Accepted for compatibility with browser-use-sdk and ignored. |
 | `enableRecording` | boolean | Accepted for compatibility with browser-use-sdk and ignored. OpenBrowse does not record sessions, and recordingUrls comes back empty. Use the live view instead. |
 | `proxyCountryCode` | string | Accepted for compatibility with browser-use-sdk and ignored. OpenBrowse has no proxy layer, so requests originate from your own machine's IP address whatever you set here. |
-| `reasoningEffort` | string |  |
+| `reasoningEffort` | string | Optional. One of default, none, low, medium, high, xhigh or max, validated against the chosen model. Omit it, or send default, and the session runs at the level recommended for that model, which is deliberately not always the provider's own: on gpt-5.6-terra it is none where the provider would use medium. |
 
 ## Responses
 

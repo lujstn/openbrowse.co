@@ -4,6 +4,7 @@
   "pages": [
     "index",
     "installation",
+    "cli",
     "migrating",
     "tasks",
     "structured-output",
