@@ -19,7 +19,7 @@ PUBLIC_PREFIX = "/v3"
 
 
 def load_spec(repo: Path, python: str) -> dict:
-    code = "import json,sys; from app.main import app; sys.stdout.write(json.dumps(app.openapi()))"
+    code = "import json,sys; from openbrowse.main import app; sys.stdout.write(json.dumps(app.openapi()))"
     proc = subprocess.run(
         [python, "-c", code],
         cwd=str(repo),
@@ -47,7 +47,7 @@ def referenced_schemas(node, found: set) -> set:
     return found
 
 
-# @nonobvious(mirrors) app/api/sessions.py declares these on the request model but create_session never forwards them and there is no proxy layer in app/; the reference is the canonical source we are asking retrievers to trust, so it has to say they do nothing
+# @nonobvious(mirrors) openbrowse/api/sessions.py declares these on the request model but create_session never forwards them and there is no proxy layer in openbrowse/; the reference is the canonical source we are asking retrievers to trust, so it has to say they do nothing
 INERT_FIELDS = {
     "proxyCountryCode": (
         "Accepted for compatibility with browser-use-sdk and ignored. OpenBrowse has no "
@@ -80,6 +80,43 @@ def annotate_inert(spec: dict) -> None:
             annotated.append(name)
     if annotated:
         print(f"annotated {len(annotated)} compatibility-only fields: {', '.join(sorted(set(annotated)))}")
+
+
+# @nonobvious(forced-by) pydantic leaves a default_factory out of the JSON schema, so a field the server
+# resolves at request time arrives here with no documented default at all. Both of these fields do that,
+# and the reference is the only place a reader can find out what omitting them means. Scoped to the
+# request model on purpose: the same two names on SessionResponse report what a run used, not a default.
+REQUEST_RESOLVED_DEFAULTS = {
+    "RunTaskRequest": {
+        "model": (
+            "Optional. Omit it and the session runs on whatever the instance's DEFAULT_MODEL names, "
+            "which is gpt-5.6-terra unless its operator changed it."
+        ),
+        "reasoningEffort": (
+            "Optional. One of default, none, low, medium, high, xhigh or max, validated against the "
+            "chosen model. Omit it, or send default, and the session runs at the level recommended for "
+            "that model, which is deliberately not always the provider's own: on gpt-5.6-terra it is "
+            "none where the provider would use medium."
+        ),
+    },
+}
+
+
+def annotate_resolved_defaults(spec: dict) -> None:
+    schemas = spec.get("components", {}).get("schemas", {})
+    for schema_name, fields in REQUEST_RESOLVED_DEFAULTS.items():
+        schema = schemas.get(schema_name)
+        if schema is None:
+            sys.exit(f"{schema_name} is no longer in the spec; this annotation needs updating")
+        for name, note in fields.items():
+            prop = (schema.get("properties") or {}).get(name)
+            if prop is None:
+                sys.exit(f"{schema_name}.{name} is gone; this annotation needs updating")
+            # @nonobvious(must-hold) a description arriving from the application wins, so adding one
+            # upstream retires this note rather than being silently shadowed by it
+            if not prop.get("description"):
+                prop["description"] = note
+    print(f"annotated {sum(len(f) for f in REQUEST_RESOLVED_DEFAULTS.values())} server-resolved defaults")
 
 
 def prune(spec: dict) -> dict:
@@ -131,7 +168,7 @@ def main() -> None:
     args = ap.parse_args()
 
     repo = args.repo.expanduser().resolve()
-    if not (repo / "app" / "main.py").exists():
+    if not (repo / "openbrowse" / "main.py").exists():
         sys.exit(f"{repo} does not look like an openbrowse checkout")
 
     python = args.python
@@ -141,6 +178,7 @@ def main() -> None:
 
     spec = prune(load_spec(repo, python))
     annotate_inert(spec)
+    annotate_resolved_defaults(spec)
     rendered = json.dumps(spec, indent=2, sort_keys=False) + "\n"
 
     if args.check:

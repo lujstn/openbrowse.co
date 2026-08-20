@@ -1,9 +1,9 @@
 ---
 title: "Installation"
-description: "Full installation of OpenBrowse on Debian or Ubuntu, including the virtual display behind the live view, configuration, and running it under systemd."
+description: "Full installation of OpenBrowse on Debian or Ubuntu, including the virtual display behind the live view, configuration, running it as a service, and keeping it up to date."
 ---
 
-The quick start on the [getting started](/docs) page is enough to try OpenBrowse. This page covers the full install: the system packages behind the live browser view, every configuration variable the application actually reads, and running it as a service that survives reboots.
+The quick start on the [getting started](/docs) page is enough to try OpenBrowse. This page covers the full install: the system packages behind the live browser view, every configuration variable the application actually reads, running it as a service that survives reboots, and how updates arrive afterwards.
 
 ## What you need
 
@@ -34,62 +34,115 @@ sudo apt install -y \
 
 ## Install OpenBrowse
 
+OpenBrowse is published to PyPI as `openbrowse`. Three installers are equally supported, and each puts the `openbrowse` command on your `PATH`:
+
+```bash
+# uv
+uv tool install openbrowse
+
+# pipx
+pipx install openbrowse
+
+# venv
+source <path-to-venv>/bin/activate
+pip install openbrowse
+```
+
+[uv](https://docs.astral.sh/uv/) and [pipx](https://pipx.pypa.io/) each keep the app in an isolated environment they manage for you, and both know how to upgrade it later. If you have neither, `curl -LsSf https://astral.sh/uv/install.sh | sh` installs uv.
+
+<Callout type="warn">
+The pip route needs a virtual environment, and the activation line above is not optional. Raspberry Pi OS and Debian mark the system Python as externally managed, so `pip install` outside a virtual environment is refused by the distribution rather than by us.
+</Callout>
+
+The rest of this page assumes only that `openbrowse` runs.
+
+To work on OpenBrowse rather than only run it, clone the repository instead and run it out of the checkout. Everything below behaves the same, except that the checkout is its own home directory:
+
 ```bash
 cd ~
 git clone https://github.com/lujstn/openbrowse.git
 cd openbrowse
-```
-
-With `uv`:
-
-```bash
 uv sync
 ```
 
-Or with a plain virtual environment:
+## Where OpenBrowse keeps its files
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-```
+One directory holds `.env` and everything under `data/`, and which one it is depends on how you installed:
+
+| How you installed | Home directory |
+| --- | --- |
+| `uv tool install`, `pipx`, or `pip` | `~/.openbrowse` |
+| A git checkout | The repository root, as before |
+| Anything, with `OPENBROWSE_HOME` set | Whatever that names |
+
+The distinction exists so that an installed copy never writes into its own `site-packages`, where the next upgrade would delete it. `OPENBROWSE_HOME` overrides both and is the one setting that cannot live in `.env`, because it decides which `.env` gets read: export it from your shell or set it in the systemd unit.
+
+A command run under `sudo` still resolves to the invoking user's home rather than root's, because `SUDO_USER` is consulted before `HOME` is. So `sudo openbrowse start` reads the `.env` you wrote instead of creating a second, empty, root-owned copy of it beside your real one.
 
 ## The browser binary
 
 OpenBrowse does not drive the Chromium from `apt`. It drives a stealth-configured build supplied by **CloakBrowser**, the library that provides the patched binary, and that binary is downloaded the first time a session launches rather than during installation.
 
-That download takes several minutes on a Raspberry Pi, during which the session sits at `running` with a blank live view and nothing in the feed. It looks exactly like a broken VNC stack, and it is not. Fetch it once, up front, and the whole failure mode disappears:
+That download is around 200MB and takes several minutes on a Raspberry Pi, so nothing is left to discover it mid-session. The setup wizard fetches it as one of its steps, with progress on screen, and the server starts a fetch at boot if the binary is still missing. A session launch waits for whichever fetch is in flight to finish before starting Chromium, rather than racing it: on SD-card hardware a download and a browser launch competing for the same disk starve Chromium of I/O until its debug port misses the readiness window, which surfaces as a launch failure with no obvious cause.
+
+For the same reason OpenBrowse sets `CLOAKBROWSER_AUTO_UPDATE=false` at startup, so the library never pulls a new build underneath a running launch. Updates to the binary happen at boot or during onboarding, deliberately, or not at all.
+
+From a checkout you can also fetch it by hand:
 
 ```bash
 uv run python -c "import cloakbrowser; print(cloakbrowser.ensure_binary())"
 ```
 
-The command prints the path to the binary and exits. Every later session starts in seconds.
+The command prints the path to the binary and exits.
 
 ## Configuration
 
-The simplest path is to start the server and let it configure itself. An unconfigured instance serves a one-time setup screen at `/setup` that generates your API bearer key, collects your provider keys, sets a dashboard password and a concurrency limit, and writes `.env` for you. The screen refuses to overwrite a non-empty `.env`, and once any credential exists it redirects to the dashboard, so a configured instance never exposes it.
+The simplest path is to start the server and let it configure itself. An unconfigured instance sends any visit to the dashboard on to a one-time setup wizard at `/setup`, which takes four steps and then writes `.env` for you:
+
+| Step | What it does |
+| --- | --- |
+| Dashboard password | The password you will sign in with, at least 8 characters. The username is `admin` |
+| Model provider | An Anthropic or OpenAI key, and optionally a CapSolver one. At least one of the two model providers is required; CapSolver does not count towards that |
+| Capacity | How much of this machine OpenBrowse may have, which sets the concurrency limit and the lighter browser profile |
+| API key | The bearer token it generates for your v3 clients |
+| Host tuning | Offers the `openbrowse tune` command for this machine. Optional, and you tell the wizard whether you ran it |
+| Browser download | Fetches the stealth Chromium build now, with progress, rather than leaving it to your first session |
+| Restart | Applies the configuration and hands you to the dashboard |
+
+Each provider key is checked against the provider itself before the wizard accepts it, so a typo is caught here rather than at your first session. A key the provider rejects blocks the step; a provider that cannot be reached from this machine is reported as exactly that, because an unreachable API says nothing about whether the key is good.
+
+The wizard refuses to overwrite a non-empty `.env`, and once any credential exists it redirects to the dashboard instead, so a configured instance never exposes it. It needs JavaScript; without it, write `.env` by hand as below. Before it asks for anything it checks that this machine has the roughly 2GB of free disk the browser build needs and that `Xvfb` is installed, because both are cheaper to discover now than at your first session.
+
+The redirect exists because no default password ships. There is deliberately never a working credential that you did not choose, which means a fresh install has nothing to check a password against and asking for one would pose a question nothing could answer. The v3 API is left out of this: a programmatic call to an unconfigured instance still fails closed with a `401` rather than being sent to an HTML wizard.
 
 <Callout type="info">
-Configuration is read once at startup, so after the setup screen writes `.env` you must restart the server for it to take effect. The setup page says the same thing when it finishes.
+Configuration is read once at startup. The wizard adopts the credentials it just wrote into the running process, so the dashboard is usable the moment you finish, but the capacity settings are not adopted: the session pool and the browser flags are already built by then, and only a restart honestly applies them. That is why the wizard ends in one. Editing `.env` by hand always needs a restart.
 </Callout>
 
-To configure by hand instead, create `.env` in the repository root. These are the variables OpenBrowse itself reads. The browser layer also honours the `CLOAKBROWSER_*` overrides its own library defines, and `BROWSER_USE_ACTION_TIMEOUT_S` is set by the application at startup rather than read from your environment:
+To configure by hand instead, create `.env` in [the home directory above](#where-openbrowse-keeps-its-files). These are the variables OpenBrowse itself reads. The browser layer also honours the `CLOAKBROWSER_*` overrides its own library defines, and `BROWSER_USE_ACTION_TIMEOUT_S` is set by the application at startup rather than read from your environment:
 
 | Variable | Description |
 | --- | --- |
 | `API_KEY` | Bearer token authenticating API requests. Required; without it every API call returns 401 |
 | `ANTHROPIC_API_KEY` | Anthropic key, for `claude-*` models |
 | `OPENAI_API_KEY` | Optional. OpenAI key, for `gpt-*` models |
+| `DEFAULT_MODEL` | Optional. The model a request that names none runs on, default `gpt-5.6-terra`. The v3 API and the dashboard's run form both follow it |
 | `CAPSOLVER_API_KEY` | Optional. [CapSolver](https://capsolver.com/) key for CAPTCHA solving. Without it the CAPTCHA tool is simply not registered |
 | `CAPTCHA_MAX_COST_USD` | Optional. Ceiling on what one **run** may spend on CAPTCHA solving in total, default `0.03`. Once a run's solves have reached it, further solves are refused rather than attempted. Each solve's real cost is added to the session total |
 | `DASHBOARD_USER` | Optional. Dashboard username, default `admin` |
-| `DASHBOARD_PASSWORD` | Optional. Dashboard password. Defaults to `API_KEY` |
+| `DASHBOARD_PASSWORD` | Optional. Dashboard password. Defaults to `API_KEY`. The setup wizard requires at least 8 characters; a value you write here by hand is not measured |
 | `MAX_CONCURRENT_SESSIONS` | Optional. Concurrent sessions, default 1. Budget roughly 2GB RAM and one core each. Over the cap a session is accepted and queued rather than refused, and the create call returns straight away |
 | `KEEP_ALIVE_IDLE_TIMEOUT` | Optional. Seconds a finished `keepAlive` session waits, browser still open, for its next follow-up before closing itself. Default `600`; `0` parks indefinitely, until the session is stopped or its display slot is claimed by a new one |
 | `CHROME_LIGHT_FLAGS` | Optional. Set to `1` to start every browser in the lighter profile described under [sizing it for your machine](#sizing-it-for-your-machine). Default off |
 | `CLOUD_MAX_COST_FACTOR` | Optional. Scales an incoming `maxCostUsd` to local cost, for callers whose budgets were priced for a hosted service. Above 0 and at most 1; `0.5` turns a `$6` cap into `$3`. Default `1.0`. An out-of-range value stops the server at startup with a clear error |
 | `ALLOW_INSECURE_NO_AUTH` | Optional. Set to `1` to run without any authentication. Development only; never expose an instance configured this way |
+| `UPDATE_CHECK_HOURS` | Optional. How often to ask PyPI whether a newer release exists, in hours. Default `6`; `0` switches the background check off, and the dashboard's update badge with it |
+
+One more variable is read before `.env` is, so it has to come from the environment itself rather than from that file:
+
+| Variable | Description |
+| --- | --- |
+| `OPENBROWSE_HOME` | Optional. The directory holding `.env` and `data/`. Overrides both defaults above. Export it from your shell or set it in the systemd unit; a value written into `.env` can never take effect, and the dashboard's Settings page will not offer it as an editable row for that reason |
 
 Generate a strong `API_KEY`:
 
@@ -102,18 +155,18 @@ Treat `.env` as secret. So is everything under `data/`, which holds the SQLite d
 ## Verify
 
 ```bash
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8420
+openbrowse serve
 ```
 
 You should see:
 
 ```
-2026-08-18 09:14:02,881 [INFO] app.main: Initializing database...
-2026-08-18 09:14:03,140 [INFO] app.main: Server ready on 0.0.0.0:8420
+2026-08-18 09:14:02,881 [INFO] openbrowse.main: Initializing database...
+2026-08-18 09:14:03,140 [INFO] openbrowse.main: Server ready on 0.0.0.0:8420
 INFO:     Application startup complete.
 ```
 
-The timestamped lines are the application's own; the bare `INFO:` prefix is uvicorn's. Note that `Server ready on` reports the host and port from your configuration, so if you passed `--port` on the command line this line still shows the configured default while the server listens on the port you asked for.
+The timestamped lines are the application's own; the bare `INFO:` prefix is uvicorn's. Note that `Server ready on` reports the host and port from your configuration, so if you passed `openbrowse serve --port` this line still shows the configured default while the server listens on the port you asked for. `--port 0` is honoured as a request for an ephemeral port rather than being read as "unset".
 
 Check the API is answering:
 
@@ -129,11 +182,27 @@ curl http://<your-host>:8420/health
 
 ## Run it as a service
 
-Running under systemd means it restarts on failure and comes back after a reboot.
+Running under systemd means it restarts on failure and comes back after a reboot. One command writes the unit, enables it and starts it:
 
 ```bash
-sudo nano /etc/systemd/system/openbrowse.service
+openbrowse start
 ```
+
+It asks for your password, because writing into `/etc/systemd/system` and enabling a unit both need root, and it prints in plain words whether OpenBrowse will now come back on boot. `openbrowse status`, `openbrowse restart` and `openbrowse stop` manage it afterwards, and `openbrowse stop --disable` is the one that also stops it starting on boot. On a machine with no systemd, `openbrowse start` says so and runs in the foreground instead.
+
+The generated unit runs as the user who invoked the command, reads the `.env` in that user's home directory, and starts the `openbrowse` launcher by the path it is on rather than by whatever that path resolves to, so an upgrade that repoints a versioned symlink does not leave the unit pointing at a directory the upgrade removed.
+
+Follow the logs with `journalctl -u openbrowse -f`.
+
+### Keeping a unit you wrote yourself
+
+`openbrowse start` writes a unit only when none exists. If one is already there and its `ExecStart` differs from what this copy would write, it says so and keeps yours, because a hand-written unit tends to carry hooks and limits the generator knows nothing about. Replacing it is then a deliberate act:
+
+```bash
+openbrowse start --reinstall-unit
+```
+
+The Tailscale integration is the usual reason to hand-write one. The generated unit has no tunnel hooks, so if you want the public tunnel to come up and down with the service, write this instead and leave it in place:
 
 ```ini
 [Unit]
@@ -144,9 +213,9 @@ Wants=tailscaled.service
 [Service]
 Type=simple
 User=<user>
-WorkingDirectory=/home/<user>/openbrowse
-EnvironmentFile=/home/<user>/openbrowse/.env
-ExecStart=/home/<user>/openbrowse/.venv/bin/python -m app.main
+WorkingDirectory=/home/<user>/.openbrowse
+EnvironmentFile=/home/<user>/.openbrowse/.env
+ExecStart=/home/<user>/.local/bin/openbrowse serve
 ExecStartPost=+/usr/bin/tailscale funnel --bg 8420
 ExecStopPost=-+/usr/bin/tailscale funnel --bg off
 Restart=on-failure
@@ -158,18 +227,38 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
-The two `tailscale` lines bring the public tunnel up and down with the service. Remove them to keep the instance on your local network only. See [exposing it safely](/docs/exposing).
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable openbrowse
-sudo systemctl start openbrowse
-sudo systemctl status openbrowse
-```
-
-Follow the logs with `journalctl -u openbrowse -f`.
+The two `tailscale` lines bring the public tunnel up and down with the service; see [exposing it safely](/docs/exposing). On a source checkout, point `WorkingDirectory`, `EnvironmentFile` and `ExecStart` at the repository and its `.venv` instead. Either way the file belongs at `/etc/systemd/system/openbrowse.service`, and `openbrowse start` will then enable and start it without touching its contents.
 
 If the server is killed mid-run, sessions that were executing are marked as errored with the note `Interrupted by server restart` at the next startup, so nothing is ever left claiming to run forever.
+
+## Updating
+
+A background task asks PyPI every `UPDATE_CHECK_HOURS` whether a newer release exists. When one does, an **Update available** badge appears in the dashboard's navigation and the Settings page grows a software update card with a one-click **Install and restart**. The install is refused while any session is running, so an upgrade never interrupts a live browser.
+
+The same thing from a shell:
+
+```bash
+openbrowse check-update
+openbrowse update
+```
+
+The upgrade runs through whichever manager owns this copy, rather than through a single command that happens to work most of the time:
+
+| How it was installed | What the upgrade runs |
+| --- | --- |
+| `uv tool install` | `uv tool upgrade openbrowse` |
+| `pipx install` | `pipx upgrade openbrowse` |
+| pip, in a virtual environment | `pip install --upgrade openbrowse`, or `uv pip install --upgrade` where the environment has no pip of its own |
+| pip, into your user site | `pip install --user --upgrade openbrowse`, so it upgrades the copy that is actually running rather than the system one |
+| A git checkout | `git pull --ff-only`, then `uv sync` |
+
+A uv tool and a pipx app both live in a virtual environment, so both are recognised before the plain pip case; upgrading either with a bare pip would reach around the manager that owns it and leave its records describing a version that is no longer installed. Where the manager's own binary cannot be found, or a copy sits in the system Python where no upgrade is safe to run unattended, OpenBrowse names the install method and declines to invent a command rather than offering one that would fail on use.
+
+That detection follows the package itself, not `OPENBROWSE_HOME`, so pointing the home directory at some other folder cannot aim a `git pull` at an unrelated repository. From the shell the restart is yours to do; from the dashboard it happens for you.
+
+<Callout type="warn">
+Run `openbrowse tune --share <preset>` once after upgrading. The sudoers entry that lets the dashboard tune the host and restart the service names `host_tune.sh` by its full path, and that path moves with the package, so an upgrade silently leaves those buttons unable to do anything. The Settings page says so when it detects it, and re-running the command rewrites the entry.
+</Callout>
 
 ## Sizing it for your machine
 
@@ -189,16 +278,22 @@ The slider stops at **8 sessions** however large the machine is, and the recomme
 
 ### The host-level half
 
-Two of those steps are outside the application: systemd does not know OpenBrowse should win a contended CPU, and on a Raspberry Pi the kernel ships with pressure stall information compiled out. `scripts/host_tune.sh` applies both in one idempotent command:
+Two of those steps are outside the application: systemd does not know OpenBrowse should win a contended CPU, and on a Raspberry Pi the kernel ships with pressure stall information compiled out. `openbrowse tune` applies both in one idempotent command:
 
 ```bash
-sudo bash scripts/host_tune.sh --share most --dry-run   # show the plan
-sudo bash scripts/host_tune.sh --share most             # apply it
+openbrowse tune --share most --dry-run   # show the plan
+openbrowse tune --share most             # apply it
 ```
 
-It writes a systemd drop-in that weights the service's CPU share and caps its memory at the fraction you chose, appends the `psi=1` boot flag where PSI is missing and this is a Pi, and adds a sudoers entry so the dashboard's one-click tuning button works without a password. Every action prints what it did, repeats are skipped rather than rewritten, and `--dry-run` touches nothing. The memory cap applies from the next service restart; the PSI flag needs a reboot.
+The work is done by a shell script bundled with the package, which needs root, so the command asks for your password rather than failing on a host where you are not already root.
 
-The drop-in is written under `openbrowse.service.d`, matching the unit name the application itself restarts by. If you run OpenBrowse under a differently-named unit, pass `--service <name>` so the two agree; otherwise the dashboard will keep reporting the tuning as still to do.
+It writes a systemd drop-in that weights the service's CPU share and caps its memory at the fraction you chose, appends the `psi=1` boot flag where PSI is missing and this is a Pi, and adds a sudoers entry so the dashboard's one-click tuning and restart buttons work without a password. Every action prints what it did, repeats are skipped rather than rewritten, and `--dry-run` touches nothing. The memory cap applies from the next service restart; the PSI flag needs a reboot.
+
+The drop-in is written under `openbrowse.service.d`, matching the unit name the application itself restarts by. If you run OpenBrowse under a differently-named unit, run the bundled script directly with `--service <name>` so the two agree; otherwise the dashboard will keep reporting the tuning as still to do.
+
+<Callout type="info">
+That sudoers entry names the script by its full path, so it stops matching as soon as an upgrade moves the package. Re-run `openbrowse tune --share <preset>` after every upgrade. The Settings page notices the mismatch and names the command, but a machine tuned once and upgraded later will otherwise sit there with dead buttons and no error.
+</Callout>
 
 <Callout type="info">
 PSI matters because load average counts runnable processes, which mistakes a healthy burst of tabs for trouble and misses real starvation behind modest numbers. Where PSI is available, OpenBrowse instead measures the fraction of time runnable work sat waiting for a CPU, which is the thing that actually hurts. Hosts without it fall back to per-core load, and the telemetry names which signal it used.
@@ -214,4 +309,4 @@ Site isolation is deliberately left intact. Collapsing it would save more memory
 
 ## Next
 
-Point a client at it from [getting started](/docs), understand what actually happens during a run in [how OpenBrowse works](/docs/concepts), or read the [v3 API reference](/docs/api).
+Point a client at it from [getting started](/docs), read the whole [`openbrowse` command](/docs/cli) surface, understand what actually happens during a run in [how OpenBrowse works](/docs/concepts), or read the [v3 API reference](/docs/api).

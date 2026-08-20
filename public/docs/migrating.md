@@ -67,7 +67,7 @@ Browser Use Cloud's v3 `model` enum has 22 names. OpenBrowse implements 8 of the
 
 The cloud's own default, `claude-opus-4.7`, is supported here. It is not the *default* here, though, and that catches people the other way round:
 
-> **Warning:** Omit `model` on the cloud and you get `claude-opus-4.7`. Omit it here and you get `claude-sonnet-5`, silently and without an error. So a caller who names a model risks a 422, and a caller who relied on the cloud's default gets a quiet model swap instead. Set `model` explicitly and neither happens.
+> **Warning:** Omit `model` on the cloud and you get `claude-opus-4.7`. Omit it here and you get `gpt-5.6-terra`, or whatever the instance's `DEFAULT_MODEL` names, silently and without an error. That is a swap of provider as well as model, and it takes the reasoning depth with it. So a caller who names a model risks a 422, and a caller who relied on the cloud's default gets a quiet substitution instead. Set `model` explicitly and neither happens.
 
 **Supported on both:** `claude-opus-4.7`, `claude-opus-4.8`, `claude-opus-4.6`, `claude-sonnet-5`, `claude-sonnet-4.6`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`.
 
@@ -109,7 +109,9 @@ They are additive, so a client that ignores them behaves exactly as it did. See 
 
 ## 8. There is nothing else running the machine
 
-The cloud absorbs uptime, capacity and upgrades. Here a box has to stay up, and concurrency is bounded by memory: budget roughly 2GB of RAM per concurrent session. [Installation](https://openbrowse.co/docs/installation) covers running it under systemd so it survives a reboot, and [exposing it safely](https://openbrowse.co/docs/exposing) covers reaching it from outside your network.
+The cloud absorbs uptime and capacity. Here a box has to stay up, and concurrency is bounded by memory: budget roughly 2GB of RAM per concurrent session. [Installation](https://openbrowse.co/docs/installation) covers `openbrowse start`, which registers it as a service so it survives a reboot, and [exposing it safely](https://openbrowse.co/docs/exposing) covers reaching it from outside your network.
+
+Upgrades are the part that comes closest to the managed experience: the instance watches PyPI for new releases and installs one on a click from its own Settings page, refusing while a session is running. That is still your click rather than someone else's, and it is [covered here](https://openbrowse.co/docs/installation#updating).
 
 ## What does carry over
 

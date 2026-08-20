@@ -41,6 +41,22 @@ export const hero = {
     "One real run of the benchmark task, at full speed. The agent works across parallel tabs on the left while the sandbox scripts it writes stream into the panel on the right.",
 } as const;
 
+// @nonobvious(mirrors) the quick start from the upstream README, kept identical to it because someone who
+// reads one and then the other has to be told the same thing twice, not two things once. The tool name is
+// the only part that differs between the three installers, which is why it is the only part that rotates.
+export const install = {
+  label: "Install",
+  // @nonobvious(must-hold) a prefix is prompt furniture rather than part of the command, which is why it
+  // is a separate field: (venv) says where you are standing, and pasting it would break the line it sits on.
+  tools: [
+    { prefix: "", name: "pipx" },
+    { prefix: "", name: "uv tool" },
+    { prefix: "(venv)", name: "pip" },
+  ],
+  installArgs: "install openbrowse",
+  start: "openbrowse start",
+} as const;
+
 // @nonobvious(must-hold) every section heading rendered on a marketing page is named here exactly once, and content/pages.ts assembles them into the page map that llms.txt publishes. A heading typed inline in a component would be invisible to that map, and scripts/check-export.mjs compares the published map against the exported HTML in both directions, so an unlisted heading fails the build rather than silently making llms.txt wrong.
 export const headings = {
   faqs: "FAQs",

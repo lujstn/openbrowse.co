@@ -116,8 +116,12 @@ if (!runTable) {
   }
 }
 
+// @nonobvious(forced-by) the leading `>` is optional because upstream folds these lists into a <details>
+// block, which puts them inside a blockquote. Anchoring on the bullet alone would stop matching the moment
+// that collapses again, and this check reports "the format changed" rather than a wrong answer, so a
+// pattern that only works in one of the two shapes fails the build for a purely cosmetic README edit.
 const upstreamModels = [
-  ...markdown.matchAll(/^-\s+(OpenAI|Anthropic|Google):\s*(.*)$/gm),
+  ...markdown.matchAll(/^>?\s*-\s+(OpenAI|Anthropic|Google):\s*(.*)$/gm),
 ].map(([, provider, rest]) => ({
   provider,
   models: [...rest.matchAll(/`([^`]+)`/g)].map(([, m]) => m),

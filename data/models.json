@@ -14,7 +14,7 @@
     "xhigh",
     "max"
   ],
-  "reasoningNote": "Values are validated per model at request time and providers differ in their defaults, so it is worth setting reasoningEffort explicitly rather than inheriting it. Not every model accepts every level: see the per-model table in the documentation.",
+  "reasoningNote": "Values are validated per model at request time. Omitting reasoningEffort does not inherit the provider's default: the session runs at the level recommended for that model, which on gpt-5.6-terra is none where the provider would have used medium. Not every model accepts every level, and the per-model table in the documentation carries both columns.",
   "thinkingDistinction": {
     "browserThinking": "How the platform itself works, in steps: the see, plan, next and thinking cards in the live feed. Not switchable.",
     "modelReasoning": "The chain-of-thought reasoning the LLM provider exposes, such as Anthropic extended thinking or OpenAI reasoning effort. Set per session with reasoningEffort."

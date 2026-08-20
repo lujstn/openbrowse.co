@@ -4,7 +4,7 @@
 
 *Source: https://openbrowse.co/docs/models*
 
-OpenBrowse puts Anthropic and OpenAI models behind one API, with a repair layer per provider for each family's failure modes. You pick the model per session; `model` defaults to `claude-sonnet-5` if you send nothing.
+OpenBrowse puts Anthropic and OpenAI models behind one API, with a repair layer per provider for each family's failure modes. You pick the model per session; `model` defaults to `gpt-5.6-terra` if you send nothing, or to whatever the instance's `DEFAULT_MODEL` names. The v3 API and the dashboard's run form both read the same setting, so a request gets the same model whichever door it came through.
 
 > Version numbers may be spelled with dots or dashes, and both reach the same model: `gpt-5.6-terra` and `gpt-5-6-terra` resolve identically, as do `claude-sonnet-4.6` and `claude-sonnet-4-6`. Names are resolved through one index keyed on version punctuation, so a client that normalises identifiers on the way out does not get a 422 for it.
 
@@ -17,6 +17,8 @@ OpenBrowse puts Anthropic and OpenAI models behind one API, with a repair layer 
 | Hard, multi-step workflows | `claude-opus-5` | `medium` |
 | Tight budget, focused prompt | `gpt-5.6-luna` | `max` |
 
+These are also the levels a session runs at when you send no `reasoningEffort` at all, so the top row is what an out-of-the-box instance does with a request that names neither a model nor a depth.
+
 ## The finding worth knowing
 
 On browser tasks, **the two families want opposite ends of the reasoning dial.**
@@ -28,7 +30,7 @@ The measured effect is large. On the reference extraction task:
 - `gpt-5.6-terra` at `none` finished in **11 steps and 1m 47s**. The same model at `high` took **17 steps and 5m 05s**, burning 2.1x the tokens for 2.75x the cost, and produced the same 14 records.
 - `claude-sonnet-5` cost **$0.40 at `high`** and **$0.51 at `none`**, and was 1m 16s slower with reasoning switched off.
 
-So the default instinct, that more reasoning means better results, is wrong for half of the models here. Set `reasoningEffort` explicitly rather than inheriting a provider default, especially since those defaults differ per model (see the table below).
+So the default instinct, that more reasoning means better results, is wrong for half of the models here. That is why an omitted `reasoningEffort` resolves to the level measured above rather than to whatever the provider does unprompted: on `gpt-5.6-terra` those two differ, and inheriting the provider's would triple the bill for the same fourteen records.
 
 Full numbers are on the [benchmarks page](https://openbrowse.co/benchmarks).
 
@@ -40,25 +42,29 @@ Full numbers are on the [benchmarks page](https://openbrowse.co/benchmarks).
 
 ## The reasoning ladder, per model
 
-`reasoningEffort` accepts `default`, `none`, `low`, `medium`, `high`, `xhigh` and `max`, validated per model at request time. `default` (or omitting the field) means the per-model default in the table below, which OpenBrowse resolves and sends explicitly rather than leaving to the provider. It varies more than you would guess. An invalid value is rejected with a 422 naming the valid set for that model.
+`reasoningEffort` accepts `default`, `none`, `low`, `medium`, `high`, `xhigh` and `max`, validated per model at request time. An invalid value is rejected with a 422 naming the valid set for that model.
 
-| Model | Accepted levels | Behaviour when unset | Can reasoning be disabled? |
-| --- | --- | --- | --- |
-| `claude-sonnet-5` | `low` to `max` | `high` | yes |
-| `claude-opus-5` | `low` to `max` | `high` | yes |
-| `claude-fable-5` | `low` to `max` | `high` | no |
-| `claude-mythos-5` | `low` to `max` | `high` | no |
-| `claude-opus-4.8` | `low` to `max` | `none` | yes |
-| `claude-opus-4.7` | `low`, `medium`, `high` | `none` | yes |
-| `claude-opus-4.6` | `low`, `medium`, `high` | `none` | yes |
-| `claude-sonnet-4.6` | `low`, `medium`, `high` | `none` | yes |
-| `gpt-5.6-terra` | `none` to `max` | `medium` | yes |
-| `gpt-5.6-sol` | `none` to `max` | `medium` | yes |
-| `gpt-5.6-luna` | `none` to `max` | `medium` | yes |
+Sending `default`, or omitting the field, is not the same as letting the provider decide. OpenBrowse resolves the level itself and sends it explicitly, using the benchmark-backed pick for that model where there is one and the provider's own default where there is not. The two columns below are separated because they genuinely disagree on four of the eleven models, and the dashboard's dropdown labels them the same way: **Default** marks the level a session actually runs at, and **Provider default** appears beside it only where the provider would have chosen differently.
+
+| Model | Accepted levels | Runs at when unset | Provider's own default | Can reasoning be disabled? |
+| --- | --- | --- | --- | --- |
+| `claude-sonnet-5` | `low` to `max` | `high` | `high` | yes |
+| `claude-opus-5` | `low` to `max` | `medium` | `high` | yes |
+| `claude-fable-5` | `low` to `max` | `high` | `high` | no |
+| `claude-mythos-5` | `low` to `max` | `high` | `high` | no |
+| `claude-opus-4.8` | `low` to `max` | `none` | `none` | yes |
+| `claude-opus-4.7` | `low`, `medium`, `high` | `none` | `none` | yes |
+| `claude-opus-4.6` | `low`, `medium`, `high` | `none` | `none` | yes |
+| `claude-sonnet-4.6` | `low`, `medium`, `high` | `none` | `none` | yes |
+| `gpt-5.6-terra` | `none` to `max` | `none` | `medium` | yes |
+| `gpt-5.6-sol` | `none` to `max` | `none` | `medium` | yes |
+| `gpt-5.6-luna` | `none` to `max` | `max` | `medium` | yes |
+
+> This changed in 1.8.3. Before it, an omitted `reasoningEffort` inherited the provider's default, which is the fourth column. If you have been relying on that, name the level you want explicitly and nothing moves.
 
 A few provider mechanics behind that table:
 
-- The Claude 5 family and Opus 4.8 use adaptive thinking, and on the 5-series models leaving the field unset means adaptive thinking at high. This is why `none` must be an explicit choice there, and why `claude-fable-5` and `claude-mythos-5`, which do not accept a disabled configuration, reject it with `reasoning cannot be disabled on claude-fable-5`.
+- The Claude 5 family and Opus 4.8 use adaptive thinking, and on the 5-series models the provider's own choice is adaptive thinking at high. This is why `none` must be an explicit choice there, and why `claude-fable-5` and `claude-mythos-5`, which do not accept a disabled configuration, reject it with `reasoning cannot be disabled on claude-fable-5`.
 - The older Claude models (`opus-4.7`, `opus-4.6`, `sonnet-4.6`) use fixed thinking budgets: `low`, `medium` and `high` map to 2,048, 8,192 and 16,384 thinking tokens.
 - OpenAI models run against the Responses API, which accepts the full `none` to `max` ladder (the chat completions endpoint rejects `max`, which is why OpenBrowse does not use it).
 
@@ -85,6 +91,8 @@ Every one of those also accepts the `[1m]` suffix, so `claude-sonnet-5[1m]` and 
 **Google:** not yet.
 
 Browser Use Cloud's v3 `model` enum has 22 names and OpenBrowse implements 8 of them, so a client that names a model explicitly may be naming one that fails here with a 422 rather than falling back. The cloud's default, `claude-opus-4.7`, is supported, so this only bites callers who set `model` themselves. See [migrating from Browser Use Cloud](https://openbrowse.co/docs/migrating) for the mapping in both directions.
+
+`DEFAULT_MODEL` in the instance's `.env` decides which of the eight a request that names none gets, and it is editable from the dashboard's Settings page. [Installation](https://openbrowse.co/docs/installation#configuration) lists it alongside every other variable.
 
 Anthropic models need `ANTHROPIC_API_KEY` configured and OpenAI models need `OPENAI_API_KEY`; a session naming a model whose key is missing fails at launch with a message saying which variable to set.
 

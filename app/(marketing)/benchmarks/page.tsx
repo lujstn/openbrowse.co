@@ -147,11 +147,12 @@ export default function Page() {
           ))}
         </div>
         <p className="mt-6 max-w-[76ch] text-[15px] leading-relaxed text-muted">
-          More reasoning is not simply better. Set{" "}
-          <code className="font-mono text-body">reasoningEffort</code> per model
-          family rather than inheriting whatever the provider defaults to,
-          because the right answer moves in opposite directions depending on who
-          made the model.
+          More reasoning is not simply better, and the right answer moves in
+          opposite directions depending on who made the model. This is why a
+          session that sends no{" "}
+          <code className="font-mono text-body">reasoningEffort</code> runs at
+          the level measured here rather than at whatever the provider would
+          have chosen unprompted.
         </p>
       </Section>
 

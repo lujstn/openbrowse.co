@@ -104,4 +104,4 @@ Two things the table does not cover, both of which matter if you are treating `f
 
 ## What runs where
 
-Everything is one Python process plus per-session subprocesses (Xvfb, x11vnc, websockify, Chromium). State lives in SQLite at `data/browser_use.db`, profiles under `data/profiles/`, and the whole thing listens on port 8420. There is no queue service, no external database, and no cloud dependency beyond the LLM providers themselves.
+Everything is one Python process plus per-session subprocesses (Xvfb, x11vnc, websockify, Chromium). State lives in SQLite at `data/browser_use.db`, profiles under `data/profiles/`, both relative to [OpenBrowse's home directory](/docs/installation#where-openbrowse-keeps-its-files), and the whole thing listens on port 8420. There is no queue service, no external database, and no cloud dependency beyond the LLM providers themselves.
