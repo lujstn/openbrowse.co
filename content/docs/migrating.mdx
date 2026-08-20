@@ -69,7 +69,7 @@ Browser Use Cloud's v3 `model` enum has 22 names. OpenBrowse implements 8 of the
 The cloud's own default, `claude-opus-4.7`, is supported here. It is not the *default* here, though, and that catches people the other way round:
 
 <Callout type="warn">
-Omit `model` on the cloud and you get `claude-opus-4.7`. Omit it here and you get `gpt-5.6-terra`, or whatever the instance's `DEFAULT_MODEL` names, silently and without an error. That is a swap of provider as well as model, and it takes the reasoning depth with it. So a caller who names a model risks a 422, and a caller who relied on the cloud's default gets a quiet substitution instead. Set `model` explicitly and neither happens.
+Omit `model` on the cloud and you get `claude-opus-4.7`. Omit it here and you get whatever the instance's `DEFAULT_MODEL` names, or, where that is unset, the default for whichever provider the instance has a key for, silently and without an error. On an OpenAI-configured instance that is a swap of provider as well as model, and it takes the reasoning depth with it either way. So a caller who names a model risks a 422, and a caller who relied on the cloud's default gets a quiet substitution instead. Set `model` explicitly and neither happens.
 </Callout>
 
 **Supported on both:** `claude-opus-4.7`, `claude-opus-4.8`, `claude-opus-4.6`, `claude-sonnet-5`, `claude-sonnet-4.6`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`.

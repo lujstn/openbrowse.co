@@ -648,10 +648,12 @@
     },
     {
       "key": "default_model",
-      "value": "gpt-5.6-terra",
+      "value": "gpt-5.6-terra, claude-sonnet-5",
+      "mode": "all",
       "source": "openbrowse/config.py",
-      "pattern": "os\\.environ\\.get\\(\"DEFAULT_MODEL\"\\) or \"([^\"]+)\"",
-      "prose": "`model` defaults to `gpt-5.6-terra` if you send nothing"
+      "scope": "def resolved_default_model\\(self\\) -> str:(?:\\n(?:        .*)?)+",
+      "pattern": "^\\s+return \"([^\"]+)\"$",
+      "prose": "an OpenAI-only instance runs `gpt-5.6-terra` and an Anthropic-only instance runs `claude-sonnet-5`"
     },
     {
       "key": "legacy_effort_fields_rejected",

@@ -126,7 +126,7 @@ To configure by hand instead, create `.env` in [the home directory above](#where
 | `API_KEY` | Bearer token authenticating API requests. Required; without it every API call returns 401 |
 | `ANTHROPIC_API_KEY` | Anthropic key, for `claude-*` models |
 | `OPENAI_API_KEY` | Optional. OpenAI key, for `gpt-*` models |
-| `DEFAULT_MODEL` | Optional. The model a request that names none runs on, default `gpt-5.6-terra`. The v3 API and the dashboard's run form both follow it |
+| `DEFAULT_MODEL` | Optional. The model a request that names none runs on. Left unset, the default follows whichever provider key is configured, `gpt-5.6-terra` for OpenAI and `claude-sonnet-5` for Anthropic. The v3 API and the dashboard's run form both follow it |
 | `CAPSOLVER_API_KEY` | Optional. [CapSolver](https://capsolver.com/) key for CAPTCHA solving. Without it the CAPTCHA tool is simply not registered |
 | `CAPTCHA_MAX_COST_USD` | Optional. Ceiling on what one **run** may spend on CAPTCHA solving in total, default `0.03`. Once a run's solves have reached it, further solves are refused rather than attempted. Each solve's real cost is added to the session total |
 | `DASHBOARD_USER` | Optional. Dashboard username, default `admin` |

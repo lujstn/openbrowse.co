@@ -4,7 +4,7 @@
 
 *Source: https://openbrowse.co/docs/models*
 
-OpenBrowse puts Anthropic and OpenAI models behind one API, with a repair layer per provider for each family's failure modes. You pick the model per session; `model` defaults to `gpt-5.6-terra` if you send nothing, or to whatever the instance's `DEFAULT_MODEL` names. The v3 API and the dashboard's run form both read the same setting, so a request gets the same model whichever door it came through.
+OpenBrowse puts Anthropic and OpenAI models behind one API, with a repair layer per provider for each family's failure modes. You pick the model per session, and if you send none the instance's `DEFAULT_MODEL` decides. Where that is unset the default follows whichever provider is actually configured, so an OpenAI-only instance runs `gpt-5.6-terra` and an Anthropic-only instance runs `claude-sonnet-5`. Where both keys are present OpenAI wins. The v3 API and the dashboard's run form both read the same setting, so a request gets the same model whichever door it came through.
 
 > Version numbers may be spelled with dots or dashes, and both reach the same model: `gpt-5.6-terra` and `gpt-5-6-terra` resolve identically, as do `claude-sonnet-4.6` and `claude-sonnet-4-6`. Names are resolved through one index keyed on version punctuation, so a client that normalises identifiers on the way out does not get a 422 for it.
 
@@ -92,7 +92,7 @@ Every one of those also accepts the `[1m]` suffix, so `claude-sonnet-5[1m]` and 
 
 Browser Use Cloud's v3 `model` enum has 22 names and OpenBrowse implements 8 of them, so a client that names a model explicitly may be naming one that fails here with a 422 rather than falling back. The cloud's default, `claude-opus-4.7`, is supported, so this only bites callers who set `model` themselves. See [migrating from Browser Use Cloud](https://openbrowse.co/docs/migrating) for the mapping in both directions.
 
-`DEFAULT_MODEL` in the instance's `.env` decides which of the eight a request that names none gets, and it is editable from the dashboard's Settings page. [Installation](https://openbrowse.co/docs/installation#configuration) lists it alongside every other variable.
+`DEFAULT_MODEL` in the instance's `.env` decides which model a request that names none gets, and it is editable from the dashboard's Settings page. Leave it unset and the instance falls back to the default for whichever provider key it holds, reporting `gpt-5.6-terra` when neither key is configured. The dashboard's picker narrows the same way, offering only the families whose key is present, though an instance with no keys at all still gets the full list so that a fresh install renders a usable form. [Installation](https://openbrowse.co/docs/installation#configuration) lists it alongside every other variable.
 
 Anthropic models need `ANTHROPIC_API_KEY` configured and OpenAI models need `OPENAI_API_KEY`; a session naming a model whose key is missing fails at launch with a message saying which variable to set.
 
