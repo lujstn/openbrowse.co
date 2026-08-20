@@ -231,7 +231,7 @@ The upgrade runs through whichever manager owns this copy, rather than through a
 | `uv tool install` | `uv tool upgrade openbrowse` |
 | `pipx install` | `pipx upgrade openbrowse` |
 | pip, in a virtual environment | `pip install --upgrade openbrowse`, or `uv pip install --upgrade` where the environment has no pip of its own |
-| pip, into your user site | The same, with `--user`, so it upgrades the copy that is actually running |
+| pip, into your user site | `pip install --user --upgrade openbrowse`, so it upgrades the copy that is actually running rather than the system one |
 | A git checkout | `git pull --ff-only`, then `uv sync` |
 
 A uv tool and a pipx app both live in a virtual environment, so both are recognised before the plain pip case; upgrading either with a bare pip would reach around the manager that owns it and leave its records describing a version that is no longer installed. Where the manager's own binary cannot be found, or a copy sits in the system Python where no upgrade is safe to run unattended, OpenBrowse names the install method and declines to invent a command rather than offering one that would fail on use.

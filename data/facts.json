@@ -1102,6 +1102,36 @@
       "prose": "in hours. Default `6`"
     },
     {
+      "key": "upgrade_command_uv_tool",
+      "value": "tool, upgrade, openbrowse",
+      "mode": "tokens",
+      "source": "openbrowse/updates.py",
+      "pattern": "return \"uv-tool\", \\[\\[uv, ([^\\]]*)\\]\\]",
+      "prose": "| `uv tool install` | `uv tool upgrade openbrowse` |"
+    },
+    {
+      "key": "upgrade_command_pipx",
+      "value": "upgrade, openbrowse",
+      "mode": "tokens",
+      "source": "openbrowse/updates.py",
+      "pattern": "return \"pipx\", \\[\\[pipx, ([^\\]]*)\\]\\]",
+      "prose": "| `pipx install` | `pipx upgrade openbrowse` |"
+    },
+    {
+      "key": "upgrade_user_site_scope_flag",
+      "value": "--user",
+      "source": "openbrowse/updates.py",
+      "pattern": "scope = \\[\\] if in_venv else \\[\"(--user)\"\\]",
+      "prose": "`pip install --user --upgrade openbrowse`, so it upgrades the copy that is actually running"
+    },
+    {
+      "key": "installer_binary_fallback_dir",
+      "value": ".local",
+      "source": "openbrowse/updates.py",
+      "pattern": "fallback = Path\\.home\\(\\) / \"(\\.local)\" / \"bin\" / name",
+      "prose": "often omits `~/.local/bin`, where both uv and pipx install themselves"
+    },
+    {
       "key": "captcha_cost_cap_default",
       "value": "0.03",
       "source": "openbrowse/config.py",
