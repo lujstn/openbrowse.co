@@ -81,7 +81,9 @@ The command prints the path to the binary and exits. Every later session starts 
 
 ## Configuration
 
-The simplest path is to start the server and let it configure itself. An unconfigured instance serves a one-time setup screen at `/setup` that generates your API bearer key, collects your provider keys, sets a dashboard password and a concurrency limit, and writes `.env` for you. The screen refuses to overwrite a non-empty `.env`, and once any credential exists it redirects to the dashboard, so a configured instance never exposes it.
+The simplest path is to start the server and let it configure itself. An unconfigured instance sends any visit to the dashboard on to a one-time setup screen at `/setup`, which generates your API bearer key, collects your provider keys, sets a dashboard password and a concurrency limit, and writes `.env` for you. The screen refuses to overwrite a non-empty `.env`, and once any credential exists it redirects to the dashboard instead, so a configured instance never exposes it.
+
+The redirect exists because no default password ships. There is deliberately never a working credential that you did not choose, which means a fresh install has nothing to check a password against and asking for one would pose a question nothing could answer. The v3 API is left out of this: a programmatic call to an unconfigured instance still fails closed with a `401` rather than being sent to an HTML wizard.
 
 <Callout type="info">
 Configuration is read once at startup, so after the setup screen writes `.env` you must restart the server for it to take effect. The setup page says the same thing when it finishes.

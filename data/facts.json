@@ -962,10 +962,17 @@
     },
     {
       "key": "dashboard_unconfigured_status_code",
-      "value": "503",
+      "value": "303",
       "source": "openbrowse/auth.py",
-      "pattern": "status_code=(503),",
-      "prose": "Dashboard returns `503` telling you to open `/setup`"
+      "pattern": "status_code=(303),",
+      "prose": "It answers with a `303` to the setup wizard rather than a challenge"
+    },
+    {
+      "key": "setup_wizard_path",
+      "value": "/setup",
+      "source": "openbrowse/auth.py",
+      "pattern": "SETUP_PATH = \"(/setup)\"",
+      "prose": "a one-time setup screen at `/setup`"
     },
     {
       "key": "sdk_api_key_header",

@@ -59,7 +59,11 @@ journalctl -u openbrowse -n 50
 
 **Requests suddenly rejected after repeated failures, with a `429` and a `Retry-After` header:** failed attempts are throttled per client IP with a doubling lockout (five free failures, then 1s doubling up to 15 minutes). Wait, or restart the server to clear the in-memory state, then fix the key rather than retrying it.
 
-**Dashboard returns `503` telling you to open `/setup`:** the instance has neither a dashboard password nor an API key; it is unconfigured.
+**The dashboard sends you to `/setup` instead of asking for a password:** the instance has neither a dashboard password nor an API key, so there is nothing yet that a password could be checked against. It answers with a `303` to the setup wizard rather than a challenge, because a challenge on a fresh install is one nothing could answer. Finish the wizard and restart; from then on the dashboard asks for the credentials you chose.
+
+<Callout type="info">
+No default password ships, and this is why. A known pair would be a working credential during exactly the window before anyone has chosen one, on a service holding provider API keys and imported profiles with live logged-in cookies. The v3 API is deliberately not part of this: a programmatic call still fails closed with a `401` rather than being redirected to an HTML wizard.
+</Callout>
 
 ## The API refuses my request
 
