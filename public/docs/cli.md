@@ -1,6 +1,6 @@
 # The openbrowse command
 
-> Every openbrowse subcommand: running the server, managing the systemd service, checking for and installing updates, and tuning the host.
+> Every openbrowse subcommand: running the server, managing the systemd service, checking for and installing updates, tuning the host, and removing it again.
 
 *Source: https://openbrowse.co/docs/cli*
 
@@ -26,6 +26,7 @@ With no subcommand it prints the help and points at `openbrowse start`, which is
 | `check-update` | Asks PyPI whether a newer release exists and says so |
 | `update` | Installs the newer release, if there is one |
 | `tune` | Sizes the host for OpenBrowse. Linux only, and needs root |
+| `uninstall` | Removes everything OpenBrowse put on this machine, then the package itself |
 
 Every one of them exits non-zero on failure, so they compose in a script.
 
@@ -64,6 +65,18 @@ openbrowse tune --share most
 `--share` takes `all`, `most` or `shared`, matching the three presets the setup screen and the Settings page offer, and `--dry-run` prints the plan without touching anything. The command runs a script bundled inside the package and needs root, so it asks for your password on a host where you are not already root, rather than failing with a traceback.
 
 What it actually writes, and why a Raspberry Pi needs it, is under [sizing it for your machine](https://openbrowse.co/docs/installation#sizing-it-for-your-machine). Run it again after every upgrade: the sudoers grant it writes names the script by its full path, and that path moves with the package.
+
+## Removing it
+
+```bash
+openbrowse uninstall
+```
+
+It prints exactly what it is about to remove and then asks you to type `uninstall` before it does anything: the systemd unit and its capacity drop-in, the tuning sudoers grant, the `psi=1` boot flag if one was added, your data directory including `.env` and your profiles, the downloaded browser, and finally the package. `--keep-data` and `--keep-browser` spare the last two of those, and `--yes` skips the prompt for a scripted teardown.
+
+A source checkout is left where it is. Removing a clone is `rm -rf` on a directory you chose, and guessing at that is not a thing an uninstaller should do.
+
+> **Warning:** Your data directory holds the profile cookie jars, which are live credentials for every site those profiles are logged into, and they are not recoverable once removed. Pass `--keep-data` if you intend to reinstall.
 
 ## Where it reads and writes
 

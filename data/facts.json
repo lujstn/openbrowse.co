@@ -982,6 +982,20 @@
       "prose": "The password you will sign in with, at least 8 characters"
     },
     {
+      "key": "browser_prefetch_min_free_bytes",
+      "value": "2",
+      "source": "openbrowse/prefetch.py",
+      "pattern": "(?m)^MIN_FREE_BYTES = (\\d+) \\* 1024 \\* 1024 \\* 1024$",
+      "prose": "roughly 2GB of free disk the browser build needs"
+    },
+    {
+      "key": "cloakbrowser_auto_update_frozen",
+      "value": "false",
+      "source": "openbrowse/main.py",
+      "pattern": "os\\.environ\\.setdefault\\(\"CLOAKBROWSER_AUTO_UPDATE\", \"(\\w+)\"\\)",
+      "prose": "sets `CLOAKBROWSER_AUTO_UPDATE=false` at startup"
+    },
+    {
       "key": "sdk_api_key_header",
       "value": "x_browser_use_api_key",
       "source": "openbrowse/auth.py",
