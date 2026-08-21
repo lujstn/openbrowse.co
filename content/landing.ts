@@ -233,7 +233,8 @@ export const browserbaseCaptured = new Date(browserbasePricing.capturedOn).toLoc
 export const browserbase = {
   h1: headings.vsBrowserbase,
   standfirst:
-    "Browserbase rents you a browser to drive. OpenBrowse is the driver, on hardware you already own: MIT licensed, no session meter, no egress bill.",
+    "Browserbase rents you a browser to drive. OpenBrowse is the driver: the open-source, self-hosted alternative, on hardware you already own, MIT licensed, with no session meter and no egress bill.",
+  steel: { label: "steel-dev/steel-browser", href: "https://github.com/steel-dev/steel-browser" },
   noCdp: {
     label: "Read this first",
     title: "OpenBrowse exposes no CDP connect endpoint.",
@@ -246,7 +247,7 @@ export const browserbase = {
         "A CDP websocket per session. Point Playwright, Puppeteer or any CDP client at connectUrl and drive it yourself",
       openbrowse:
         "No connect endpoint at all. You write the task in words and the agent drives, so existing browser-automation code is a rewrite rather than a port",
-      note: "Steel is the better choice for this: Apache 2.0, self-hostable, and built for agents.",
+      note: "Steel is the better choice for this, being Apache 2.0, self-hostable and built for agents:",
       advantage: "browserbase",
     },
     {
@@ -337,7 +338,28 @@ export const browserbase = {
       advantage: "openbrowse",
     },
   ],
-  columnNote: `Browserbase as their own pricing page and documentation described it on ${browserbaseCaptured}.`,
+  columnNote: `Browserbase as their own pricing page, developer documentation and enterprise page described it on ${browserbaseCaptured}.`,
+  sourcesLead: "Everything in the Browserbase column above is theirs, not ours:",
+  verdict: [
+    {
+      title: "Pick Browserbase if",
+      points: [
+        "you have browser automation already written and want somewhere to run it",
+        "the sites you target need a residential IP in a country you choose",
+        "you need recorded sessions, an audit trail, or a compliance attestation",
+        "you need more than a handful of browsers running at once",
+      ],
+    },
+    {
+      title: "Pick OpenBrowse if",
+      points: [
+        "the agent is the part you were going to build anyway",
+        "the pages and the data they hold must not leave your network",
+        "you want the licence, the model choice and the API key to be yours",
+        "the meter is the thing you are running from",
+      ],
+    },
+  ],
   pricingLead:
     "Browserbase sells a monthly plan that buys concurrency and an allowance, then meters six things on top of it. These are the published rates:",
   // @nonobvious(must-hold) the Browserbase column of the measurement table is empty and labelled, rather than

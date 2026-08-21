@@ -11,7 +11,7 @@ import { browserbase, browserbaseCaptured, headings, site } from "@/content/land
 import { baseline, champion, task } from "@/lib/benchmark";
 
 const TITLE = browserbase.h1;
-const SEO_TITLE = `${headings.vsBrowserbase}: the open-source, self-hosted alternative`;
+const SEO_TITLE = `${headings.vsBrowserbase}: the open-source alternative`;
 const DESCRIPTION =
   "Browserbase rents a browser you drive. OpenBrowse is the agent, self-hosted and MIT licensed, with no session meter and no CDP connect endpoint.";
 
@@ -84,6 +84,7 @@ export default function Page() {
           title: SEO_TITLE,
           description: DESCRIPTION,
           url: "/vs/browserbase",
+          mentions: [{ name: bb.vendor, url: new URL(bb.sourceUrl).origin }],
         })}
       />
       <JsonLd data={faqPage(FAQ)} />
@@ -97,14 +98,16 @@ export default function Page() {
       <Section className="border-t-0 pt-14">
         <SectionHead level={1} title={TITLE} standfirst={browserbase.standfirst} />
 
-        <Panel label={browserbase.noCdp.label}>
-          <p className="text-[15px] font-medium leading-relaxed text-ink">
-            {browserbase.noCdp.title}
-          </p>
-          <p className="mt-3 max-w-[76ch] text-[15px] leading-relaxed text-muted">
-            {browserbase.noCdp.body}
-          </p>
-        </Panel>
+        <div className="max-w-[82ch]">
+          <Panel label={browserbase.noCdp.label}>
+            <p className="text-[15px] font-medium leading-relaxed text-ink">
+              {browserbase.noCdp.title}
+            </p>
+            <p className="mt-3 text-[15px] leading-relaxed text-muted">
+              {browserbase.noCdp.body}
+            </p>
+          </Panel>
+        </div>
 
         <p className="mt-6 max-w-[76ch] text-[15px] leading-relaxed text-muted">
           {"Weighing this against a hosted agent runner rather than a hosted browser? "}
@@ -166,7 +169,14 @@ export default function Page() {
                       {row.openbrowse}
                       {"note" in row && row.note ? (
                         <span className="mt-2 block text-[12px] leading-relaxed text-dim">
-                          {row.note}
+                          {`${row.note} `}
+                          <a
+                            href={browserbase.steel.href}
+                            className="text-accent hover:underline"
+                            rel="nofollow noreferrer"
+                          >
+                            {browserbase.steel.label}
+                          </a>
                         </span>
                       ) : null}
                     </td>
@@ -177,8 +187,37 @@ export default function Page() {
           </div>
         </Panel>
         <p className="mt-6 max-w-[76ch] text-[15px] leading-relaxed text-muted">
-          {`${browserbase.columnNote} ${conceded} of the ${browserbase.rows.length} go to Browserbase, and a table conceding fewer than that would be telling you something other than the truth.`}
+          {`${browserbase.columnNote} ${conceded} of the ${browserbase.rows.length} go to Browserbase, and a table conceding fewer than that would be telling you something other than the truth. ${browserbase.sourcesLead} `}
+          {[bb.sourceUrl, bb.docsUrl, bb.enterpriseUrl].map((href, i) => (
+            <span key={href}>
+              {i > 0 ? ", " : ""}
+              <a href={href} className="text-accent hover:underline" rel="nofollow">
+                {new URL(href).host + new URL(href).pathname}
+              </a>
+            </span>
+          ))}
+          {"."}
         </p>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
+          {browserbase.verdict.map((column) => (
+            <Panel key={column.title} label={column.title}>
+              <ul className="space-y-2.5">
+                {column.points.map((point) => (
+                  <li
+                    key={point}
+                    className="flex gap-2.5 text-[14px] leading-relaxed text-muted"
+                  >
+                    <span aria-hidden="true" className="text-label">
+                      &mdash;
+                    </span>
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          ))}
+        </div>
       </Section>
 
       <Section id="pricing">
@@ -280,11 +319,11 @@ export default function Page() {
         </Panel>
 
         <p className="mt-6 max-w-[76ch] text-[15px] leading-relaxed text-muted">
-          {`${browserbase.notMeasured}. ${browserbase.measuredNote} The OpenBrowse column is ${champion.model} at reasoning ${champion.reasoning}; both runs recovered all ${task.recordsExpected} records, and only one of them invented fields the page never displayed. The full method, every run and the task specification are on `}
+          {`${browserbase.notMeasured}. ${browserbase.measuredNote} The OpenBrowse column is ${champion.model} at reasoning ${champion.reasoning}. Both runs recovered all ${task.recordsExpected} records, but the Browser Use Cloud run also populated values the page never displayed, job seniority among them, while no OpenBrowse run invented a field. `}
           <Link href="/benchmarks" className="text-accent hover:underline">
-            the benchmarks page
+            Every run, the method and the task specification
           </Link>
-          {"."}
+          {" are published in full."}
         </p>
       </Section>
 

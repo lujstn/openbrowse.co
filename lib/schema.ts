@@ -108,6 +108,7 @@ export function techArticle({
   image,
   datePublished = release.dateReleased,
   dateModified = BUILD_DATE,
+  mentions,
 }: {
   title: string;
   description: string;
@@ -115,6 +116,7 @@ export function techArticle({
   image?: string;
   datePublished?: string;
   dateModified?: string;
+  mentions?: { name: string; url: string }[];
 }) {
   return {
     "@context": "https://schema.org",
@@ -127,6 +129,11 @@ export function techArticle({
     // marketing pages' Open Graph images are emitted by Next's file convention under content-hashed paths
     // this module cannot know, and a plausible guess would be a structured-data error pointing at a 404
     ...(image ? { image: `${site.url}${image}` } : {}),
+    // @nonobvious(means) a comparison page names products it does not own, and mentions is the only place
+    // the markup says which entities those are; prose alone leaves a consumer to resolve "Browserbase" itself
+    ...(mentions
+      ? { mentions: mentions.map((m) => ({ "@type": "Organization", name: m.name, url: m.url })) }
+      : {}),
     author,
     publisher,
     datePublished,
