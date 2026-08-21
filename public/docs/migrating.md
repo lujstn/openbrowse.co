@@ -35,6 +35,8 @@ The case where it genuinely bites is a VPS. A datacentre IP is exactly what site
 
 `proxyCountryCode` is accepted so your code still compiles, and does nothing: there is no per-session proxy selection to reach for. If you do need one, put it in front of the instance at the network level, or keep those particular jobs on the cloud. Note that geo-targeting is the one thing a home connection cannot substitute for, since your IP is wherever you are.
 
+Making the field mean something is planned, by letting a session borrow its browser from [Steel](https://steel.dev) instead of launching one locally, so a job that needs an IP in a particular country can have one while everything else keeps running on your hardware. Not yet, though. Today the field is inert.
+
 ## 2. Ten request fields are accepted and ignored
 
 Three of them are declared in the request model and deliberately inert:
