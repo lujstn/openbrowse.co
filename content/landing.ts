@@ -308,7 +308,7 @@ export const browserbase = {
     {
       dimension: "The agent",
       browserbase:
-        "Browserbase Agents is hosted, on an undisclosed model, and rationed as a monthly run allowance. Stagehand and Director are frameworks whose loop you host on your own key",
+        "Browserbase Agents is hosted, on an undisclosed model, and rationed as a monthly run allowance. Stagehand is the framework whose loop you host yourself, on your own key",
       openbrowse:
         "The agent is the product. No run allowance, and you choose the model and hold the key",
       advantage: "openbrowse",
@@ -496,6 +496,6 @@ export const faq = [
   },
   {
     q: "How is this different from Firecrawl?",
-    a: "Different job. Firecrawl is a web data API: hand it URLs and it returns clean page content at scale. OpenBrowse is an agent: describe an outcome and it works the site out for itself, clicking and reading until the answer is complete. Know which pages you want and a crawler is the right tool. If you are weighing up self-hosting theirs, their own docs are the honest dividing line: the open-source stack ships crawl and scrape, while Agent, Browser, interact and feedback are listed as reasons to use Firecrawl Cloud.",
+    a: "Different job. Firecrawl is a web data API: hand it URLs and it returns clean page content at scale. OpenBrowse is an agent: describe an outcome and it works the site out for itself, clicking and reading until the answer is complete. Know which pages you want and a crawler is the right tool. If you are weighing up self-hosting theirs, their own docs are the honest dividing line: the open-source stack ships the crawl, scrape, map and search routes, while Agent, Browser, interact and feedback are among the capabilities they name Firecrawl Cloud for.",
   },
 ];
