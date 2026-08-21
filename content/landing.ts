@@ -71,6 +71,9 @@ export const headings = {
   reasoning: "Reasoning cuts both ways",
   picking: "Which model to reach for",
   method: "Run it yourself",
+  cloudCharges: "What Browser Use Cloud charges",
+  selfHostCosts: "What the same work costs self-hosted",
+  multiplier: "The multiplier is the whole story",
   vs: "OpenBrowse vs Browser Use Cloud",
 } as const;
 
@@ -215,6 +218,44 @@ export const comparison = {
 } as const;
 
 // @nonobvious(must-hold) these two paths are the llmstxt.org contract and are also asserted by scripts/check-export.mjs; renaming either one silently breaks retrievers that look for them by convention
+// @nonobvious(must-hold) every figure this page renders comes from data/cloud-pricing.json and is stamped
+// with the date it was read, because a competitor's prices change without telling you and an undated quote of
+// them is a claim that goes wrong on its own. The arithmetic is derived rather than written: the multiplier
+// is their published number, so the worked example cannot disagree with the rate it is applying.
+export const pricing = {
+  h1: "Browser Use Cloud pricing, and what self-hosting costs instead",
+  standfirst:
+    "Their published rates, read on the date below, and the same work priced on hardware you own. The difference is not a discount, it is a multiplier applied to tokens you were going to buy anyway.",
+  cloudLead:
+    "Browser Use Cloud bills a monthly plan for concurrency, then usage on top. These are the rates as published:",
+  selfHostLead:
+    "Self-hosting removes the platform from the bill entirely. What is left is the same tokens at the provider's own price, plus a machine and the electricity it draws.",
+  selfHostRows: [
+    {
+      item: "Agent tokens",
+      rate: "the provider's rates, at 1×",
+      note: "You hold the API key and pay OpenAI or Anthropic directly. Nothing is added.",
+    },
+    {
+      item: "Browser session",
+      rate: "nothing",
+      note: "The browser runs on your machine, for as long as you like.",
+    },
+    {
+      item: "Egress",
+      rate: "your own connection",
+      note: "Requests leave from your address. There is no proxy layer and no per-gigabyte meter.",
+    },
+    {
+      item: "Hardware",
+      rate: "one-off",
+      note: "It was built and benchmarked on a Raspberry Pi 5, which is the whole of the fixed cost.",
+    },
+  ],
+  giveUp:
+    "What you give up for that is a managed residential proxy, session recordings, workspaces and somebody else's uptime.",
+} as const;
+
 export const machineReadable = {
   heading: "For LLMs",
   files: [

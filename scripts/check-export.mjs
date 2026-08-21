@@ -235,6 +235,7 @@ const EXPORTED_FOR = {
   "/": "index.html",
   "/benchmarks": "benchmarks.html",
   "/vs/browser-use-cloud": "vs/browser-use-cloud.html",
+  "/vs/browser-use-cloud/pricing": "vs/browser-use-cloud/pricing.html",
 };
 
 if (llms) {
