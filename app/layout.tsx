@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     default: `${site.name}: ${site.tagline}`,
     template: `%s · ${site.name}`,
   },
-  description: site.abstract,
+  description: site.metaDescription,
   authors: [{ name: site.author, url: site.orcid }],
   creator: site.author,
   alternates: { canonical: "/" },

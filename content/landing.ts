@@ -21,6 +21,7 @@ export const site = {
   domain: "openbrowse.co",
   url: "https://openbrowse.co",
   repo: "https://github.com/lujstn/openbrowse",
+  pypi: "https://pypi.org/project/openbrowse/",
   doi: release.doi,
   doiUrl: `https://doi.org/${release.doi}`,
   orcid: release.orcid,
@@ -30,6 +31,11 @@ export const site = {
   tagline: "The open-source Browser Use Cloud alternative",
   abstract:
     "OpenBrowse is an open-source, self-hosted alternative to Browser Use Cloud: AI browser agents that run on your own hardware, driven through the v3 REST API, with schema-validated structured output, anti-hallucination grounding guards, and a live visual dashboard.",
+  // @nonobvious(forced-by) the abstract above is the right length for JSON-LD and llms.txt, where a retriever
+  // benefits from every clause, and far too long for a search result, which cuts it mid-sentence. They are two
+  // strings because they are answering two different readers, not because either one is wrong.
+  metaDescription:
+    "The open-source Browser Use Cloud alternative: AI browser agents on your own hardware, same v3 REST API, schema-validated output, nothing invented.",
 } as const;
 
 export const hero = {
@@ -65,6 +71,9 @@ export const headings = {
   reasoning: "Reasoning cuts both ways",
   picking: "Which model to reach for",
   method: "Run it yourself",
+  cloudCharges: "What Browser Use Cloud charges",
+  selfHostCosts: "What the same work costs self-hosted",
+  multiplier: "The multiplier is the whole story",
   vs: "OpenBrowse vs Browser Use Cloud",
 } as const;
 
@@ -75,7 +84,10 @@ export const benchmark = {
 } as const;
 
 export const evidence = {
-  title: "Benchmarks",
+  // @nonobvious(must-hold) this is the H1, the breadcrumb name and the page-map entry, all from one string.
+  // The header and footer keep the short "Benchmarks" label, because a nav item is read in a list where the
+  // surrounding items supply the context an H1 has to carry alone.
+  title: "Browser agent benchmarks",
   // @nonobvious(must-hold) every figure in this block is interpolated: these sentences render inches from the runs table and are inlined verbatim into llms-full.txt, so a typed number here contradicts the table beside it the first time a run changes
   intro: (shape: { runs: number; runtimes: number; models: number }) =>
     `One real extraction task, ${shape.runs} runs, ${shape.runtimes} runtimes, ${shape.models} models. A careers page listing ${task.recordsExpected} vacancies whose listings live inside an embedded job board on another domain, so a naive read of the page returns nothing at all. Every run had the same schema, the same spending cap, and had to come back with all ${task.recordsExpected}.`,
@@ -206,6 +218,44 @@ export const comparison = {
 } as const;
 
 // @nonobvious(must-hold) these two paths are the llmstxt.org contract and are also asserted by scripts/check-export.mjs; renaming either one silently breaks retrievers that look for them by convention
+// @nonobvious(must-hold) every figure this page renders comes from data/cloud-pricing.json and is stamped
+// with the date it was read, because a competitor's prices change without telling you and an undated quote of
+// them is a claim that goes wrong on its own. The arithmetic is derived rather than written: the multiplier
+// is their published number, so the worked example cannot disagree with the rate it is applying.
+export const pricing = {
+  h1: "Browser Use Cloud pricing, and what self-hosting costs instead",
+  standfirst:
+    "Their published rates, read on the date below, and the same work priced on hardware you own. The difference is not a discount, it is a multiplier applied to tokens you were going to buy anyway.",
+  cloudLead:
+    "Browser Use Cloud bills a monthly plan for concurrency, then usage on top. These are the rates as published:",
+  selfHostLead:
+    "Self-hosting removes the platform from the bill entirely. What is left is the same tokens at the provider's own price, plus a machine and the electricity it draws.",
+  selfHostRows: [
+    {
+      item: "Agent tokens",
+      rate: "the provider's rates, at 1×",
+      note: "You hold the API key and pay OpenAI or Anthropic directly. Nothing is added.",
+    },
+    {
+      item: "Browser session",
+      rate: "nothing",
+      note: "The browser runs on your machine, for as long as you like.",
+    },
+    {
+      item: "Egress",
+      rate: "your own connection",
+      note: "Requests leave from your address. There is no proxy layer and no per-gigabyte meter.",
+    },
+    {
+      item: "Hardware",
+      rate: "one-off",
+      note: "It was built and benchmarked on a Raspberry Pi 5, which is the whole of the fixed cost.",
+    },
+  ],
+  giveUp:
+    "What you give up for that is a managed residential proxy, session recordings, workspaces and somebody else's uptime.",
+} as const;
+
 export const machineReadable = {
   heading: "For LLMs",
   files: [
@@ -254,7 +304,11 @@ export const faq = [
   },
   {
     q: "What does it cost to run?",
-    a: `Just LLM tokens: no platform fee, and maxCostUsd hard-caps any session. Our benchmark job cost $${champion.costUsd.toFixed(2)} here against $${baseline.costUsd.toFixed(2)} on the cloud.`,
+    // @nonobvious(must-hold) the matched pair is interpolated and the clause disappears entirely if no
+    // same-model row exists, exactly as the comparison page does it: this answer is emitted verbatim as
+    // FAQPage JSON-LD, so quoting a cross-model pair without saying so puts an unqualified claim where
+    // retrievers copy it word for word
+    a: `Just LLM tokens: no platform fee, and maxCostUsd hard-caps any session. Our benchmark job cost $${champion.costUsd.toFixed(2)} here against $${baseline.costUsd.toFixed(2)} on the cloud, though that pair changes model as well as runtime.${likeForLike ? ` Holding the model steady, ${likeForLike.cloud.model} at reasoning ${likeForLike.cloud.reasoning} cost $${likeForLike.openbrowse.costUsd.toFixed(2)} here against $${likeForLike.cloud.costUsd.toFixed(2)} there.` : ""}`,
     link: { label: "See the benchmark", href: "/benchmarks" },
   },
   {

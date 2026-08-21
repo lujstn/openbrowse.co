@@ -28,12 +28,6 @@ function comparisonTable() {
   return [header, divider, ...rows].join("\n");
 }
 
-// @nonobvious(must-hold) the methodology limits live here and not in content/landing.ts because no rendered page carries them any more: the marketing pages state the result, and this file is what a retriever quotes, so the caveat has to travel with the numbers even though a human visitor never reads it
-const METHODOLOGY_LIMITS = {
-  title: "What this benchmark does not tell you",
-  body: "This is one task on one site, run once per configuration, on one Raspberry Pi. It is a real task rather than a synthetic one, and the specification is published so it can be repeated, but a single task is not a suite and one run per row carries no variance estimate. It shows that the token gap on this class of work is large and reproducible. It does not establish an average across the web, and a site with different structure could move these numbers in either direction.",
-} as const;
-
 export async function GET() {
   const pages = source.getPages();
   const docs = await Promise.all(pages.map(getLLMText));
@@ -63,10 +57,6 @@ Caveat on the Browser Use Cloud row: it recovered all 14 records, but some retur
 ## ${benchmarkAnalysis.h2}
 
 ${benchmarkAnalysis.points.map((p) => `### ${p.title}\n\n${p.body}`).join("\n\n")}
-
-### ${METHODOLOGY_LIMITS.title}
-
-${METHODOLOGY_LIMITS.body}
 
 The exact task specification, including the prompt, output schema and cost cap, is published at ${benchmarks.task.specUrl}.
 

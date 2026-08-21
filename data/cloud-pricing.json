@@ -1,0 +1,44 @@
+{
+  "$comment": "Browser Use Cloud's published rates, captured by hand from their pricing page. Every figure the pricing page renders comes from here, and the page states capturedOn beside them, because quoting a competitor's prices without a date is how a comparison becomes wrong without anyone touching it. Re-check on the sourceUrl and move capturedOn when it changes.",
+  "vendor": "Browser Use Cloud",
+  "sourceUrl": "https://browser-use.com/pricing",
+  "capturedOn": "2026-08-21",
+  "agentApi": "v4",
+  "tokenMultiplier": 1.2,
+  "byokOrchestrationFee": 0.2,
+  "usage": [
+    {
+      "item": "Agent tokens",
+      "rate": "1.2× the model provider's own rates",
+      "note": "Charged on top of what the tokens would cost you at the provider."
+    },
+    {
+      "item": "Agent tokens, bring your own key",
+      "rate": "provider rates, plus a 0.2× orchestration fee",
+      "note": "You pay OpenAI or Anthropic directly, and the platform fee arrives separately."
+    },
+    {
+      "item": "Browser session",
+      "rate": "$0.02 per hour",
+      "note": "Billed per minute for the time a browser is open."
+    },
+    {
+      "item": "Managed proxy",
+      "rate": "$5 per GB, $4 per GB on Scaleup",
+      "note": "Their residential proxy, on by default."
+    },
+    {
+      "item": "Egress without their proxy",
+      "rate": "$0.20 per GB",
+      "note": "Charged even when you bring your own proxy or use none."
+    }
+  ],
+  "plans": [
+    { "name": "Free", "monthlyUsd": 0, "concurrentSessions": 10, "note": "10 agent tasks a month" },
+    { "name": "Dev", "monthlyUsd": 29, "concurrentSessions": 25, "note": "$29 of credits a month" },
+    { "name": "Business", "monthlyUsd": 299, "concurrentSessions": 200, "note": "$299 of credits a month" },
+    { "name": "Scaleup", "monthlyUsd": 999, "concurrentSessions": 500, "note": "$999 of credits a month" }
+  ],
+  "annualNote": "Annual plans get two months free, with credits granted up front.",
+  "legacyRatesNote": "Their pricing page links V2 and V3 rates, and that link returns 404, so the rates the benchmarked v3 agent ran under are no longer published anywhere we can cite."
+}

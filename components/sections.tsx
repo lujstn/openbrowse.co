@@ -1,16 +1,8 @@
 import Link from "next/link";
 import { benchmark, differentiators, dropIn, faq, headings } from "@/content/landing";
 import { Section, SectionHead } from "@/components/section";
-import { CompareStat } from "@/components/compare-stat";
-import { BenchmarkTable } from "@/components/benchmark-table";
+import { HeadlineStats } from "@/components/headline-stats";
 import { Panel } from "@/components/ui";
-import {
-  baseline,
-  champion,
-  headlineRuns,
-  percentFaster,
-  percentLess,
-} from "@/lib/benchmark";
 
 // @nonobvious(must-hold) the heading is visually hidden rather than deleted: these four read as a bare capability strip by design, but a section of prose with no heading in the outline is unreadable to a screen reader and to a retriever building a page map
 export function CapabilitiesSection() {
@@ -41,42 +33,7 @@ export function BenchmarkSection() {
     <Section id="benchmark">
       <SectionHead title={benchmark.h2} standfirst={benchmark.standfirst} />
 
-      <div className="mb-8 grid grid-cols-1 gap-3 md:grid-cols-3">
-        <CompareStat
-          label="What it cost"
-          ours={champion.costUsd}
-          theirs={baseline.costUsd}
-          ourValue={`$${champion.costUsd.toFixed(2)}`}
-          theirValue={`$${baseline.costUsd.toFixed(2)}`}
-          saving={percentLess(baseline.costUsd, champion.costUsd)}
-        />
-        <CompareStat
-          label="Tokens burned"
-          ours={champion.tokens}
-          theirs={baseline.tokens}
-          ourValue={champion.tokensDisplay}
-          theirValue={baseline.tokensDisplay}
-          saving={percentLess(baseline.tokens, champion.tokens)}
-        />
-        <CompareStat
-          label="Time to finish"
-          ours={champion.seconds}
-          theirs={baseline.seconds}
-          ourValue={champion.timeDisplay}
-          theirValue={baseline.timeDisplay}
-          saving={percentFaster(baseline.seconds, champion.seconds)}
-        />
-      </div>
-
-      {/* @nonobvious(must-hold) the two sides of those cards ran different models, and the cards are the part that gets screenshotted and quoted away from the table that would have shown it. Naming both configurations here is what stops the headline reading as a rigged comparison. */}
-      <p className="mb-8 font-mono text-[12px] leading-relaxed text-dim">
-        {`OpenBrowse on ${champion.model} at reasoning ${champion.reasoning}, against Browser Use Cloud on ${baseline.model} at ${baseline.reasoning}.`}
-      </p>
-
-      {/* @nonobvious(means) the table is deliberately quieter than the cards above it: it is corroboration for the headline figures, not the thing the reader is meant to land on first */}
-      <Panel label="The runs behind those numbers" padded={false} tone="quiet">
-        <BenchmarkTable rows={headlineRuns} highlight={champion.id} />
-      </Panel>
+      <HeadlineStats tone="quiet" />
     </Section>
   );
 }

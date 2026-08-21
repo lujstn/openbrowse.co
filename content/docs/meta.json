@@ -4,6 +4,7 @@
   "pages": [
     "index",
     "installation",
+    "raspberry-pi",
     "cli",
     "migrating",
     "tasks",

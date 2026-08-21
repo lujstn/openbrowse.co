@@ -6,6 +6,7 @@ import {
   evidence,
   headings,
   hero,
+  pricing,
 } from "@/content/landing";
 
 export type MarketingPage = {
@@ -42,6 +43,13 @@ export const marketingPages: MarketingPage[] = [
       headings.picking,
       headings.method,
     ],
+  },
+  {
+    url: "/vs/browser-use-cloud/pricing",
+    name: "Pricing",
+    summary:
+      "Browser Use Cloud's published rates read on a stated date, the same work priced on your own hardware, and the multiplier between the two.",
+    headings: [pricing.h1, headings.cloudCharges, headings.selfHostCosts, headings.multiplier],
   },
   {
     url: "/vs/browser-use-cloud",

@@ -1,4 +1,4 @@
-import { readFile, stat } from "node:fs/promises";
+import { glob, readFile, stat } from "node:fs/promises";
 
 const OUT = "./out";
 const problems = [];
@@ -235,6 +235,7 @@ const EXPORTED_FOR = {
   "/": "index.html",
   "/benchmarks": "benchmarks.html",
   "/vs/browser-use-cloud": "vs/browser-use-cloud.html",
+  "/vs/browser-use-cloud/pricing": "vs/browser-use-cloud/pricing.html",
 };
 
 if (llms) {
@@ -319,6 +320,90 @@ for (const page of docsPages) {
     );
   }
 }
+
+// @nonobvious(must-hold) every app route exports a sibling .txt holding that page's full React payload, which
+// the client router prefetches and which carries no robots signal of its own. The rule keeping them out of
+// the index is compiled here with the same library the host uses, and run over the set the exporter actually
+// produced rather than a handful of paths someone checked once, because the exporter names those files and a
+// future upgrade can rename them. The two llms files are asserted in the opposite direction: they exist to be
+// retrieved, so a rule that swept them up would be a silent, total loss of the machine-readable surface.
+const { sourceToRegex } = await import("@vercel/routing-utils");
+const noindexPatterns = headerRules
+  .filter((rule) => String(rule.headers["X-Robots-Tag"] ?? "").includes("noindex"))
+  .map((rule) => new RegExp(sourceToRegex(rule.source).src));
+const RETRIEVABLE = ["/llms.txt", "/llms-full.txt"];
+
+let payloads = 0;
+for await (const file of glob(`${OUT}/**/*.txt`)) {
+  const urlPath = `/${file.replace(/^out[/\\]/, "").split(/[/\\]/).join("/")}`;
+  const covered = noindexPatterns.some((pattern) => pattern.test(urlPath));
+  if (RETRIEVABLE.includes(urlPath)) {
+    check(
+      !covered,
+      `${urlPath} is marked noindex by config/headers.json, but it exists to be retrieved`,
+    );
+    continue;
+  }
+  payloads += 1;
+  check(
+    covered,
+    `${urlPath} is served as public plain text with no rule in config/headers.json marking it noindex, so it is an indexable copy of a page that already has one`,
+  );
+}
+check(payloads > 0, "no payload .txt files were found in the export, so the noindex rule is asserting nothing");
+notes.push(`${payloads} exported payload files are covered by a noindex rule`);
+
+// @nonobvious(mirrors) every other machine-readable claim on this site is guarded against its source, and the
+// JSON-LD was the exception. It is the one surface where an error is invisible in the browser, in the build
+// and in review: a TechArticle spent this project's life declaring itself part of another TechArticle, which
+// no rendered page could have shown anyone.
+const REQUIRED_FIELDS = {
+  TechArticle: ["headline", "author", "publisher", "isPartOf", "mainEntityOfPage"],
+  SoftwareApplication: ["name", "description", "applicationCategory", "offers"],
+  SoftwareSourceCode: ["name", "codeRepository", "license"],
+  BreadcrumbList: ["itemListElement"],
+  FAQPage: ["mainEntity"],
+  Dataset: ["name", "description", "creator"],
+  WebSite: ["name", "url"],
+};
+
+let blocks = 0;
+for await (const file of glob(`${OUT}/**/*.html`)) {
+  const html = await readFile(file, "utf8");
+  for (const [, raw] of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+    blocks += 1;
+    let node;
+    try {
+      node = JSON.parse(raw);
+    } catch (error) {
+      problems.push(`${file} carries JSON-LD that does not parse: ${error.message}`);
+      continue;
+    }
+    check(
+      node["@context"] === "https://schema.org",
+      `${file}: a JSON-LD block declares no schema.org @context`,
+    );
+    const type = node["@type"];
+    if (typeof type !== "string") {
+      problems.push(`${file}: a JSON-LD block declares no @type`);
+      continue;
+    }
+    for (const field of REQUIRED_FIELDS[type] ?? []) {
+      check(
+        node[field] !== undefined && node[field] !== "",
+        `${file}: ${type} JSON-LD is missing ${field}`,
+      );
+    }
+    if (type === "TechArticle") {
+      check(
+        node.isPartOf?.["@type"] !== "TechArticle",
+        `${file}: TechArticle declares itself part of another TechArticle, which is not a containment schema.org recognises`,
+      );
+    }
+  }
+}
+check(blocks > 0, "no JSON-LD was found anywhere in the export");
+notes.push(`${blocks} JSON-LD blocks validated`);
 
 if (problems.length) {
   console.error("the export does not satisfy the citation contract:\n");

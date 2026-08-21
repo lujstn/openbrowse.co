@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${site.url}/`, priority: 1, changeFrequency: "weekly" },
     { url: `${site.url}/benchmarks`, priority: 0.9, changeFrequency: "monthly" },
     { url: `${site.url}/vs/browser-use-cloud`, priority: 0.9, changeFrequency: "monthly" },
+    { url: `${site.url}/vs/browser-use-cloud/pricing`, priority: 0.8, changeFrequency: "monthly" },
   ];
 
   const docs: MetadataRoute.Sitemap = source.getPages().map((page) => ({
