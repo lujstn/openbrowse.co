@@ -6,8 +6,6 @@
 
 This page is the map. Everything on it is observable in the live view, and each section links to the page that covers it in depth.
 
-Everything below describes an agent: you state an outcome and it works the site out for itself, deciding what to click and what to read until the answer is complete. That is the machinery you want when you do not already know which pages hold the answer, or when reaching them means logging in, filling a form, or opening a panel served from another domain. If you already know the URLs and only need their contents, a crawler is the simpler tool, and Firecrawl is the obvious one to reach for: hand it URLs, get clean page content back at scale. The line between the two is worth drawing because self-hosting sits on different sides of it. Firecrawl's open-source stack ships the crawl, scrape, map and search routes, while Agent, Browser, `interact` and `feedback` are among the capabilities their docs name Firecrawl Cloud for. Self-host theirs and you have the crawler. Self-host this and you have the agent.
-
 ## One session, one real browser
 
 When you create a session with a task, the instance allocates a **display slot**: a fresh Xvfb virtual display at 1920x1080, an `x11vnc` server attached to it, and a `websockify` bridge serving noVNC to your browser. It then launches a stealth-configured Chromium on that display, supplied by CloakBrowser, the library that provides the patched browser binary with its own user-data directory and a Chrome DevTools Protocol port, and connects the agent to it over CDP. This is why the live view shows a real browser rather than a replay: the stream is the actual X display the agent is working on.
