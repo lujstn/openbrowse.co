@@ -1,7 +1,7 @@
 import { readFile, readdir, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
-const REPO = process.env.OPENBROWSE_REPO ?? "../browser-use-raspberrypi";
+const REPO = process.env.OPENBROWSE_REPO ?? "../openbrowse";
 const PROSE_DIR = "./content/docs";
 const PROSE_EXTRA = ["./content/landing.ts"];
 

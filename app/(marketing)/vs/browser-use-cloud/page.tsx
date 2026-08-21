@@ -106,7 +106,11 @@ export default function Page() {
           <Link href="/benchmarks" className="text-accent hover:underline">
             benchmarks page
           </Link>
-          .
+          {". Shopping for a hosted browser to drive yourself rather than a hosted agent? "}
+          <Link href="/vs/browserbase" className="text-accent hover:underline">
+            The Browserbase comparison
+          </Link>
+          {" answers that one."}
         </p>
       </Section>
 

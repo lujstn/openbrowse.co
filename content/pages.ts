@@ -9,6 +9,7 @@ import {
   pricing,
 } from "@/content/landing";
 
+
 export type MarketingPage = {
   url: string;
   name: string;
@@ -57,5 +58,18 @@ export const marketingPages: MarketingPage[] = [
     summary:
       "A dimension-by-dimension comparison of the self-hosted runtime against the managed service, including the rows where the managed service wins.",
     headings: [headings.vs, headings.dimensions, dropIn.h2, headings.faqs],
+  },
+  {
+    url: "/vs/browserbase",
+    name: headings.vsBrowserbase,
+    summary:
+      "The open-source, self-hosted alternative to Browserbase for the agent buyer rather than the browser buyer: twelve dimensions split evenly, Browserbase's published rates read on a stated date, and an openly empty benchmark column.",
+    headings: [
+      headings.vsBrowserbase,
+      headings.dimensions,
+      headings.browserbaseCharges,
+      headings.measured,
+      headings.faqs,
+    ],
   },
 ];

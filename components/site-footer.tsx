@@ -18,6 +18,7 @@ const COLUMNS = [
     links: [
       { label: "Benchmarks", href: "/benchmarks" },
       { label: "vs Browser Use Cloud", href: "/vs/browser-use-cloud" },
+      { label: "vs Browserbase", href: "/vs/browserbase" },
       { label: "Pricing compared", href: "/vs/browser-use-cloud/pricing" },
     ],
   },

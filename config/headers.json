@@ -31,6 +31,13 @@
       }
     },
     {
+      "source": "/vs/browserbase/opengraph-image-(.*)",
+      "headers": {
+        "Content-Type": "image/png",
+        "Cache-Control": "public, max-age=86400"
+      }
+    },
+    {
       "source": "/og/docs/(.*)",
       "headers": {
         "Content-Type": "image/png",

@@ -1,4 +1,5 @@
 import release from "@/data/release.json";
+import browserbasePricing from "@/data/browserbase-pricing.json";
 import {
   baseline,
   champion,
@@ -75,6 +76,9 @@ export const headings = {
   selfHostCosts: "What the same work costs self-hosted",
   multiplier: "The multiplier is the whole story",
   vs: "OpenBrowse vs Browser Use Cloud",
+  vsBrowserbase: "OpenBrowse vs Browserbase",
+  browserbaseCharges: "What Browserbase charges",
+  measured: "What we have measured, and what we have not",
 } as const;
 
 export const benchmark = {
@@ -217,6 +221,135 @@ export const comparison = {
   moreHref: "/vs/browser-use-cloud",
 } as const;
 
+export const browserbaseCaptured = new Date(browserbasePricing.capturedOn).toLocaleDateString(
+  "en-GB",
+  { day: "numeric", month: "long", year: "numeric" },
+);
+
+// @nonobvious(must-hold) the concession about the connect endpoint is the first thing this page says, above
+// the table and above the pitch, because the query it answers is typed by people shopping for a remote
+// browser to attach their own code to. A visitor who reads the pitch, migrates, and only then discovers
+// there is nothing to connect to has been misled by omission, and a bounce costs more than the click earned.
+export const browserbase = {
+  h1: headings.vsBrowserbase,
+  standfirst:
+    "Browserbase rents you a browser to drive. OpenBrowse is the driver, on hardware you already own: MIT licensed, no session meter, no egress bill.",
+  noCdp: {
+    label: "Read this first",
+    title: "OpenBrowse exposes no CDP connect endpoint.",
+    body: "Browserbase hands you a browser and a websocket, and your own code drives it. OpenBrowse has no equivalent: you describe the job in words and the agent drives the browser itself. Playwright, Puppeteer or Stagehand code you have already written does not port across, it gets rewritten. If a remote browser for your own script is what you actually want, Steel is the closer open-source answer and this page is not for you. It is for the buyer who was going to build an agent on top of a rented browser.",
+  },
+  rows: [
+    {
+      dimension: "Connecting your own code",
+      browserbase:
+        "A CDP websocket per session. Point Playwright, Puppeteer or any CDP client at connectUrl and drive it yourself",
+      openbrowse:
+        "No connect endpoint at all. You write the task in words and the agent drives, so existing browser-automation code is a rewrite rather than a port",
+      note: "Steel is the better choice for this: Apache 2.0, self-hostable, and built for agents.",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Network egress",
+      browserbase:
+        "Managed residential proxies with country targeting across 201 countries, and state or city where it is available",
+      openbrowse:
+        "Your machine's own IP address. There is no proxy layer, and nothing to select a country with",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Session records",
+      browserbase:
+        "Every session recorded as replayable video, plus screenshots and an inspector carrying the network and console timeline",
+      openbrowse:
+        "Live only. Real-time VNC of the browser and a feed of the model's reasoning while it runs, and nothing kept once it ends",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Bot protection",
+      browserbase:
+        "Verified sessions with real fingerprints, automatic solving of supported CAPTCHAs, and a Cloudflare signed-agent integration",
+      openbrowse:
+        "A stealth-configured Chromium, and CAPTCHA solving only if you bring a CapSolver key. Nothing negotiated with the protection vendors",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Concurrency",
+      browserbase:
+        "3 concurrent browsers on Free, 25 on Developer, 100 on Startup, and 250 or more on Scale",
+      openbrowse:
+        "One by default and a hard ceiling of eight, however large the machine, at roughly 2GB of memory each",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Operations and compliance",
+      browserbase:
+        "A public status page, SOC 2 Type II, and HIPAA, SSO and a DPA on the top tier. No numeric uptime SLA is published",
+      openbrowse:
+        "Yours. A machine that has to stay up, no attestation of any kind, and nobody to escalate to",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Licence",
+      browserbase:
+        "The browser infrastructure is proprietary. Stagehand and the client SDKs are open source, but there is no server to run",
+      openbrowse: "MIT, the whole server, with a DOI so it can be cited",
+      advantage: "openbrowse",
+    },
+    {
+      dimension: "Metering",
+      browserbase:
+        "Browser-hours, proxy gigabytes, Search calls, Fetch calls, agent runs and retention days, each metered separately",
+      openbrowse:
+        "Nothing is metered. The only variable line is the LLM tokens you were going to buy anyway",
+      advantage: "openbrowse",
+    },
+    {
+      dimension: "The agent",
+      browserbase:
+        "Browserbase Agents is hosted, on an undisclosed model, and rationed as a monthly run allowance. Stagehand and Director are frameworks whose loop you host on your own key",
+      openbrowse:
+        "The agent is the product. No run allowance, and you choose the model and hold the key",
+      advantage: "openbrowse",
+    },
+    {
+      dimension: "Where the data goes",
+      browserbase:
+        "Every page the browser loads crosses their cloud. There is no on-premises or bring-your-own-cloud deployment",
+      openbrowse:
+        "The browser, the pages and the extracted data stay on your machine. Only the model calls leave it",
+      advantage: "openbrowse",
+    },
+    {
+      dimension: "Structured output",
+      browserbase:
+        "Stagehand's extract validates the shape against a schema, so a wrong value of the right type passes",
+      openbrowse:
+        "Schema-validated too, then gated: values with no evidence on the page are refused at the answer-store boundary, and the agent cannot finish until every required field is filled or explicitly marked absent",
+      advantage: "openbrowse",
+    },
+    {
+      dimension: "Bulk page reads",
+      browserbase:
+        "One URL per Fetch call, and Fetch runs no JavaScript. Reading a listing in parallel is something you build",
+      openbrowse:
+        "read_pages opens up to 48 URLs in parallel waves of six real tabs, including inside embedded cross-origin panels",
+      advantage: "openbrowse",
+    },
+  ],
+  columnNote: `Browserbase as their own pricing page and documentation described it on ${browserbaseCaptured}.`,
+  pricingLead:
+    "Browserbase sells a monthly plan that buys concurrency and an allowance, then meters six things on top of it. These are the published rates:",
+  // @nonobvious(must-hold) the Browserbase column of the measurement table is empty and labelled, rather than
+  // filled with a qualitative claim. We measured Browser Use Cloud and have not measured this, and an admitted
+  // gap in a column of numbers is credible where a hedge in the same column reads as a concealed loss.
+  measuredLead:
+    "One thing this page will not do is imply a measurement it does not have. The benchmark below is a real, repeatable extraction task, and it has been run against Browser Use Cloud and against OpenBrowse. It has not been run against Browserbase.",
+  notMeasured: "Not yet measured",
+  measuredNote:
+    "Until that column is filled in, treat the comparison above as an architectural one rather than a performance one.",
+} as const;
+
 // @nonobvious(must-hold) these two paths are the llmstxt.org contract and are also asserted by scripts/check-export.mjs; renaming either one silently breaks retrievers that look for them by convention
 // @nonobvious(must-hold) every figure this page renders comes from data/cloud-pricing.json and is stamped
 // with the date it was read, because a competitor's prices change without telling you and an undated quote of
@@ -338,5 +471,9 @@ export const faq = [
   {
     q: "Is OpenBrowse affiliated with Browser Use, and how is it licensed?",
     a: "No, it is independent, and built on Browser Use's own open-source SDK. MIT licensed, with a DOI so it can be cited.",
+  },
+  {
+    q: "How is this different from Firecrawl?",
+    a: "Different job. Firecrawl is a web data API: hand it URLs and it returns clean page content at scale. OpenBrowse is an agent: describe an outcome and it works the site out for itself, clicking and reading until the answer is complete. Know which pages you want and a crawler is the right tool. If you are weighing up self-hosting theirs, their own docs are the honest dividing line: the open-source stack ships crawl and scrape, while Agent, Browser, interact and feedback are listed as reasons to use Firecrawl Cloud.",
   },
 ];
