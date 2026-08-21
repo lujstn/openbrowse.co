@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Section, SectionHead } from "@/components/section";
 import { Panel } from "@/components/ui";
-import { CompareStat } from "@/components/compare-stat";
-import { BenchmarkTable } from "@/components/benchmark-table";
+import { HeadlineStats } from "@/components/headline-stats";
 import { FaqList } from "@/components/sections";
 import { JsonLd } from "@/components/json-ld";
 import { breadcrumb, faqPage, techArticle } from "@/lib/schema";
@@ -22,7 +21,11 @@ import {
 } from "@/lib/benchmark";
 
 const TITLE = headings.vs;
-const DESCRIPTION = `A dimension-by-dimension comparison of the self-hosted open-source runtime against the managed service, including measured cost, token and latency differences on an identical extraction task.`;
+// @nonobvious(must-hold) the tab title carries "alternative" and the H1 does not: the H1 names what the page
+// is to someone already reading it, while the phrase a prospective migrator actually types is "Browser Use
+// Cloud alternative", and this is the only page on the site built to answer it
+const SEO_TITLE = `${headings.vs}: the open-source alternative`;
+const DESCRIPTION = `The open-source alternative to Browser Use Cloud, dimension by dimension: measured cost, token and latency differences on one identical extraction task.`;
 
 // @nonobvious(must-hold) the matched pair is interpolated and the whole clause disappears if no same-model row exists, rather than degrading to a hand-written figure: this answer is emitted as FAQPage JSON-LD, so a stale number here is a false claim in Google's structured data
 const matchedPair = likeForLike
@@ -57,12 +60,12 @@ const FAQ = [
 ];
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: SEO_TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/vs/browser-use-cloud" },
   openGraph: {
     ...articleOpenGraph,
-    title: TITLE,
+    title: SEO_TITLE,
     description: DESCRIPTION,
     url: `${site.url}/vs/browser-use-cloud`,
   },
@@ -77,7 +80,7 @@ export default function Page() {
     <>
       <JsonLd
         data={techArticle({
-          title: TITLE,
+          title: SEO_TITLE,
           description: DESCRIPTION,
           url: "/vs/browser-use-cloud",
         })}
@@ -94,39 +97,10 @@ export default function Page() {
         <SectionHead
           level={1}
           title={TITLE}
-          standfirst="Both run AI browser agents behind the same v3 API. The difference is who owns the machine, and what the agent is allowed to invent."
+          standfirst="The open-source alternative to Browser Use Cloud, dimension by dimension. Both run AI browser agents behind the same v3 API. The difference is who owns the machine, and what the agent is allowed to invent."
         />
 
-        <div className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <CompareStat
-            label="What it cost"
-            ours={champion.costUsd}
-            theirs={baseline.costUsd}
-            ourValue={`$${champion.costUsd.toFixed(2)}`}
-            theirValue={`$${baseline.costUsd.toFixed(2)}`}
-            saving={percentLess(baseline.costUsd, champion.costUsd)}
-          />
-          <CompareStat
-            label="Tokens burned"
-            ours={champion.tokens}
-            theirs={baseline.tokens}
-            ourValue={champion.tokensDisplay}
-            theirValue={baseline.tokensDisplay}
-            saving={percentLess(baseline.tokens, champion.tokens)}
-          />
-          <CompareStat
-            label="Time to finish"
-            ours={champion.seconds}
-            theirs={baseline.seconds}
-            ourValue={champion.timeDisplay}
-            theirValue={baseline.timeDisplay}
-            saving={percentFaster(baseline.seconds, champion.seconds)}
-          />
-        </div>
-
-        <Panel label="Identical task, identical schema, identical cost cap" padded={false}>
-          <BenchmarkTable rows={headlineRuns} highlight={champion.id} />
-        </Panel>
+        <HeadlineStats />
         <p className="mt-6 max-w-[76ch] text-[15px] leading-relaxed text-muted">
           {`All ${runs.length} runs, every model tried, and the exact task specification are on the `}
           <Link href="/benchmarks" className="text-accent hover:underline">

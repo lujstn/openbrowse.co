@@ -6,6 +6,7 @@ import { CONTAINER } from "@/components/section";
 
 const LINKS = [
   { label: "Benchmarks", href: "/benchmarks" },
+  { label: "vs Browser Use Cloud", href: "/vs/browser-use-cloud" },
   { label: "Docs", href: "/docs" },
 ];
 

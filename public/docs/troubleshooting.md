@@ -1,6 +1,6 @@
 # Troubleshooting
 
-> Fixes for the failures that actually happen: Chromium not launching, a blank VNC view, authentication errors, sessions stopping early, running out of memory, and updates that will not install.
+> Fixes for the failures that actually happen: Chromium not launching, a blank VNC view, sessions stopping early, and updates that will not install.
 
 *Source: https://openbrowse.co/docs/troubleshooting*
 

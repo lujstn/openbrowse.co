@@ -21,11 +21,12 @@ import {
 } from "@/lib/benchmark";
 
 const TITLE = evidence.title;
-// @nonobvious(must-hold) the tab title and the H1 are deliberately different: the H1 names the section a
-// reader has landed in, while the title tag is the string that has to win a search for browser agent
-// benchmarks, and "Benchmarks" alone ranks for nothing
-const SEO_TITLE = `Browser agent benchmarks: cost, tokens and latency across ${shape.runs} runs`;
-const DESCRIPTION = `${shape.runs} runs of one real extraction task across ${shape.runtimes} runtimes, ${shape.models} models and ${shape.reasoningLevels} reasoning levels, plus which model to use for browser work and how much reasoning to give it.`;
+// @nonobvious(must-hold) the tab title and the H1 say the same thing at different lengths rather than
+// different things: the H1 has to name the section a reader has landed in, the title tag has to win a search
+// for browser agent benchmarks, and both now carry the term. The run count is interpolated in both, because a
+// hand-typed count is the first thing to drift when a row is added.
+const SEO_TITLE = `Browser agent benchmarks: ${shape.runs} runs, measured`;
+const DESCRIPTION = `${shape.runs} runs of one real extraction task across ${shape.runtimes} runtimes and ${shape.models} models, plus which model to reach for and how much reasoning to give it.`;
 
 export const metadata: Metadata = {
   title: SEO_TITLE,

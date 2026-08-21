@@ -1,6 +1,6 @@
 # Solving CAPTCHAs
 
-> How OpenBrowse detects and solves CAPTCHAs through CapSolver: which challenge types are solved, which are only recognised, what a solve costs, and why a solved checkbox never visibly ticks.
+> How OpenBrowse solves CAPTCHAs through CapSolver: which types are solved, which are only recognised, what a solve costs, and why the checkbox never ticks.
 
 *Source: https://openbrowse.co/docs/captchas*
 

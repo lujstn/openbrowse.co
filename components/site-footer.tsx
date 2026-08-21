@@ -25,6 +25,7 @@ const COLUMNS = [
     links: [
       { label: "Source", href: site.repo },
       { label: "Issues", href: `${site.repo}/issues` },
+      { label: "PyPI", href: site.pypi },
     ],
   },
 ];

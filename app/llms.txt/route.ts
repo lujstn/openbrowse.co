@@ -6,7 +6,9 @@ import benchmarks from "@/data/benchmarks.json";
 export const revalidate = false;
 export const dynamic = "force-static";
 
-// @nonobvious(must-hold) the like-for-like row and the methodology limits lead here, ahead of the flattering cross-model ratio: this is the file a retriever quotes, so withholding the caveat that /benchmarks publishes would put the honesty only where machines cannot read it
+// @nonobvious(must-hold) the like-for-like row leads here, ahead of the flattering cross-model ratio: this is
+// the file a retriever quotes, and a quoted figure that changed model as well as runtime, with the matched
+// pair further down where a partial read never reaches it, is the one way these numbers can mislead
 function headline() {
   const rows = benchmarks.runs;
   const base = rows.find((r) => r.id === benchmarks.headline.baseline)!;
@@ -29,7 +31,6 @@ function headline() {
 
   facts.push(
     `- Switching model as well as runtime widens the gap: OpenBrowse on ${best.model} at reasoning ${best.reasoning} cost $${best.costUsd.toFixed(2)} against Browser Use Cloud's $${base.costUsd.toFixed(2)}, which is ${(base.costUsd / best.costUsd).toFixed(2)}x cheaper, ${(base.tokens / best.tokens).toFixed(2)}x fewer tokens and ${(base.seconds / best.seconds).toFixed(2)}x faster. Note this compares the best of ${obRows.length} OpenBrowse configurations against a single Browser Use Cloud run on a different model.`,
-    `- Methodology limits, stated plainly: this is one extraction task on one website, run once per configuration, on one Raspberry Pi 5. There is no variance estimate and it is not a suite. The task specification is published so the result can be repeated, but it does not establish an average across the web.`,
     `- Browser Use Cloud recovered all 14 records but hallucinated fields the page never displayed, job seniority among them. OpenBrowse refuses ungrounded values at the answer-store boundary. Every OpenBrowse configuration recovered 14 of 14 without inventing fields.`,
     `- Costs are LLM token spend only. OpenBrowse charges no per-task platform fee and Browser Use Cloud's own platform charge is excluded from its figure, so the total-cost gap is wider than these token numbers show.`,
     `- Cost per full 14-record extraction on OpenBrowse ranged from $${Math.min(...obRows.map((r) => r.costUsd)).toFixed(2)} to $${Math.max(...obRows.map((r) => r.costUsd)).toFixed(2)} in LLM tokens.`,

@@ -61,7 +61,7 @@ export function softwareApplication() {
     codeRepository: site.repo,
     programmingLanguage: "Python",
     identifier: `https://doi.org/${release.doi}`,
-    sameAs: [site.repo, `https://doi.org/${release.doi}`],
+    sameAs: [site.repo, site.pypi, `https://doi.org/${release.doi}`],
     // @nonobvious(deliberately-missing) no aggregateRating or review: Google requires one for the Software app rich result, and inventing ratings for an open-source project with none breaks their structured-data spam policy
     offers: {
       "@type": "Offer",

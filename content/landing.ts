@@ -21,6 +21,7 @@ export const site = {
   domain: "openbrowse.co",
   url: "https://openbrowse.co",
   repo: "https://github.com/lujstn/openbrowse",
+  pypi: "https://pypi.org/project/openbrowse/",
   doi: release.doi,
   doiUrl: `https://doi.org/${release.doi}`,
   orcid: release.orcid,
@@ -30,6 +31,11 @@ export const site = {
   tagline: "The open-source Browser Use Cloud alternative",
   abstract:
     "OpenBrowse is an open-source, self-hosted alternative to Browser Use Cloud: AI browser agents that run on your own hardware, driven through the v3 REST API, with schema-validated structured output, anti-hallucination grounding guards, and a live visual dashboard.",
+  // @nonobvious(forced-by) the abstract above is the right length for JSON-LD and llms.txt, where a retriever
+  // benefits from every clause, and far too long for a search result, which cuts it mid-sentence. They are two
+  // strings because they are answering two different readers, not because either one is wrong.
+  metaDescription:
+    "The open-source Browser Use Cloud alternative: AI browser agents on your own hardware, same v3 REST API, schema-validated output, nothing invented.",
 } as const;
 
 export const hero = {
@@ -75,7 +81,10 @@ export const benchmark = {
 } as const;
 
 export const evidence = {
-  title: "Benchmarks",
+  // @nonobvious(must-hold) this is the H1, the breadcrumb name and the page-map entry, all from one string.
+  // The header and footer keep the short "Benchmarks" label, because a nav item is read in a list where the
+  // surrounding items supply the context an H1 has to carry alone.
+  title: "Browser agent benchmarks",
   // @nonobvious(must-hold) every figure in this block is interpolated: these sentences render inches from the runs table and are inlined verbatim into llms-full.txt, so a typed number here contradicts the table beside it the first time a run changes
   intro: (shape: { runs: number; runtimes: number; models: number }) =>
     `One real extraction task, ${shape.runs} runs, ${shape.runtimes} runtimes, ${shape.models} models. A careers page listing ${task.recordsExpected} vacancies whose listings live inside an embedded job board on another domain, so a naive read of the page returns nothing at all. Every run had the same schema, the same spending cap, and had to come back with all ${task.recordsExpected}.`,
@@ -254,7 +263,11 @@ export const faq = [
   },
   {
     q: "What does it cost to run?",
-    a: `Just LLM tokens: no platform fee, and maxCostUsd hard-caps any session. Our benchmark job cost $${champion.costUsd.toFixed(2)} here against $${baseline.costUsd.toFixed(2)} on the cloud.`,
+    // @nonobvious(must-hold) the matched pair is interpolated and the clause disappears entirely if no
+    // same-model row exists, exactly as the comparison page does it: this answer is emitted verbatim as
+    // FAQPage JSON-LD, so quoting a cross-model pair without saying so puts an unqualified claim where
+    // retrievers copy it word for word
+    a: `Just LLM tokens: no platform fee, and maxCostUsd hard-caps any session. Our benchmark job cost $${champion.costUsd.toFixed(2)} here against $${baseline.costUsd.toFixed(2)} on the cloud, though that pair changes model as well as runtime.${likeForLike ? ` Holding the model steady, ${likeForLike.cloud.model} at reasoning ${likeForLike.cloud.reasoning} cost $${likeForLike.openbrowse.costUsd.toFixed(2)} here against $${likeForLike.cloud.costUsd.toFixed(2)} there.` : ""}`,
     link: { label: "See the benchmark", href: "/benchmarks" },
   },
   {
