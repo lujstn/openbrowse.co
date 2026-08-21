@@ -27,6 +27,7 @@
           "profiles"
         ],
         "summary": "Create Profile",
+        "description": "Create an empty profile, with no cookies and no per-origin storage yet. Fill it by importing a cookie jar, or by letting a session log in while using it.",
         "operationId": "create_profile_v3_profiles_post",
         "security": [
           {
@@ -96,6 +97,7 @@
           "profiles"
         ],
         "summary": "List Profiles",
+        "description": "List profiles, paginated, with an optional query to narrow the results.",
         "operationId": "list_profiles_v3_profiles_get",
         "security": [
           {
@@ -186,6 +188,7 @@
           "profiles"
         ],
         "summary": "Get Profile",
+        "description": "Fetch a single profile by id. Returns 404 if no profile has that id.",
         "operationId": "get_profile_v3_profiles__profile_id__get",
         "security": [
           {
@@ -247,6 +250,7 @@
           "profiles"
         ],
         "summary": "Update Profile",
+        "description": "Update a profile's editable fields. PUT and PATCH behave identically here: both apply only the fields present in the request body.",
         "operationId": "update_profile_v3_profiles__profile_id__put",
         "security": [
           {
@@ -318,6 +322,7 @@
           "profiles"
         ],
         "summary": "Update Profile",
+        "description": "Update a profile's editable fields. PUT and PATCH behave identically here: both apply only the fields present in the request body.",
         "operationId": "update_profile_v3_profiles__profile_id__patch",
         "security": [
           {
@@ -389,6 +394,7 @@
           "profiles"
         ],
         "summary": "Delete Profile",
+        "description": "Delete a profile and the browser state stored against it. The cookies and per-origin storage go with it.",
         "operationId": "delete_profile_v3_profiles__profile_id__delete",
         "security": [
           {
@@ -519,6 +525,7 @@
           "sessions"
         ],
         "summary": "Create Session",
+        "description": "Start a browser session and give the agent its task. The run begins immediately, and the response carries the session id you poll for progress.",
         "operationId": "create_session_v3_sessions_post",
         "security": [
           {
@@ -588,6 +595,7 @@
           "sessions"
         ],
         "summary": "List Sessions",
+        "description": "List sessions with their current status, paginated. Running and finished sessions are both included.",
         "operationId": "list_sessions_v3_sessions_get",
         "security": [
           {
@@ -665,6 +673,7 @@
           "sessions"
         ],
         "summary": "Get Session",
+        "description": "Fetch one session by id, with its status, step count, live view URL and structured output as they stand right now.",
         "operationId": "get_session_v3_sessions__session_id__get",
         "security": [
           {
@@ -726,6 +735,7 @@
           "sessions"
         ],
         "summary": "Delete Session",
+        "description": "Cancel the session if it is still running, then delete it and everything stored against it.",
         "operationId": "delete_session_v3_sessions__session_id__delete",
         "security": [
           {
@@ -782,6 +792,7 @@
           "sessions"
         ],
         "summary": "List Messages",
+        "description": "Read the messages a session has produced, paged with after, before and limit, for following a run live or diagnosing one afterwards.",
         "operationId": "list_messages_v3_sessions__session_id__messages_get",
         "security": [
           {
@@ -889,6 +900,7 @@
           "sessions"
         ],
         "summary": "Stop Session",
+        "description": "Cancel a running session and close its browser. The default leaves it stopped; strategy \"task\" leaves it idle, so a later call can give it new work.",
         "operationId": "stop_session_v3_sessions__session_id__stop_post",
         "security": [
           {

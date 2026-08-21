@@ -4,7 +4,7 @@
 
 *Source: https://openbrowse.co/docs/api/v3/profiles/profile_id/patch*
 
-
+Update a profile's editable fields. PUT and PATCH behave identically here: both apply only the fields present in the request body.
 
 ## Request
 

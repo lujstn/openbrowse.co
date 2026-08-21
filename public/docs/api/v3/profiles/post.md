@@ -4,7 +4,7 @@
 
 *Source: https://openbrowse.co/docs/api/v3/profiles/post*
 
-
+Create an empty profile, with no cookies and no per-origin storage yet. Fill it by importing a cookie jar, or by letting a session log in while using it.
 
 ## Request
 

@@ -4,7 +4,7 @@
 
 *Source: https://openbrowse.co/docs/api/v3/sessions/post*
 
-
+Start a browser session and give the agent its task. The run begins immediately, and the response carries the session id you poll for progress.
 
 ## Request
 

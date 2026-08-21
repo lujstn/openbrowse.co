@@ -4,7 +4,7 @@
 
 *Source: https://openbrowse.co/docs/api/v3/profiles/get*
 
-
+List profiles, paginated, with an optional query to narrow the results.
 
 ## Request
 
