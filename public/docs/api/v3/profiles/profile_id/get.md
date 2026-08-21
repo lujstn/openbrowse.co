@@ -4,7 +4,7 @@
 
 *Source: https://openbrowse.co/docs/api/v3/profiles/profile_id/get*
 
-
+Fetch a single profile by id. Returns 404 if no profile has that id.
 
 ## Request
 

@@ -4,7 +4,7 @@
 
 *Source: https://openbrowse.co/docs/api/v3/sessions/session_id/stop/post*
 
-
+Cancel a running session and close its browser. The default leaves it stopped; strategy "task" leaves it idle, so a later call can give it new work.
 
 ## Request
 

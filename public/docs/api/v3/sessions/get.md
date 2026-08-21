@@ -4,7 +4,7 @@
 
 *Source: https://openbrowse.co/docs/api/v3/sessions/get*
 
-
+List sessions with their current status, paginated. Running and finished sessions are both included.
 
 ## Request
 

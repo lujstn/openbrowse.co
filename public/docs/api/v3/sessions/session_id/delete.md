@@ -4,7 +4,7 @@
 
 *Source: https://openbrowse.co/docs/api/v3/sessions/session_id/delete*
 
-
+Cancel the session if it is still running, then delete it and everything stored against it.
 
 ## Request
 

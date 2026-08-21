@@ -4,7 +4,7 @@
 
 *Source: https://openbrowse.co/docs/api/v3/profiles/profile_id/delete*
 
-
+Delete a profile and the browser state stored against it. The cookies and per-origin storage go with it.
 
 ## Request
 

@@ -4,7 +4,7 @@
 
 *Source: https://openbrowse.co/docs/api/v3/sessions/session_id/messages/get*
 
-
+Read the messages a session has produced, paged with after, before and limit, for following a run live or diagnosing one afterwards.
 
 ## Request
 
