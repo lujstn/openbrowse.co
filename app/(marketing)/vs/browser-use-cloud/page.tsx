@@ -25,7 +25,7 @@ const TITLE = headings.vs;
 // is to someone already reading it, while the phrase a prospective migrator actually types is "Browser Use
 // Cloud alternative", and this is the only page on the site built to answer it
 const SEO_TITLE = `${headings.vs}: the open-source alternative`;
-const DESCRIPTION = `The open-source alternative to Browser Use Cloud, dimension by dimension: measured cost, token and latency differences on one identical extraction task.`;
+const DESCRIPTION = `The open-source alternative to Browser Use Cloud, dimension by dimension: measured cost, token and latency differences on our extraction benchmark task.`;
 
 // @nonobvious(must-hold) the matched pair is interpolated and the whole clause disappears if no same-model row exists, rather than degrading to a hand-written figure: this answer is emitted as FAQPage JSON-LD, so a stale number here is a false claim in Google's structured data
 const matchedPair = likeForLike
@@ -39,11 +39,11 @@ const FAQ = [
   },
   {
     q: "How much cheaper is OpenBrowse in practice?",
-    a: `On the reference extraction task OpenBrowse completed the same work for $${champion.costUsd.toFixed(2)} in LLM tokens against $${baseline.costUsd.toFixed(2)} for Browser Use Cloud, using ${formatRatio(delta.tokens)} fewer tokens and finishing ${percentFaster(baseline.seconds, champion.seconds)}.${matchedPair} OpenBrowse charges no per-task platform fee, so the total gap is larger than the token comparison alone.`,
+    a: `On our extraction benchmark task, OpenBrowse completed the same work for $${champion.costUsd.toFixed(2)} in LLM tokens against $${baseline.costUsd.toFixed(2)} for Browser Use Cloud, using ${formatRatio(delta.tokens)} fewer tokens and finishing ${percentFaster(baseline.seconds, champion.seconds)}.${matchedPair} OpenBrowse charges no per-task platform fee, so the total gap is larger than the token comparison alone.`,
   },
   {
     q: "Where does the token gap actually come from?",
-    a: "read_pages opens a listing in parallel waves of up to six real tabs and reads inside embedded cross-origin panels, which is most of the token gap. Structured output is a live answer store rather than a final validation pass, with per-field coverage and a completeness gate the agent has to pass before it can finish. Values with no evidence on the page are refused at that boundary, which is why the cloud run invented job seniority on the reference task and this one did not.",
+    a: "read_pages opens a listing in parallel waves of up to six real tabs and reads inside embedded cross-origin panels, which is most of the token gap. Structured output is a live answer store rather than a final validation pass, with per-field coverage and a completeness gate the agent has to pass before it can finish. Values with no evidence on the page are refused at that boundary, which is why the cloud run invented job seniority on our benchmark task and this one did not.",
   },
   {
     q: "Can I migrate my existing profiles?",
@@ -106,7 +106,11 @@ export default function Page() {
           <Link href="/benchmarks" className="text-accent hover:underline">
             benchmarks page
           </Link>
-          .
+          {". Shopping for a hosted browser to drive yourself rather than a hosted agent? "}
+          <Link href="/vs/browserbase" className="text-accent hover:underline">
+            The Browserbase comparison
+          </Link>
+          {" answers that one."}
         </p>
       </Section>
 

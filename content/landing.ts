@@ -1,4 +1,5 @@
 import release from "@/data/release.json";
+import browserbasePricing from "@/data/browserbase-pricing.json";
 import {
   baseline,
   champion,
@@ -44,7 +45,7 @@ export const hero = {
   primary: { label: "Get started", href: "/docs" },
   secondary: { label: "View source", href: site.repo },
   videoCaption:
-    "One real run of the benchmark task, at full speed. The agent works across parallel tabs on the left while the sandbox scripts it writes stream into the panel on the right.",
+    "One run of our benchmark task, at full speed. The agent works across parallel tabs on the left while the sandbox scripts it writes stream into the panel on the right.",
 } as const;
 
 // @nonobvious(mirrors) the quick start from the upstream README, kept identical to it because someone who
@@ -75,12 +76,15 @@ export const headings = {
   selfHostCosts: "What the same work costs self-hosted",
   multiplier: "The multiplier is the whole story",
   vs: "OpenBrowse vs Browser Use Cloud",
+  vsBrowserbase: "OpenBrowse vs Browserbase",
+  browserbaseCharges: "What Browserbase charges",
+  measured: "Measured, on a task anyone can rerun",
 } as const;
 
 export const benchmark = {
   h2: "Cheaper, faster, hallucination-resistant.",
   standfirst:
-    "You get the same result for a fraction of the spend, in less time, with nothing in it the page did not actually say. Here is one real extraction task where we measured all three.",
+    "The same result for a fraction of the spend, in less time, with nothing in it the page did not say. Our extraction benchmark measures all three.",
 } as const;
 
 export const evidence = {
@@ -90,7 +94,7 @@ export const evidence = {
   title: "Browser agent benchmarks",
   // @nonobvious(must-hold) every figure in this block is interpolated: these sentences render inches from the runs table and are inlined verbatim into llms-full.txt, so a typed number here contradicts the table beside it the first time a run changes
   intro: (shape: { runs: number; runtimes: number; models: number }) =>
-    `One real extraction task, ${shape.runs} runs, ${shape.runtimes} runtimes, ${shape.models} models. A careers page listing ${task.recordsExpected} vacancies whose listings live inside an embedded job board on another domain, so a naive read of the page returns nothing at all. Every run had the same schema, the same spending cap, and had to come back with all ${task.recordsExpected}.`,
+    `Our extraction benchmark task, ${shape.runs} runs, ${shape.runtimes} runtimes, ${shape.models} models. A careers page listing ${task.recordsExpected} vacancies whose listings live inside an embedded job board on another domain, so a naive read of the page returns nothing at all. Every run had the same schema, the same spending cap, and had to come back with all ${task.recordsExpected}.`,
   honesty: `Every OpenBrowse run recovered all ${task.recordsExpected} records without inventing a field. Browser Use Cloud recovered all ${task.recordsExpected} too, and populated values the page never displayed, job seniority among them.`,
   costsNote:
     "Costs are LLM token spend. OpenBrowse charges nothing on top, and Browser Use Cloud's own platform fee is not in its figure, so the real difference in what you pay is wider than this.",
@@ -217,6 +221,150 @@ export const comparison = {
   moreHref: "/vs/browser-use-cloud",
 } as const;
 
+export const browserbaseCaptured = new Date(browserbasePricing.capturedOn).toLocaleDateString(
+  "en-GB",
+  { day: "numeric", month: "long", year: "numeric" },
+);
+
+// @nonobvious(must-hold) the connect-endpoint concession is stated in body text under the proof strip rather
+// than in a panel above it. The fact has to stay on the first screen, because someone shopping for a remote
+// browser to attach their own code to has to be able to leave before migrating, and a bounce costs less than
+// a misled buyer. What it must not do is be the first thing the page asserts about itself.
+export const browserbase = {
+  h1: headings.vsBrowserbase,
+  standfirst:
+    "Browserbase rents you a browser to drive. OpenBrowse is the driver: an MIT-licensed, self-hosted agent that runs on hardware you already own, meters nothing, and keeps every page it opens inside your network.",
+  scope:
+    "OpenBrowse is the agent, not the browser. You post the job in plain words and it drives itself, so there is no CDP connect endpoint and no place to attach Playwright, Puppeteer or Stagehand code you have already written. That is the trade this page is about. If you want a remote browser to run your own automation on, Browserbase is built for exactly that. If the agent is the part you were going to build, read on.",
+  rows: [
+    {
+      dimension: "The agent",
+      browserbase:
+        "Browserbase Agents is hosted, on an undisclosed model, and rationed as a monthly run allowance. Stagehand is the framework whose loop you host yourself, on your own key",
+      openbrowse:
+        "The agent is the whole product, not an allowance bolted onto a browser. You pick the model, you hold the key, and you run it as often as the hardware allows",
+      advantage: "openbrowse",
+    },
+    {
+      dimension: "Bulk page reads",
+      browserbase:
+        "One URL per Fetch call, and Fetch runs no JavaScript. Reading a listing in parallel is something you build",
+      openbrowse:
+        "read_pages opens up to 48 URLs in parallel waves of six real tabs, including inside embedded cross-origin panels",
+      advantage: "openbrowse",
+    },
+    {
+      dimension: "Structured output",
+      browserbase:
+        "Stagehand's extract validates the shape against a schema, so a wrong value of the right type passes",
+      openbrowse:
+        "Schema-validated, then evidence-gated: a value with nothing behind it on the page is refused at the answer-store boundary, and the agent cannot finish until every required field is filled or explicitly marked absent",
+      advantage: "openbrowse",
+    },
+    {
+      dimension: "Metering",
+      browserbase:
+        "Browser-hours, proxy gigabytes, Search calls, Fetch calls, agent runs and retention days, each metered separately",
+      openbrowse:
+        "Nothing is metered at all. The only variable line on the bill is LLM tokens you were buying from the provider anyway, at their price, on your key",
+      advantage: "openbrowse",
+    },
+    {
+      dimension: "Connecting your own code",
+      browserbase:
+        "A CDP websocket per session. Point Playwright, Puppeteer or any CDP client at connectUrl and drive it yourself",
+      openbrowse:
+        "By design, none. You state the outcome and the agent works the site out for itself, so there is nothing to attach an existing script to",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Network egress",
+      browserbase:
+        "Managed residential proxies with country targeting across 201 countries, and state or city where it is available",
+      openbrowse:
+        "Your machine's own IP, with no proxy layer and no country to select. On sites that do not gate by geography, that is one less hop and one less bill",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Bot protection",
+      browserbase:
+        "Verified sessions with real fingerprints, automatic solving of supported CAPTCHAs, and a Cloudflare signed-agent integration",
+      openbrowse:
+        "A stealth-configured Chromium, and CAPTCHA solving on your own CapSolver key. No agreements with the protection vendors behind it",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Session records",
+      browserbase:
+        "Every session recorded as replayable video, plus screenshots and an inspector carrying the network and console timeline",
+      openbrowse:
+        "Real-time VNC of the actual browser, a feed carrying the model's reasoning, and an IDE panel streaming the sandbox scripts as the agent writes them. All of it live; nothing is kept once the session ends",
+      advantage: "neutral",
+    },
+    {
+      dimension: "Concurrency",
+      browserbase:
+        "3 concurrent browsers on Free, 25 on Developer, 100 on Startup, and 250 or more on Scale",
+      openbrowse:
+        "Up to eight concurrent sessions, one by default, at roughly 2GB of memory each",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Operations and compliance",
+      browserbase:
+        "A public status page, SOC 2 Type II, and HIPAA, SSO and a DPA on the top tier. No numeric uptime SLA is published",
+      openbrowse:
+        "Yours to run. There is no attestation and no support line, though there is also no vendor between you and the data, and every line of what is running is public and auditable",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Where the data goes",
+      browserbase:
+        "Every page the browser loads crosses their cloud. There is no on-premises or bring-your-own-cloud deployment",
+      openbrowse:
+        "The browser, the pages it loads and the data it extracts never leave your machine. The only thing that goes out is the model call, on your key",
+      advantage: "openbrowse",
+    },
+    {
+      dimension: "Licence",
+      browserbase:
+        "The browser infrastructure is proprietary. Stagehand and the client SDKs are open source, but there is no server to run",
+      openbrowse:
+        "MIT end to end: server, agent and dashboard, with a DOI so it can be cited. Fork it, audit it, run it for as long as you like",
+      advantage: "openbrowse",
+    },
+  ],
+  verdict: [
+    {
+      title: "Pick OpenBrowse if",
+      points: [
+        "the agent is the part you were going to build on top of the browser anyway",
+        "the pages and the data they hold must not leave your network",
+        "you want the licence, the model choice and the API key to be yours",
+        "you are reading listings in bulk and want 48 pages opened at once rather than one per call",
+        "you would rather pay for tokens than for browser-hours, gigabytes, calls, runs and retention days",
+      ],
+    },
+    {
+      title: "Pick Browserbase if",
+      points: [
+        "you have browser automation already written and need somewhere to run it",
+        "the sites you target need a residential IP in a country you choose",
+        "you need a compliance attestation, recorded sessions, or more than a handful of browsers at once",
+      ],
+    },
+  ],
+  pricingLead:
+    "Browserbase sells a monthly plan that buys concurrency and an allowance, then meters six things on top of it.",
+  // @nonobvious(must-hold) the Browserbase column of the measurement table is empty and labelled, rather than
+  // filled with a qualitative claim. We measured Browser Use Cloud and have not measured this, and an admitted
+  // gap in a column of numbers is credible where a hedge in the same column reads as a concealed loss.
+  measuredLead: `Our extraction benchmark task, published in full. OpenBrowse recovered all ${task.recordsExpected} records without inventing a field, against Browser Use Cloud as the hosted comparison. Browserbase has not been put through it.`,
+  notMeasured: "Not yet measured",
+  measuredNote:
+    "The comparison above is an architectural one, and every line of it comes from documentation one side or the other publishes today.",
+} as const;
+
 // @nonobvious(must-hold) these two paths are the llmstxt.org contract and are also asserted by scripts/check-export.mjs; renaming either one silently breaks retrievers that look for them by convention
 // @nonobvious(must-hold) every figure this page renders comes from data/cloud-pricing.json and is stamped
 // with the date it was read, because a competitor's prices change without telling you and an undated quote of
@@ -233,8 +381,8 @@ export const pricing = {
   selfHostRows: [
     {
       item: "Agent tokens",
-      rate: "the provider's rates, at 1×",
-      note: "You hold the API key and pay OpenAI or Anthropic directly. Nothing is added.",
+      rate: "you pay the provider directly",
+      note: "You hold the API key. Nothing is added on top.",
     },
     {
       item: "Browser session",
@@ -271,7 +419,7 @@ export const differentiators = {
     {
       id: "tab-waves",
       title: "Real tabs, not just code.",
-      body: "OpenBrowse focuses on visual content, driving the browser like a human with parallel tabs, then diving into background data like JSON files to make its response better.",
+      body: "The agent drives real tabs the way a person would, opening a whole listing in parallel waves of six and reading inside panels served from another domain.",
     },
     {
       id: "answer-store",
@@ -286,7 +434,7 @@ export const differentiators = {
     {
       id: "live-view",
       title: "See it work.",
-      body: "Drop into any browser session to see real-time costs, a feed of the model's reasoning, and a livestream of each browser working away.",
+      body: "Drop into any session for a live view of the browser, the model's reasoning as it arrives, and the sandbox scripts it writes streaming in.",
     },
   ],
 } as const;
@@ -338,5 +486,14 @@ export const faq = [
   {
     q: "Is OpenBrowse affiliated with Browser Use, and how is it licensed?",
     a: "No, it is independent, and built on Browser Use's own open-source SDK. MIT licensed, with a DOI so it can be cited.",
+  },
+  {
+    q: "How is this different from Firecrawl?",
+    a: "Firecrawl is a crawler: give it URLs, get clean page content back. OpenBrowse is an agent: give it an outcome and it works the site out for itself.",
+  },
+  {
+    q: "How does it compare to Browserbase?",
+    a: "Browserbase rents you a browser to drive. OpenBrowse is the driver, on your own hardware. No connect endpoint, so existing automation is a rewrite.",
+    link: { label: "Full comparison", href: "/vs/browserbase" },
   },
 ];

@@ -26,7 +26,7 @@ const TITLE = evidence.title;
 // for browser agent benchmarks, and both now carry the term. The run count is interpolated in both, because a
 // hand-typed count is the first thing to drift when a row is added.
 const SEO_TITLE = `Browser agent benchmarks: ${shape.runs} runs, measured`;
-const DESCRIPTION = `${shape.runs} runs of one real extraction task across ${shape.runtimes} runtimes and ${shape.models} models, plus which model to reach for and how much reasoning to give it.`;
+const DESCRIPTION = `${shape.runs} runs of our extraction benchmark task across ${shape.runtimes} runtimes and ${shape.models} models, plus which model to reach for and how much reasoning to give it.`;
 
 export const metadata: Metadata = {
   title: SEO_TITLE,

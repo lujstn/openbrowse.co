@@ -1,6 +1,7 @@
 ---
 title: "Migrating from Browser Use Cloud"
-description: "What changes when a browser-use-sdk integration moves from Browser Use Cloud to self-hosted OpenBrowse: the two-line client change, and everything else."
+description: "What changes when a browser-use-sdk integration moves from Browser Use Cloud to self-hosted OpenBrowse: the two-line client change, the request fields that are silently ignored, the model names that are rejected, and the timing differences that will surprise you."
+seoDescription: "What changes when a browser-use-sdk integration moves from Browser Use Cloud to self-hosted OpenBrowse: the two-line client change, and everything else."
 ---
 
 OpenBrowse serves the same v3 REST surface as Browser Use Cloud, so the client change is two lines. This page is about everything else: the handful of places where the two are not the same, ordered by how likely each one is to cost you an afternoon. If you are still deciding rather than migrating, the [dimension-by-dimension comparison](/vs/browser-use-cloud) covers what you gain and what you give up.
@@ -35,6 +36,8 @@ Whichever you run on, this is the difference that changes results without errori
 </Callout>
 
 `proxyCountryCode` is accepted so your code still compiles, and does nothing: there is no per-session proxy selection to reach for. If you do need one, put it in front of the instance at the network level, or keep those particular jobs on the cloud. Note that geo-targeting is the one thing a home connection cannot substitute for, since your IP is wherever you are.
+
+Making it mean something is planned, by letting a session borrow its browser from [Steel](https://steel.dev) rather than launching one locally. Not yet, though.
 
 ## 2. Ten request fields are accepted and ignored
 

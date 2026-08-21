@@ -44,6 +44,7 @@ const REQUIRED_PAGES = [
   "index.html",
   "benchmarks.html",
   "vs/browser-use-cloud.html",
+  "vs/browserbase.html",
   "docs.html",
   "docs/installation.html",
   "docs/api.html",
@@ -81,6 +82,12 @@ const TABLE_PAGES = [
     tables: 2,
     headers: 14,
     what: "the benchmark and dimension-by-dimension tables",
+  },
+  {
+    page: "vs/browserbase.html",
+    tables: 3,
+    headers: 24,
+    what: "the dimension, published-rates and measurement tables",
   },
 ];
 
@@ -170,7 +177,7 @@ check(
   removedEndpoint === null,
   "benchmarks.json is being exported again; the results JSON is meant to live only in the GitHub repository",
 );
-for (const file of ["llms.txt", "llms-full.txt", "index.html", "benchmarks.html", "vs/browser-use-cloud.html"]) {
+for (const file of ["llms.txt", "llms-full.txt", "index.html", "benchmarks.html", "vs/browser-use-cloud.html", "vs/browserbase.html"]) {
   const body = await read(file);
   if (!body) continue;
   check(
@@ -236,6 +243,7 @@ const EXPORTED_FOR = {
   "/benchmarks": "benchmarks.html",
   "/vs/browser-use-cloud": "vs/browser-use-cloud.html",
   "/vs/browser-use-cloud/pricing": "vs/browser-use-cloud/pricing.html",
+  "/vs/browserbase": "vs/browserbase.html",
 };
 
 if (llms) {

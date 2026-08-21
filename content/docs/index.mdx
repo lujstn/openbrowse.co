@@ -25,23 +25,14 @@ sudo apt install -y xvfb x11vnc novnc websockify \
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Then install OpenBrowse with whichever package manager you prefer, and start it:
+Then install OpenBrowse and start it:
 
 ```bash
-# uv
 uv tool install openbrowse
-
-# pipx
-pipx install openbrowse
-
-# venv
-source <path-to-venv>/bin/activate
-pip install openbrowse
-```
-
-```bash
 openbrowse start
 ```
+
+`pipx install openbrowse` works the same way if you prefer it. The pip route needs a virtual environment you create and activate first, because Raspberry Pi OS and Debian mark the system Python as externally managed and refuse a bare `pip install`. [Installation](/docs/installation) covers all three.
 
 `openbrowse start` registers it as a systemd service, so it is running now and comes back after every reboot. `openbrowse stop --disable` undoes that, and `openbrowse status` and `openbrowse restart` manage it in between. On a machine without systemd it runs in the foreground instead.
 

@@ -25,7 +25,7 @@ On browser tasks, **the two families want opposite ends of the reasoning dial.**
 
 OpenAI models do better with *less* reasoning. They spend less time planning ahead and more time reacting to the page actually in front of them, which is the correct instinct when the environment is a live DOM that changes under you. Anthropic's 5-series models lean towards rabbit holes and need reasoning time to refocus on the goal.
 
-The measured effect is large. On the reference extraction task:
+The measured effect is large. On our extraction benchmark task:
 
 - `gpt-5.6-terra` at `none` finished in **11 steps and 1m 47s**. The same model at `high` took **17 steps and 5m 05s**, burning 2.1x the tokens for 2.75x the cost, and produced the same 14 records.
 - `claude-sonnet-5` cost **$0.40 at `high`** and **$0.51 at `none`**, and was 1m 16s slower with reasoning switched off.

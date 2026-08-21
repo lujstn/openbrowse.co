@@ -1,0 +1,72 @@
+{
+  "$comment": "Browserbase's published rates, captured by hand from their pricing page and billing docs. Every figure the comparison page renders comes from here, and the page states capturedOn beside them, because quoting a competitor's prices without a date is how a comparison becomes wrong without anyone touching it. Re-check on the sourceUrl and move capturedOn when it changes.",
+  "vendor": "Browserbase",
+  "sourceUrl": "https://www.browserbase.com/pricing",
+  "docsUrl": "https://docs.browserbase.com/guides/plans-and-pricing",
+  "enterpriseUrl": "https://www.browserbase.com/enterprise",
+  "capturedOn": "2026-08-21",
+  "usage": [
+    {
+      "item": "Browser time",
+      "rate": "$0.12 per browser-hour on Developer, $0.10 on Startup",
+      "note": "Charged once a plan's included hours run out. Billed by the minute, with a one-minute minimum per session."
+    },
+    {
+      "item": "Proxy bandwidth",
+      "rate": "$12 per GB on Developer, $10 per GB on Startup",
+      "note": "Billed by the megabyte, with a one-megabyte minimum per session. They publish no separate residential and datacentre rates."
+    },
+    {
+      "item": "Search API",
+      "rate": "$7 per 1,000 calls",
+      "note": "The same rate on Developer and Startup."
+    },
+    {
+      "item": "Fetch API",
+      "rate": "$1 per 1,000 calls, or $4 per 1,000 through a proxy",
+      "note": "One URL per call, no JavaScript execution, and a ten-second timeout."
+    },
+    {
+      "item": "Agent runs",
+      "rate": "a monthly allowance, no overage rate published",
+      "note": "Three a month on Free, 15 on Developer, 50 on Startup. The model behind them is not disclosed."
+    }
+  ],
+  "plans": [
+    {
+      "name": "Free",
+      "monthlyUsd": 0,
+      "concurrentSessions": 3,
+      "note": "1 browser hour, no proxy bandwidth, 3 agent runs, sessions capped at 15 minutes, 7-day data retention"
+    },
+    {
+      "name": "Developer",
+      "monthlyUsd": 20,
+      "concurrentSessions": 25,
+      "note": "100 browser hours, 1GB of proxy bandwidth, 15 agent runs, basic stealth, 7-day data retention"
+    },
+    {
+      "name": "Startup",
+      "monthlyUsd": 99,
+      "concurrentSessions": 100,
+      "note": "500 browser hours, 5GB of proxy bandwidth, 50 agent runs, basic stealth, 30-day data retention"
+    },
+    {
+      "name": "Scale",
+      "monthlyUsd": null,
+      "concurrentSessions": 250,
+      "note": "Custom pricing. 250 concurrent browsers or more, advanced stealth, verified agents, SSO, HIPAA and a DPA on request"
+    }
+  ],
+  "billingNote": "Browser time is billed by the minute and proxy bandwidth by the megabyte, each with a one-unit minimum per session.",
+  "annualNote": "No annual billing is published. The pricing page lists monthly rates only.",
+  "meteredDimensions": [
+    "browser-hours",
+    "proxy bandwidth",
+    "Search API calls",
+    "Fetch API calls",
+    "agent runs",
+    "data retention"
+  ],
+  "unverifiedNote": "Two things could not be confirmed on the pricing page itself and are therefore not quoted here: an Extract API overage rate that appeared once and could not be re-isolated, and the session-length caps on the paid tiers, which appear only in the plans-and-pricing documentation. Scale publishes no rate for anything."
+}

@@ -1,6 +1,6 @@
 # Migrating from Browser Use Cloud
 
-> What changes when a browser-use-sdk integration moves from Browser Use Cloud to self-hosted OpenBrowse: the two-line client change, and everything else.
+> What changes when a browser-use-sdk integration moves from Browser Use Cloud to self-hosted OpenBrowse: the two-line client change, the request fields that are silently ignored, the model names that are rejected, and the timing differences that will surprise you.
 
 *Source: https://openbrowse.co/docs/migrating*
 
@@ -34,6 +34,8 @@ The case where it genuinely bites is a VPS. A datacentre IP is exactly what site
 > **Warning:** Whichever you run on, this is the difference that changes results without erroring. Nothing throws; the pages simply come back different. Test anything geo-gated, rate-limited by IP, or fussy about datacentre ranges before you migrate the rest.
 
 `proxyCountryCode` is accepted so your code still compiles, and does nothing: there is no per-session proxy selection to reach for. If you do need one, put it in front of the instance at the network level, or keep those particular jobs on the cloud. Note that geo-targeting is the one thing a home connection cannot substitute for, since your IP is wherever you are.
+
+Making it mean something is planned, by letting a session borrow its browser from [Steel](https://steel.dev) rather than launching one locally. Not yet, though.
 
 ## 2. Ten request fields are accepted and ignored
 
