@@ -96,6 +96,12 @@ export default function Page() {
             </table>
           </div>
         </Panel>
+        <p className="mt-3 text-[13px] leading-relaxed text-dim">
+          {"Source: "}
+          <a href={cloud.sourceUrl} className="hover:text-accent" rel="nofollow">
+            {new URL(cloud.sourceUrl).host + new URL(cloud.sourceUrl).pathname}
+          </a>
+        </p>
 
         <p className="mt-6 max-w-[76ch] text-[15px] leading-relaxed text-muted">
           {`Plans buy concurrency and arrive as credits: ${cloud.plans

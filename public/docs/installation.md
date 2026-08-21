@@ -257,7 +257,17 @@ That detection follows the package itself, not `OPENBROWSE_HOME`, so pointing th
 
 ## Sizing it for your machine
 
-Concurrency that suits a Raspberry Pi strands a sixteen-core VPS, and the reverse thrashes the Pi, so the setup screen reads the machine before it asks you anything: cores, total and available memory, current load, whether the kernel exposes pressure stall information, whether this is a Raspberry Pi, whether systemd is in charge, whether the cgroup memory controller is available, whether the root filesystem is on an SD card, and whether the capacity drop-in below has already been written. The last three drive checklist rows rather than the slider. You then choose how much of the device OpenBrowse may have, and a slider recommends a session count bounded by what the hardware can hold.
+Concurrency that suits a Raspberry Pi strands a sixteen-core VPS, and the reverse thrashes the Pi, so the setup screen reads the machine before it asks you anything:
+
+- cores, total and available memory, and current load
+- whether the kernel exposes pressure stall information
+- whether this is a Raspberry Pi
+- whether systemd is in charge
+- whether the cgroup memory controller is available
+- whether the root filesystem is on an SD card
+- whether the capacity drop-in below has already been written
+
+The last three drive checklist rows rather than the slider. You then choose how much of the device OpenBrowse may have, and a slider recommends a session count bounded by what the hardware can hold.
 
 | Share | Meaning | Fraction of memory |
 | --- | --- | --- |

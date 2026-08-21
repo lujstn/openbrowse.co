@@ -99,12 +99,12 @@ export async function generateMetadata(
 
   return {
     title: page.data.seoTitle ?? page.data.title,
-    description: page.data.description,
+    description: page.data.seoDescription ?? page.data.description,
     alternates: { canonical: page.url },
     openGraph: {
       ...articleOpenGraph,
       title: page.data.title,
-      description: page.data.description,
+      description: page.data.seoDescription ?? page.data.description,
       url: page.url,
       // @nonobvious(forced-by) passed as an object rather than the bare URL string it used to be: Next can
       // only emit og:image:width, height and alt when the metadata declares them, and a string declares

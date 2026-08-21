@@ -1,6 +1,6 @@
 # Migrating from Browser Use Cloud
 
-> What changes when a browser-use-sdk integration moves from Browser Use Cloud to self-hosted OpenBrowse: the two-line client change, and everything else.
+> What changes when a browser-use-sdk integration moves from Browser Use Cloud to self-hosted OpenBrowse: the two-line client change, the request fields that are silently ignored, the model names that are rejected, and the timing differences that will surprise you.
 
 *Source: https://openbrowse.co/docs/migrating*
 

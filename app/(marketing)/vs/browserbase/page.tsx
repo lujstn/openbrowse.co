@@ -142,7 +142,7 @@ export default function Page() {
       <Section id="dimensions">
         <SectionHead
           title={headings.dimensions}
-          standfirst="Twelve dimensions, taken from their published documentation and ours. Six go each way, and the six that go to Browserbase are named as plainly as the six that do not."
+          standfirst="Twelve dimensions, from their published documentation and ours."
         />
         <Panel label={`${browserbase.rows.length} dimensions`} padded={false}>
           <div className="md:overflow-x-auto">
@@ -224,6 +224,12 @@ export default function Page() {
             </table>
           </div>
         </Panel>
+        <p className="mt-3 text-[13px] leading-relaxed text-dim">
+          {"Source: "}
+          <a href={bb.sourceUrl} className="hover:text-accent" rel="nofollow">
+            {new URL(bb.sourceUrl).host + new URL(bb.sourceUrl).pathname}
+          </a>
+        </p>
 
       </Section>
 

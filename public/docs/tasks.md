@@ -80,7 +80,7 @@ For structured extraction, put per-field rules in the schema's `description` fie
 
 ## Follow-up tasks
 
-With `keepAlive: true`, the session returns to `idle` when the task finishes instead of stopping, and a follow-up request with the same `sessionId` runs a new task in it. The browser is relaunched per run, so state that must survive between tasks belongs in a [profile](https://openbrowse.co/docs/profiles) (cookies, logins) or in the output of the previous task, not in open tabs.
+With `keepAlive: true`, the session returns to `idle` when the task finishes instead of stopping, and a follow-up request with the same `sessionId` runs a new task in it. The browser normally stays open between turns, so a follow-up answers from what the session already knows rather than starting cold. It is not guaranteed to: the idle timeout, an eviction by a newly started run, or a server restart all release the browser while the conversation survives. State that has to outlast a turn belongs in a [profile](https://openbrowse.co/docs/profiles) (cookies, logins) or in the previous task's output, not in open tabs.
 
 ## A complete example
 

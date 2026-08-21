@@ -84,7 +84,7 @@ export const headings = {
 export const benchmark = {
   h2: "Cheaper, faster, hallucination-resistant.",
   standfirst:
-    "You get the same result for a fraction of the spend, in less time, with nothing in it the page did not actually say. Here is one real extraction task where we measured all three.",
+    "The same result for a fraction of the spend, in less time, with nothing in it the page did not say. One extraction task, all three measured.",
 } as const;
 
 export const evidence = {
@@ -359,7 +359,7 @@ export const browserbase = {
   // @nonobvious(must-hold) the Browserbase column of the measurement table is empty and labelled, rather than
   // filled with a qualitative claim. We measured Browser Use Cloud and have not measured this, and an admitted
   // gap in a column of numbers is credible where a hedge in the same column reads as a concealed loss.
-  measuredLead: `One real extraction task, published in full with the spec anyone can rerun it from. OpenBrowse recovered all ${task.recordsExpected} records for a fraction of the cost, tokens and time of the hosted runtime it was measured against, and invented nothing. Browserbase has not been put through the same task, so its column below is empty rather than guessed at.`,
+  measuredLead: `One real extraction task, published in full. OpenBrowse recovered all ${task.recordsExpected} records without inventing a field, against Browser Use Cloud as the hosted comparison. Browserbase has not been put through it.`,
   notMeasured: "Not yet measured",
   measuredNote:
     "The comparison above is an architectural one, and every line of it comes from documentation one side or the other publishes today.",
@@ -419,7 +419,7 @@ export const differentiators = {
     {
       id: "tab-waves",
       title: "Real tabs, not just code.",
-      body: "OpenBrowse focuses on visual content, driving the browser like a human with parallel tabs, then diving into background data like JSON files to make its response better.",
+      body: "The agent drives real tabs the way a person would, opening a whole listing in parallel waves of six and reading inside panels served from another domain.",
     },
     {
       id: "answer-store",
@@ -434,7 +434,7 @@ export const differentiators = {
     {
       id: "live-view",
       title: "See it work.",
-      body: "Drop into any browser session to see real-time costs, a feed of the model's reasoning, and a livestream of each browser working away.",
+      body: "Drop into any session for a live view of the browser, the model's reasoning as it arrives, and the sandbox scripts it writes streaming in.",
     },
   ],
 } as const;
