@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import bb from "@/data/browserbase-pricing.json";
 import { Section, SectionHead } from "@/components/section";
-import { Label, Panel } from "@/components/ui";
+import { Panel } from "@/components/ui";
 import { FaqList } from "@/components/sections";
 import { JsonLd } from "@/components/json-ld";
 import { breadcrumb, faqPage, techArticle } from "@/lib/schema";
@@ -26,28 +26,28 @@ const DESCRIPTION =
 const FAQ = [
   {
     q: "What does OpenBrowse cost to run?",
-    a: `LLM tokens, and nothing else. There is no plan, no browser-hour meter, no per-gigabyte egress charge and no agent-run allowance, so the only variable line on the bill is tokens you were buying from the provider anyway, at the provider's own price on your own key. The hardware is a one-off: it was built and benchmarked on a Raspberry Pi 5. For scale, the reference extraction task cost $${champion.costUsd.toFixed(2)} in tokens on the fastest complete OpenBrowse run.`,
+    a: `LLM tokens. No plan, no browser-hours, no egress charge, no run allowance. The reference task cost $${champion.costUsd.toFixed(2)}.`,
   },
   {
     q: "Is OpenBrowse open source in a way Browserbase is not?",
-    a: "Yes, and that distinction is the whole reason this comparison is worth drawing. Browserbase open-sources Stagehand and its client SDKs, but the browser infrastructure those clients talk to is proprietary and there is no server to run yourself. OpenBrowse is MIT end to end, server and agent and dashboard, with a DOI so it can be cited. That is the difference between renting the infrastructure and owning it.",
+    a: "Browserbase open-sources Stagehand and its SDKs, but the infrastructure behind them is proprietary and there is no server to run. OpenBrowse is MIT end to end.",
   },
   {
-    q: "Where does the data actually go?",
-    a: "Nowhere you did not send it. The browser runs on your machine, the pages it loads are fetched over your own connection, and the extracted data is written to SQLite on your own disk. The only thing that leaves is the model calls, on an API key you hold. Browserbase is managed cloud only: every page its browser loads crosses their infrastructure, and there is no on-premises or bring-your-own-cloud deployment to opt into.",
+    q: "Where does the data go?",
+    a: "Your machine. The browser, the pages and the extracted data stay there; only the model call leaves, on your key. Browserbase is managed cloud only.",
   },
   {
     q: "How has OpenBrowse been benchmarked?",
-    a: `On one real extraction task: ${task.recordsExpected} records behind an embedded cross-origin job board, run across several models and reasoning levels, with Browser Use Cloud as the hosted comparison. Every OpenBrowse run recovered all ${task.recordsExpected} without inventing a field, and the fastest complete run cost $${champion.costUsd.toFixed(2)} in tokens. Browserbase has not been put through the same task, so its column on this page stays empty rather than being filled with adjectives. Everything else compared here is architecture and published pricing, both of which you can check today.`,
-    link: { label: "See what has been measured", href: "/benchmarks" },
+    a: `One extraction task, ${task.recordsExpected} records behind an embedded cross-origin job board, across several models. Every run recovered all ${task.recordsExpected} without inventing a field. Browserbase has not been put through it.`,
+    link: { label: "See the benchmark", href: "/benchmarks" },
   },
   {
-    q: "Can I point my existing Playwright or Puppeteer code at OpenBrowse?",
-    a: "Not directly, and that is the design rather than a gap. Browserbase gives every session a CDP websocket so your code can drive the browser; OpenBrowse has no connect endpoint because the driving is the part it does for you. Automation you have already written is a rewrite rather than a port. If running that existing code is the job, a remote-browser product is what you want and Browserbase is one of them. OpenBrowse substitutes for the agent you were going to build on top of a rented browser, not for the browser.",
+    q: "Can I point my existing Playwright code at OpenBrowse?",
+    a: "No. There is no connect endpoint, because driving the browser is the part OpenBrowse does for you. Existing automation is a rewrite, not a port.",
   },
   {
     q: "What does Browserbase do better?",
-    a: `Six things, and they are worth checking against your own workload. Managed residential proxies with country, state and city targeting, which has no equivalent here at all. Recorded, replayable sessions and an inspector. Verified fingerprints, automatic CAPTCHA solving and a Cloudflare signed-agent integration. Concurrency of ${bb.plans[2].concurrentSessions} browsers on a $${bb.plans[2].monthlyUsd} plan, against eight here. A public status page and SOC 2 Type II. And the machine being somebody else's to keep running. If your workload turns on any of those, buy theirs. If it turns on what the agent does once the browser is open, that is the other column.`,
+    a: `Residential proxies with country targeting, recorded sessions, verified fingerprints and CAPTCHA solving, ${bb.plans[2].concurrentSessions} concurrent browsers against eight here, and SOC 2 Type II. If your workload turns on any of those, buy theirs.`,
   },
 ];
 
@@ -83,8 +83,6 @@ const MEASURED = [
 ];
 
 export default function Page() {
-  const conceded = browserbase.rows.filter((r) => r.advantage === "browserbase").length;
-
   return (
     <>
       <JsonLd
@@ -106,17 +104,23 @@ export default function Page() {
       <Section className="border-t-0 pt-14">
         <SectionHead level={1} title={TITLE} standfirst={browserbase.standfirst} />
 
-        <div className="mb-8 grid grid-cols-1 gap-3 md:grid-cols-3">
-          {browserbase.proof.map((stat) => (
-            <div key={stat.label} className="rounded-md border border-line bg-raised px-4 py-3.5">
-              <div className="flex items-baseline justify-between gap-3">
-                <Label>{stat.label}</Label>
-                <span className="font-mono text-[22px] leading-none tabular-nums text-ink">
-                  {stat.value}
-                </span>
-              </div>
-              <p className="mt-2.5 font-mono text-[11px] text-dim">{stat.detail}</p>
-            </div>
+        <div className="mb-8 grid gap-4 md:grid-cols-2">
+          {browserbase.verdict.map((column) => (
+            <Panel key={column.title} label={column.title}>
+              <ul className="space-y-2.5">
+                {column.points.map((point) => (
+                  <li
+                    key={point}
+                    className="flex gap-2.5 text-[14px] leading-relaxed text-muted"
+                  >
+                    <span aria-hidden="true" className="text-label">
+                      &mdash;
+                    </span>
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </Panel>
           ))}
         </div>
 
@@ -185,38 +189,6 @@ export default function Page() {
             </table>
           </div>
         </Panel>
-        <p className="mt-6 max-w-[76ch] text-[15px] leading-relaxed text-muted">
-          {`${browserbase.columnNote} ${conceded} of the ${browserbase.rows.length} go to Browserbase, and they are in the table for the same reason the rest of it is: this is what the two products actually are. ${browserbase.sourcesLead} `}
-          {[bb.sourceUrl, bb.docsUrl, bb.enterpriseUrl].map((href, i) => (
-            <span key={href}>
-              {i > 0 ? ", " : ""}
-              <a href={href} className="text-accent hover:underline" rel="nofollow">
-                {new URL(href).host + new URL(href).pathname}
-              </a>
-            </span>
-          ))}
-          {"."}
-        </p>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
-          {browserbase.verdict.map((column) => (
-            <Panel key={column.title} label={column.title}>
-              <ul className="space-y-2.5">
-                {column.points.map((point) => (
-                  <li
-                    key={point}
-                    className="flex gap-2.5 text-[14px] leading-relaxed text-muted"
-                  >
-                    <span aria-hidden="true" className="text-label">
-                      &mdash;
-                    </span>
-                    {point}
-                  </li>
-                ))}
-              </ul>
-            </Panel>
-          ))}
-        </div>
       </Section>
 
       <Section id="pricing">
@@ -253,27 +225,6 @@ export default function Page() {
           </div>
         </Panel>
 
-        <p className="mt-6 max-w-[76ch] text-[15px] leading-relaxed text-muted">
-          {`Plans buy concurrency and an allowance: ${bb.plans
-            .map((plan) =>
-              plan.monthlyUsd === null
-                ? `${plan.name} at custom pricing for ${plan.concurrentSessions} or more`
-                : `${plan.name} at $${plan.monthlyUsd} a month for ${plan.concurrentSessions} concurrent browsers`,
-            )
-            .join(", ")}. ${bb.annualNote} ${bb.billingNote}`}
-        </p>
-
-        <p className="mt-5 max-w-[76ch] text-[15px] leading-relaxed text-muted">
-          {`Self-hosting removes every one of those meters. What is left is the same LLM tokens at the provider's own price, on a key you hold, plus a machine and the electricity it draws. Nothing here charges for ${bb.meteredDimensions.slice(0, -1).join(", ")} or ${bb.meteredDimensions.at(-1)}, because there is no platform in between to charge for them.`}
-        </p>
-
-        <p className="mt-5 max-w-[76ch] text-[14px] leading-relaxed text-dim">
-          {`${bb.unverifiedNote} And these are their prices as we read them on ${browserbaseCaptured}; check `}
-          <a href={bb.sourceUrl} className="text-accent hover:underline" rel="nofollow">
-            their pricing page
-          </a>
-          {" before making a decision on them."}
-        </p>
       </Section>
 
       <Section id="measured">
@@ -294,7 +245,10 @@ export default function Page() {
                     Browser Use Cloud
                   </th>
                   <th scope="col" className={TH}>
-                    Browserbase
+                    Browserbase{" "}
+                    <span className="font-normal normal-case tracking-normal text-dim">
+                      ({browserbase.notMeasured.toLowerCase()})
+                    </span>
                   </th>
                 </tr>
               </thead>
@@ -321,13 +275,6 @@ export default function Page() {
           {`That is ${percentLess(baseline.costUsd, champion.costUsd)} spend, ${formatRatio(delta.tokens)} fewer tokens and ${percentFaster(baseline.seconds, champion.seconds)}, on the same task, the same schema and the same cost cap.`}
         </p>
 
-        <p className="mt-5 max-w-[76ch] text-[15px] leading-relaxed text-muted">
-          {`${browserbase.notMeasured}. ${browserbase.measuredNote} The OpenBrowse column is ${champion.model} at reasoning ${champion.reasoning}. Both runs recovered all ${task.recordsExpected} records, but the Browser Use Cloud run also populated values the page never displayed, job seniority among them, while no OpenBrowse run invented a field. `}
-          <Link href="/benchmarks" className="text-accent hover:underline">
-            Every run, the method and the task specification
-          </Link>
-          {" are published in full."}
-        </p>
       </Section>
 
       <Section id="faqs">

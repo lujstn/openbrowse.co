@@ -6,7 +6,6 @@ import {
   cheapest,
   formatRatio,
   likeForLike,
-  runs,
   task,
 } from "@/lib/benchmark";
 
@@ -235,23 +234,6 @@ export const browserbase = {
   h1: headings.vsBrowserbase,
   standfirst:
     "Browserbase rents you a browser to drive. OpenBrowse is the driver: an MIT-licensed, self-hosted agent that runs on hardware you already own, meters nothing, and keeps every page it opens inside your network.",
-  proof: [
-    {
-      label: "Metered dimensions",
-      value: "0",
-      detail: `Against ${browserbasePricing.meteredDimensions.length} on Browserbase.`,
-    },
-    {
-      label: "URLs per parallel read",
-      value: "48",
-      detail: "In waves of six real tabs.",
-    },
-    {
-      label: "Fields invented",
-      value: "0",
-      detail: `Across all ${runs.length} published runs.`,
-    },
-  ],
   scope:
     "OpenBrowse is the agent, not the browser. You post the job in plain words and it drives itself, so there is no CDP connect endpoint and no place to attach Playwright, Puppeteer or Stagehand code you have already written. That is the trade this page is about. If you want a remote browser to run your own automation on, Browserbase is built for exactly that. If the agent is the part you were going to build, read on.",
   rows: [
@@ -352,17 +334,7 @@ export const browserbase = {
       advantage: "openbrowse",
     },
   ],
-  columnNote: `Browserbase as their own pricing page, developer documentation and enterprise page described it on ${browserbaseCaptured}.`,
-  sourcesLead: "Everything in the Browserbase column above is theirs, not ours:",
   verdict: [
-    {
-      title: "Pick Browserbase if",
-      points: [
-        "you have browser automation already written and need somewhere to run it",
-        "the sites you target need a residential IP in a country you choose",
-        "you need a compliance attestation, recorded sessions, or more than a handful of browsers at once",
-      ],
-    },
     {
       title: "Pick OpenBrowse if",
       points: [
@@ -373,9 +345,17 @@ export const browserbase = {
         "you would rather pay for tokens than for browser-hours, gigabytes, calls, runs and retention days",
       ],
     },
+    {
+      title: "Pick Browserbase if",
+      points: [
+        "you have browser automation already written and need somewhere to run it",
+        "the sites you target need a residential IP in a country you choose",
+        "you need a compliance attestation, recorded sessions, or more than a handful of browsers at once",
+      ],
+    },
   ],
   pricingLead:
-    "Browserbase sells a monthly plan that buys concurrency and an allowance, then meters six things on top of it. These are the published rates:",
+    "Browserbase sells a monthly plan that buys concurrency and an allowance, then meters six things on top of it.",
   // @nonobvious(must-hold) the Browserbase column of the measurement table is empty and labelled, rather than
   // filled with a qualitative claim. We measured Browser Use Cloud and have not measured this, and an admitted
   // gap in a column of numbers is credible where a hedge in the same column reads as a concealed loss.
@@ -509,6 +489,11 @@ export const faq = [
   },
   {
     q: "How is this different from Firecrawl?",
-    a: "Different job. Firecrawl is a web data API: hand it URLs and it returns clean page content at scale. OpenBrowse is an agent: describe an outcome and it works the site out for itself, clicking and reading until the answer is complete. Know which pages you want and a crawler is the right tool. If you are weighing up self-hosting theirs, their own docs are the honest dividing line: the open-source stack ships the crawl, scrape, map and search routes, while Agent, Browser, interact and feedback are among the capabilities they name Firecrawl Cloud for.",
+    a: "Firecrawl is a crawler: give it URLs, get clean page content back. OpenBrowse is an agent: give it an outcome and it works the site out for itself.",
+  },
+  {
+    q: "How does it compare to Browserbase?",
+    a: "Browserbase rents you a browser to drive. OpenBrowse is the driver, on your own hardware. No connect endpoint, so existing automation is a rewrite.",
+    link: { label: "Full comparison", href: "/vs/browserbase" },
   },
 ];
