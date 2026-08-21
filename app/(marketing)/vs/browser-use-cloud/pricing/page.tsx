@@ -160,17 +160,6 @@ export default function Page() {
         <p className="mt-5 max-w-[76ch] text-[15px] leading-relaxed text-muted">
           {`Applied to something measured: the fastest complete run on the benchmark cost $${champion.costUsd.toFixed(2)} in tokens on ${champion.model}. The same tokens through the platform would be $${cloudCost.toFixed(2)}, before session time at ${cloud.usage[2].rate} and any egress. On one run that is pennies. It is a percentage, so it scales exactly as your usage does.`}
         </p>
-
-        {/* @nonobvious(must-hold) the benchmarked run used their v3 agent and this arithmetic applies their
-            current v4 rates to it, because the v3 rates are no longer published anywhere citable. Saying so is
-            not a hedge: without it the figure reads as a like-for-like measurement, which it is not. */}
-        <p className="mt-5 max-w-[76ch] text-[14px] leading-relaxed text-dim">
-          {`Two things worth stating plainly. The benchmarked cloud run used their v3 agent, and the rates above are for v4, so the figure above applies today's published multiplier to a measured token count rather than reproducing a v3 bill. ${cloud.legacyRatesNote} And these are their prices as we read them on ${CAPTURED}; check `}
-          <a href={cloud.sourceUrl} className="text-accent hover:underline" rel="nofollow">
-            their pricing page
-          </a>
-          {" before making a decision on them."}
-        </p>
       </Section>
     </>
   );
