@@ -26,7 +26,7 @@ const DESCRIPTION =
 const FAQ = [
   {
     q: "What does OpenBrowse cost to run?",
-    a: `LLM tokens. No plan, no browser-hours, no egress charge, no run allowance. The reference task cost $${champion.costUsd.toFixed(2)}.`,
+    a: `LLM tokens. No plan, no browser-hours, no egress charge, no run allowance. On our extraction benchmark task it cost $${champion.costUsd.toFixed(2)}.`,
   },
   {
     q: "Is OpenBrowse open source in a way Browserbase is not?",
@@ -38,7 +38,7 @@ const FAQ = [
   },
   {
     q: "How has OpenBrowse been benchmarked?",
-    a: `One extraction task, ${task.recordsExpected} records behind an embedded cross-origin job board, across several models. Every run recovered all ${task.recordsExpected} without inventing a field. Browserbase has not been put through it.`,
+    a: `On our extraction benchmark task, ${task.recordsExpected} records behind an embedded cross-origin job board, across several models. Every run recovered all ${task.recordsExpected} without inventing a field. Browserbase has not been put through it.`,
     link: { label: "See the benchmark", href: "/benchmarks" },
   },
   {
@@ -236,7 +236,7 @@ export default function Page() {
       <Section id="measured">
         <SectionHead title={headings.measured} standfirst={browserbase.measuredLead} />
 
-        <Panel label="One extraction task, same schema, same cost cap" padded={false}>
+        <Panel label="Our extraction benchmark, same schema, same cost cap" padded={false}>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
@@ -278,7 +278,7 @@ export default function Page() {
         </Panel>
 
         <p className="mt-6 max-w-[76ch] text-[15px] leading-relaxed text-muted">
-          {`That is ${percentLess(baseline.costUsd, champion.costUsd)} spend, ${formatRatio(delta.tokens)} fewer tokens and ${percentFaster(baseline.seconds, champion.seconds)}, on the same task, the same schema and the same cost cap.`}
+          {`Compared to Browser Use Cloud, that is ${percentLess(baseline.costUsd, champion.costUsd)} spend, ${formatRatio(delta.tokens)} fewer tokens and ${percentFaster(baseline.seconds, champion.seconds)}, on the same task, the same schema and the same cost cap.`}
         </p>
 
       </Section>

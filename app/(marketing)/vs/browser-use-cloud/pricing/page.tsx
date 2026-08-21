@@ -164,7 +164,7 @@ export default function Page() {
         </p>
 
         <p className="mt-5 max-w-[76ch] text-[15px] leading-relaxed text-muted">
-          {`Applied to something measured: the fastest complete run on the benchmark cost $${champion.costUsd.toFixed(2)} in tokens on ${champion.model}. The same tokens through the platform would be $${cloudCost.toFixed(2)}, before session time at ${cloud.usage[2].rate} and any egress. On one run that is pennies. It is a percentage, so it scales exactly as your usage does.`}
+          {`Applied to something measured: the fastest complete run on our benchmark cost $${champion.costUsd.toFixed(2)} in tokens on ${champion.model}. The same tokens through the platform would be $${cloudCost.toFixed(2)}, before session time at ${cloud.usage[2].rate} and any egress. On one run that is pennies. It is a percentage, so it scales exactly as your usage does.`}
         </p>
       </Section>
     </>

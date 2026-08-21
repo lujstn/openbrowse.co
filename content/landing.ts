@@ -45,7 +45,7 @@ export const hero = {
   primary: { label: "Get started", href: "/docs" },
   secondary: { label: "View source", href: site.repo },
   videoCaption:
-    "One real run of the benchmark task, at full speed. The agent works across parallel tabs on the left while the sandbox scripts it writes stream into the panel on the right.",
+    "One run of our benchmark task, at full speed. The agent works across parallel tabs on the left while the sandbox scripts it writes stream into the panel on the right.",
 } as const;
 
 // @nonobvious(mirrors) the quick start from the upstream README, kept identical to it because someone who
@@ -84,7 +84,7 @@ export const headings = {
 export const benchmark = {
   h2: "Cheaper, faster, hallucination-resistant.",
   standfirst:
-    "The same result for a fraction of the spend, in less time, with nothing in it the page did not say. One extraction task, all three measured.",
+    "The same result for a fraction of the spend, in less time, with nothing in it the page did not say. Our extraction benchmark measures all three.",
 } as const;
 
 export const evidence = {
@@ -94,7 +94,7 @@ export const evidence = {
   title: "Browser agent benchmarks",
   // @nonobvious(must-hold) every figure in this block is interpolated: these sentences render inches from the runs table and are inlined verbatim into llms-full.txt, so a typed number here contradicts the table beside it the first time a run changes
   intro: (shape: { runs: number; runtimes: number; models: number }) =>
-    `One real extraction task, ${shape.runs} runs, ${shape.runtimes} runtimes, ${shape.models} models. A careers page listing ${task.recordsExpected} vacancies whose listings live inside an embedded job board on another domain, so a naive read of the page returns nothing at all. Every run had the same schema, the same spending cap, and had to come back with all ${task.recordsExpected}.`,
+    `Our extraction benchmark task, ${shape.runs} runs, ${shape.runtimes} runtimes, ${shape.models} models. A careers page listing ${task.recordsExpected} vacancies whose listings live inside an embedded job board on another domain, so a naive read of the page returns nothing at all. Every run had the same schema, the same spending cap, and had to come back with all ${task.recordsExpected}.`,
   honesty: `Every OpenBrowse run recovered all ${task.recordsExpected} records without inventing a field. Browser Use Cloud recovered all ${task.recordsExpected} too, and populated values the page never displayed, job seniority among them.`,
   costsNote:
     "Costs are LLM token spend. OpenBrowse charges nothing on top, and Browser Use Cloud's own platform fee is not in its figure, so the real difference in what you pay is wider than this.",
@@ -359,7 +359,7 @@ export const browserbase = {
   // @nonobvious(must-hold) the Browserbase column of the measurement table is empty and labelled, rather than
   // filled with a qualitative claim. We measured Browser Use Cloud and have not measured this, and an admitted
   // gap in a column of numbers is credible where a hedge in the same column reads as a concealed loss.
-  measuredLead: `One real extraction task, published in full. OpenBrowse recovered all ${task.recordsExpected} records without inventing a field, against Browser Use Cloud as the hosted comparison. Browserbase has not been put through it.`,
+  measuredLead: `Our extraction benchmark task, published in full. OpenBrowse recovered all ${task.recordsExpected} records without inventing a field, against Browser Use Cloud as the hosted comparison. Browserbase has not been put through it.`,
   notMeasured: "Not yet measured",
   measuredNote:
     "The comparison above is an architectural one, and every line of it comes from documentation one side or the other publishes today.",
@@ -381,8 +381,8 @@ export const pricing = {
   selfHostRows: [
     {
       item: "Agent tokens",
-      rate: "the provider's rates, at 1×",
-      note: "You hold the API key and pay OpenAI or Anthropic directly. Nothing is added.",
+      rate: "you pay the provider directly",
+      note: "You hold the API key. Nothing is added on top.",
     },
     {
       item: "Browser session",
