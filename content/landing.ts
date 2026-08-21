@@ -6,6 +6,7 @@ import {
   cheapest,
   formatRatio,
   likeForLike,
+  runs,
   task,
 } from "@/lib/benchmark";
 
@@ -78,7 +79,7 @@ export const headings = {
   vs: "OpenBrowse vs Browser Use Cloud",
   vsBrowserbase: "OpenBrowse vs Browserbase",
   browserbaseCharges: "What Browserbase charges",
-  measured: "What we have measured, and what we have not",
+  measured: "Measured, on a task anyone can rerun",
 } as const;
 
 export const benchmark = {
@@ -226,107 +227,40 @@ export const browserbaseCaptured = new Date(browserbasePricing.capturedOn).toLoc
   { day: "numeric", month: "long", year: "numeric" },
 );
 
-// @nonobvious(must-hold) the concession about the connect endpoint is the first thing this page says, above
-// the table and above the pitch, because the query it answers is typed by people shopping for a remote
-// browser to attach their own code to. A visitor who reads the pitch, migrates, and only then discovers
-// there is nothing to connect to has been misled by omission, and a bounce costs more than the click earned.
+// @nonobvious(must-hold) the connect-endpoint concession is stated in body text under the proof strip rather
+// than in a panel above it. The fact has to stay on the first screen, because someone shopping for a remote
+// browser to attach their own code to has to be able to leave before migrating, and a bounce costs less than
+// a misled buyer. What it must not do is be the first thing the page asserts about itself.
 export const browserbase = {
   h1: headings.vsBrowserbase,
   standfirst:
-    "Browserbase rents you a browser to drive. OpenBrowse is the driver: the open-source, self-hosted alternative, on hardware you already own, MIT licensed, with no session meter and no egress bill.",
-  steel: { label: "steel-dev/steel-browser", href: "https://github.com/steel-dev/steel-browser" },
-  noCdp: {
-    label: "Read this first",
-    title: "OpenBrowse exposes no CDP connect endpoint.",
-    body: "Browserbase hands you a browser and a websocket, and your own code drives it. OpenBrowse has no equivalent: you describe the job in words and the agent drives the browser itself. Playwright, Puppeteer or Stagehand code you have already written does not port across, it gets rewritten. If a remote browser for your own script is what you actually want, Steel is the closer open-source answer and this page is not for you. It is for the buyer who was going to build an agent on top of a rented browser.",
-  },
+    "Browserbase rents you a browser to drive. OpenBrowse is the driver: an MIT-licensed, self-hosted agent that runs on hardware you already own, meters nothing, and keeps every page it opens inside your network.",
+  proof: [
+    {
+      label: "Metered dimensions",
+      value: "0",
+      detail: `Against ${browserbasePricing.meteredDimensions.length} on Browserbase.`,
+    },
+    {
+      label: "URLs per parallel read",
+      value: "48",
+      detail: "In waves of six real tabs.",
+    },
+    {
+      label: "Fields invented",
+      value: "0",
+      detail: `Across all ${runs.length} published runs.`,
+    },
+  ],
+  scope:
+    "OpenBrowse is the agent, not the browser. You post the job in plain words and it drives itself, so there is no CDP connect endpoint and no place to attach Playwright, Puppeteer or Stagehand code you have already written. That is the trade this page is about. If you want a remote browser to run your own automation on, Browserbase is built for exactly that. If the agent is the part you were going to build, read on.",
   rows: [
-    {
-      dimension: "Connecting your own code",
-      browserbase:
-        "A CDP websocket per session. Point Playwright, Puppeteer or any CDP client at connectUrl and drive it yourself",
-      openbrowse:
-        "No connect endpoint at all. You write the task in words and the agent drives, so existing browser-automation code is a rewrite rather than a port",
-      note: "Steel is the better choice for this, being Apache 2.0, self-hostable and built for agents:",
-      advantage: "browserbase",
-    },
-    {
-      dimension: "Network egress",
-      browserbase:
-        "Managed residential proxies with country targeting across 201 countries, and state or city where it is available",
-      openbrowse:
-        "Your machine's own IP address. There is no proxy layer, and nothing to select a country with",
-      advantage: "browserbase",
-    },
-    {
-      dimension: "Session records",
-      browserbase:
-        "Every session recorded as replayable video, plus screenshots and an inspector carrying the network and console timeline",
-      openbrowse:
-        "Live only. Real-time VNC of the browser and a feed of the model's reasoning while it runs, and nothing kept once it ends",
-      advantage: "browserbase",
-    },
-    {
-      dimension: "Bot protection",
-      browserbase:
-        "Verified sessions with real fingerprints, automatic solving of supported CAPTCHAs, and a Cloudflare signed-agent integration",
-      openbrowse:
-        "A stealth-configured Chromium, and CAPTCHA solving only if you bring a CapSolver key. Nothing negotiated with the protection vendors",
-      advantage: "browserbase",
-    },
-    {
-      dimension: "Concurrency",
-      browserbase:
-        "3 concurrent browsers on Free, 25 on Developer, 100 on Startup, and 250 or more on Scale",
-      openbrowse:
-        "One by default and a hard ceiling of eight, however large the machine, at roughly 2GB of memory each",
-      advantage: "browserbase",
-    },
-    {
-      dimension: "Operations and compliance",
-      browserbase:
-        "A public status page, SOC 2 Type II, and HIPAA, SSO and a DPA on the top tier. No numeric uptime SLA is published",
-      openbrowse:
-        "Yours. A machine that has to stay up, no attestation of any kind, and nobody to escalate to",
-      advantage: "browserbase",
-    },
-    {
-      dimension: "Licence",
-      browserbase:
-        "The browser infrastructure is proprietary. Stagehand and the client SDKs are open source, but there is no server to run",
-      openbrowse: "MIT, the whole server, with a DOI so it can be cited",
-      advantage: "openbrowse",
-    },
-    {
-      dimension: "Metering",
-      browserbase:
-        "Browser-hours, proxy gigabytes, Search calls, Fetch calls, agent runs and retention days, each metered separately",
-      openbrowse:
-        "Nothing is metered. The only variable line is the LLM tokens you were going to buy anyway",
-      advantage: "openbrowse",
-    },
     {
       dimension: "The agent",
       browserbase:
         "Browserbase Agents is hosted, on an undisclosed model, and rationed as a monthly run allowance. Stagehand is the framework whose loop you host yourself, on your own key",
       openbrowse:
-        "The agent is the product. No run allowance, and you choose the model and hold the key",
-      advantage: "openbrowse",
-    },
-    {
-      dimension: "Where the data goes",
-      browserbase:
-        "Every page the browser loads crosses their cloud. There is no on-premises or bring-your-own-cloud deployment",
-      openbrowse:
-        "The browser, the pages and the extracted data stay on your machine. Only the model calls leave it",
-      advantage: "openbrowse",
-    },
-    {
-      dimension: "Structured output",
-      browserbase:
-        "Stagehand's extract validates the shape against a schema, so a wrong value of the right type passes",
-      openbrowse:
-        "Schema-validated too, then gated: values with no evidence on the page are refused at the answer-store boundary, and the agent cannot finish until every required field is filled or explicitly marked absent",
+        "The agent is the whole product, not an allowance bolted onto a browser. You pick the model, you hold the key, and you run it as often as the hardware allows",
       advantage: "openbrowse",
     },
     {
@@ -337,6 +271,86 @@ export const browserbase = {
         "read_pages opens up to 48 URLs in parallel waves of six real tabs, including inside embedded cross-origin panels",
       advantage: "openbrowse",
     },
+    {
+      dimension: "Structured output",
+      browserbase:
+        "Stagehand's extract validates the shape against a schema, so a wrong value of the right type passes",
+      openbrowse:
+        "Schema-validated, then evidence-gated: a value with nothing behind it on the page is refused at the answer-store boundary, and the agent cannot finish until every required field is filled or explicitly marked absent",
+      advantage: "openbrowse",
+    },
+    {
+      dimension: "Metering",
+      browserbase:
+        "Browser-hours, proxy gigabytes, Search calls, Fetch calls, agent runs and retention days, each metered separately",
+      openbrowse:
+        "Nothing is metered at all. The only variable line on the bill is LLM tokens you were buying from the provider anyway, at their price, on your key",
+      advantage: "openbrowse",
+    },
+    {
+      dimension: "Connecting your own code",
+      browserbase:
+        "A CDP websocket per session. Point Playwright, Puppeteer or any CDP client at connectUrl and drive it yourself",
+      openbrowse:
+        "By design, none. You state the outcome and the agent works the site out for itself, so there is nothing to attach an existing script to",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Network egress",
+      browserbase:
+        "Managed residential proxies with country targeting across 201 countries, and state or city where it is available",
+      openbrowse:
+        "Your machine's own IP, with no proxy layer and no country to select. On sites that do not gate by geography, that is one less hop and one less bill",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Bot protection",
+      browserbase:
+        "Verified sessions with real fingerprints, automatic solving of supported CAPTCHAs, and a Cloudflare signed-agent integration",
+      openbrowse:
+        "A stealth-configured Chromium, and CAPTCHA solving on your own CapSolver key. No agreements with the protection vendors behind it",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Session records",
+      browserbase:
+        "Every session recorded as replayable video, plus screenshots and an inspector carrying the network and console timeline",
+      openbrowse:
+        "Real-time VNC of the actual browser, a feed carrying the model's reasoning, and an IDE panel streaming the sandbox scripts as the agent writes them. All of it live; nothing is kept once the session ends",
+      advantage: "neutral",
+    },
+    {
+      dimension: "Concurrency",
+      browserbase:
+        "3 concurrent browsers on Free, 25 on Developer, 100 on Startup, and 250 or more on Scale",
+      openbrowse:
+        "Up to eight concurrent sessions, one by default, at roughly 2GB of memory each",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Operations and compliance",
+      browserbase:
+        "A public status page, SOC 2 Type II, and HIPAA, SSO and a DPA on the top tier. No numeric uptime SLA is published",
+      openbrowse:
+        "Yours to run. There is no attestation and no support line, though there is also no vendor between you and the data, and every line of what is running is public and auditable",
+      advantage: "browserbase",
+    },
+    {
+      dimension: "Where the data goes",
+      browserbase:
+        "Every page the browser loads crosses their cloud. There is no on-premises or bring-your-own-cloud deployment",
+      openbrowse:
+        "The browser, the pages it loads and the data it extracts never leave your machine. The only thing that goes out is the model call, on your key",
+      advantage: "openbrowse",
+    },
+    {
+      dimension: "Licence",
+      browserbase:
+        "The browser infrastructure is proprietary. Stagehand and the client SDKs are open source, but there is no server to run",
+      openbrowse:
+        "MIT end to end: server, agent and dashboard, with a DOI so it can be cited. Fork it, audit it, run it for as long as you like",
+      advantage: "openbrowse",
+    },
   ],
   columnNote: `Browserbase as their own pricing page, developer documentation and enterprise page described it on ${browserbaseCaptured}.`,
   sourcesLead: "Everything in the Browserbase column above is theirs, not ours:",
@@ -344,19 +358,19 @@ export const browserbase = {
     {
       title: "Pick Browserbase if",
       points: [
-        "you have browser automation already written and want somewhere to run it",
+        "you have browser automation already written and need somewhere to run it",
         "the sites you target need a residential IP in a country you choose",
-        "you need recorded sessions, an audit trail, or a compliance attestation",
-        "you need more than a handful of browsers running at once",
+        "you need a compliance attestation, recorded sessions, or more than a handful of browsers at once",
       ],
     },
     {
       title: "Pick OpenBrowse if",
       points: [
-        "the agent is the part you were going to build anyway",
+        "the agent is the part you were going to build on top of the browser anyway",
         "the pages and the data they hold must not leave your network",
         "you want the licence, the model choice and the API key to be yours",
-        "the meter is the thing you are running from",
+        "you are reading listings in bulk and want 48 pages opened at once rather than one per call",
+        "you would rather pay for tokens than for browser-hours, gigabytes, calls, runs and retention days",
       ],
     },
   ],
@@ -365,11 +379,10 @@ export const browserbase = {
   // @nonobvious(must-hold) the Browserbase column of the measurement table is empty and labelled, rather than
   // filled with a qualitative claim. We measured Browser Use Cloud and have not measured this, and an admitted
   // gap in a column of numbers is credible where a hedge in the same column reads as a concealed loss.
-  measuredLead:
-    "One thing this page will not do is imply a measurement it does not have. The benchmark below is a real, repeatable extraction task, and it has been run against Browser Use Cloud and against OpenBrowse. It has not been run against Browserbase.",
+  measuredLead: `One real extraction task, published in full with the spec anyone can rerun it from. OpenBrowse recovered all ${task.recordsExpected} records for a fraction of the cost, tokens and time of the hosted runtime it was measured against, and invented nothing. Browserbase has not been put through the same task, so its column below is empty rather than guessed at.`,
   notMeasured: "Not yet measured",
   measuredNote:
-    "Until that column is filled in, treat the comparison above as an architectural one rather than a performance one.",
+    "The comparison above is an architectural one, and every line of it comes from documentation one side or the other publishes today.",
 } as const;
 
 // @nonobvious(must-hold) these two paths are the llmstxt.org contract and are also asserted by scripts/check-export.mjs; renaming either one silently breaks retrievers that look for them by convention

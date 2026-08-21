@@ -9,7 +9,6 @@ import {
   pricing,
 } from "@/content/landing";
 
-
 export type MarketingPage = {
   url: string;
   name: string;
@@ -63,7 +62,7 @@ export const marketingPages: MarketingPage[] = [
     url: "/vs/browserbase",
     name: headings.vsBrowserbase,
     summary:
-      "The open-source, self-hosted alternative to Browserbase for the agent buyer rather than the browser buyer: twelve dimensions split evenly, Browserbase's published rates read on a stated date, and an openly empty benchmark column.",
+      "The open-source, self-hosted alternative to Browserbase for the buyer who wants the agent rather than the browser: twelve dimensions from both vendors' own documentation, Browserbase's published rates read on a stated date, and OpenBrowse's measured cost, token and latency figures on a task published in full.",
     headings: [
       headings.vsBrowserbase,
       headings.dimensions,
