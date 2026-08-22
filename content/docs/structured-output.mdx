@@ -65,7 +65,7 @@ The same operations are exposed inside the code sandbox, with identical validati
 
 For list-shaped extractions, the intended golden path takes four steps regardless of how many records there are:
 
-1. `find_links(...)` collects the listing's links with a selector, scrolling the page (and any embedded panel) until the count is stable. It is the only tool that reads links inside a cross-origin embed.
+1. `find_links(...)` collects the listing's links, bare or narrowed with a selector, scrolling the page (and any embedded panel) until the count is stable. It is the only tool that reads links inside a cross-origin embed.
 2. `read_pages()` opens every found link in parallel tab waves (up to 48 URLs per call, visible in the live view), waits for each page's real content to render, and saves `{url, title, text, jsonld, links}` per page to `pages.json`. It also **prefills `rows_draft.json`**: one schema row per page, deterministically mapped, the page URL into the item's own-URL field, JSON-LD scalars token-matched onto schema fields (`datePublished` onto `publishedAt`), labelled specs harvested from the visible text, the description HTML-stripped, and every value validated against its field before inclusion. What the page does not state stays empty.
 3. `add_items_from_file('rows_draft.json')` loads all rows in one validated step.
 4. One `update_items` call fixes the judgement fields, `mark_absent` settles what no page publishes, and `done` finishes.

@@ -30,7 +30,7 @@ const session = await client.sessions.create({
 });
 ```
 
-`maxCostUsd` must be a finite number above zero. The cap is checked at the end of every step against the running total; when it is reached the run stops with `failureKind` `budget_exceeded` and a completion message of the form `Stopped: Cost $3.0121 exceeded budget $3.00`. The status is `stopped`, or `idle` on a `keepAlive` session, which stays addressable for follow-ups rather than ending. A caller polling a budgeted keep-alive session for `stopped` will wait for ever. It is a stop-loss, not a pre-flight reservation: the step that crosses the line completes, so the final figure can exceed the cap by up to one step's cost.
+`maxCostUsd` must be a finite number above zero. The budget is checked at the end of every step: with room to spare the run simply carries on, and as spend nears the cap the run compares what remains against its own average step cost so far, running another step if it fits and stopping if it does not. Going over is therefore possible in theory, when one step costs well above the run's average, but unlikely in practice; most budgeted runs stop just short of their cap. A budget stop carries `failureKind` `budget_exceeded`, and a run that already holds data still submits what it has, as the next section describes. The status is `stopped`, or `idle` on a `keepAlive` session, which stays addressable for follow-ups rather than ending. A caller polling a budgeted keep-alive session for `stopped` will wait for ever.
 
 ### A capped run keeps what it produced
 
