@@ -27,12 +27,15 @@ type Operation = {
 
 type OperationRecord = Operation & { method: string; path: string };
 
+let operationsCache: OperationRecord[] | null = null;
+
 function operations() {
-  return Object.entries(openapi.paths).flatMap(([path, methods]) =>
+  operationsCache ??= Object.entries(openapi.paths).flatMap(([path, methods]) =>
     Object.entries(methods as Record<string, Operation>).flatMap(([method, operation]) =>
       operation.operationId ? [{ ...operation, method: method.toUpperCase(), path }] : [],
     ),
   );
+  return operationsCache;
 }
 
 function normaliseDocumentPath(path: string) {
@@ -66,9 +69,12 @@ function renderDocuments() {
 
 let documentsCache: ReturnType<typeof renderDocuments> | null = null;
 
-// @nonobvious(forced-by) static docs corpus: cache the render across requests
+// @nonobvious(forced-by) static docs corpus: cache the render across requests, but clear the cache if it rejects so a transient failure does not poison every later call on a warm instance
 function searchableDocuments() {
-  documentsCache ??= renderDocuments();
+  documentsCache ??= renderDocuments().catch((error) => {
+    documentsCache = null;
+    throw error;
+  });
   return documentsCache;
 }
 

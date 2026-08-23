@@ -49,6 +49,7 @@ export async function getMarkdownForPath(path: string) {
 
   if (normalised.startsWith("/docs/")) {
     const slug = normalised.slice("/docs/".length).split("/").filter(Boolean);
+    if (slug.some((segment) => !/^[a-z0-9_-]+$/i.test(segment))) return null;
     const page = source.getPage(slug);
     return page ? getLLMText(page) : null;
   }

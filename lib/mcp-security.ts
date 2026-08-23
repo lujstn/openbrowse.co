@@ -4,7 +4,7 @@ const publicHosts = new Set(["openbrowse.co", "www.openbrowse.co"]);
 function normalisePreviewHost(value: string | undefined) {
   return value
     ?.trim()
-    .toLocaleLowerCase()
+    .toLowerCase()
     .replace(/^https?:\/\//, "")
     .replace(/\/.*$/, "")
     .replace(/:\d+$/, "");
@@ -18,11 +18,11 @@ function isPreviewHost(host: string) {
 
 function requestHost(request: Request) {
   const value = request.headers.get("host") ?? new URL(request.url).host;
-  return value.toLocaleLowerCase().replace(/:\d+$/, "");
+  return value.toLowerCase().replace(/:\d+$/, "");
 }
 
 function requestProtocol(request: Request) {
-  return (request.headers.get("x-forwarded-proto")?.split(",", 1)[0] ?? new URL(request.url).protocol.replace(":", "")).toLocaleLowerCase();
+  return (request.headers.get("x-forwarded-proto")?.split(",", 1)[0] ?? new URL(request.url).protocol.replace(":", "")).toLowerCase();
 }
 
 // @nonobvious(must-hold) Host validation alone defeats DNS rebinding (a rebound request carries the attacker's Host), so public read-only discovery documents gate on this and ignore Origin, which lets legitimate cross-origin agents through
@@ -44,7 +44,7 @@ export function isAllowedMcpRequest(request: Request) {
   if (!origin) return true;
   try {
     const originUrl = new URL(origin);
-    const originHost = originUrl.hostname.toLocaleLowerCase();
+    const originHost = originUrl.hostname.toLowerCase();
     return (
       (publicHost && originUrl.protocol === "https:" && (publicHosts.has(originHost) || isPreviewHost(originHost))) ||
       (localHosts.has(host) && originUrl.protocol === "http:" && localHosts.has(originHost))
