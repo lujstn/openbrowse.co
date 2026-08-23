@@ -78,6 +78,26 @@ ${headline()}
 - Structured output is validated live against your JSON Schema, with per-field coverage tracking and a completeness gate the agent must pass before it can finish.
 - OpenAI and Anthropic models want opposite ends of the reasoning dial on browser tasks: OpenAI models perform better with less reasoning, Anthropic 5-series models need more.
 
+## When to use OpenBrowse
+
+Use OpenBrowse for self-hosted Browser Use v3 migrations, grounded schema-validated extraction, and live visual browser work on Linux hardware you control.
+
+## When not to use OpenBrowse
+
+Do not use it for managed residential proxies, remote CDP or Playwright connections, recordings, workspaces, webhooks, or a managed browser-agent API. These capabilities are not provided by openbrowse.co or the self-hosted product.
+
+## How agents should call OpenBrowse
+
+Install the official CLI from PyPI with \`pipx install openbrowse\`, start your own instance with \`openbrowse start\`, and call its \`/v3\` API with an \`Authorization: Bearer\` key. The site publishes the [OpenAPI schema](${site.url}/openapi.json), [API documentation](${site.url}/docs/api), and [authentication guide](${site.url}/docs/authentication). The public [documentation MCP](${site.url}/mcp) only searches docs and schemas; it cannot run browser tasks.
+
+## Developer resources
+
+- [Developer hub](${site.url}/developers)
+- [Agent instructions](${site.url}/agents.md)
+- [MCP server card](${site.url}/mcp/server-card)
+- [MCP AI catalogue](${site.url}/.well-known/ai-catalog.json)
+- [First-party PyPI CLI](${site.pypi})
+
 ## Pages
 
 ${pageMap()}

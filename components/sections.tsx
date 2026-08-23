@@ -15,8 +15,8 @@ export function CapabilitiesSection() {
             key={item.id}
             className="border-t border-line pt-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6 lg:first:border-l-0 lg:first:pl-0"
           >
-            <dt className="text-[16px] font-semibold text-ink text-balance">
-              {item.title}
+            <dt>
+              <h3 className="text-[16px] font-semibold text-ink text-balance">{item.title}</h3>
             </dt>
             <dd className="mt-2.5 text-[14px] leading-relaxed text-muted">
               {item.body}

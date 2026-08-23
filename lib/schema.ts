@@ -26,7 +26,23 @@ const publisher = {
   "@id": ORGANISATION_ID,
   name: site.name,
   url: site.url,
+  description: site.abstract,
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "technical support",
+    email: "help@lujstn.com",
+    availableLanguage: "English",
+  },
+  sameAs: [site.repo, site.pypi, site.doiUrl, release.orcid],
 };
+
+export function organisation() {
+  return {
+    "@context": "https://schema.org",
+    ...publisher,
+    founder: author,
+  };
+}
 
 const partOfSite = {
   "@type": "WebSite",

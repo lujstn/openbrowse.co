@@ -108,7 +108,10 @@
     },
     {
       "source": "/",
-      "headers": { "Cache-Control": "public, max-age=0, must-revalidate" }
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate",
+        "Vary": "Accept"
+      }
     },
     {
       "source": "/(.*)",

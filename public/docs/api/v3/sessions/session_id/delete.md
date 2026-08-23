@@ -20,4 +20,7 @@ curl -X DELETE "https://your-host/v3/sessions/{session_id}" \
 ## Responses
 
 - `204`: Successful Response
+- `401`: Authentication failed.
+- `404`: Requested resource was not found.
 - `422`: Validation Error
+- `429`: Authentication attempts are rate limited.

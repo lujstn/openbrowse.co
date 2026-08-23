@@ -19,7 +19,7 @@ _openapi:
       - content: "Parameters: session_id, x-browser-use-api-key"
       - content: "Request body fields: strategy"
       - content: "Response fields: id, status, model, title, output, outputSchema, stepCount, lastStepSummary, isTaskSuccessful, liveUrl, recordingUrls, profileId, workspaceId, proxyCountryCode, maxCostUsd, totalInputTokens, totalOutputTokens, llmCostUsd, proxyCostUsd, browserCostUsd, proxyUsedMb, totalCostUsd, screenshotUrl, reasoningEffort, failureKind, failureStatusCode, agentmailEmail, integrationsUsed, createdAt, updatedAt"
-      - content: "Status codes: 200, 422"
+      - content: "Status codes: 200, 401, 404, 422, 429"
       - content: Cancel a running session and close its browser. The default leaves it
           stopped; strategy "task" leaves it idle, so a later call can give it
           new work.

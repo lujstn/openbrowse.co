@@ -18,7 +18,7 @@ _openapi:
       - content: "Parameters: profile_id, x-browser-use-api-key"
       - content: "Request body fields: name, userId"
       - content: "Response fields: id, userId, name, lastUsedAt, createdAt, updatedAt, cookieDomains"
-      - content: "Status codes: 200, 422"
+      - content: "Status codes: 200, 401, 404, 422, 429"
       - content: "Update a profile's editable fields. PUT and PATCH behave identically
           here: both apply only the fields present in the request body."
 ---

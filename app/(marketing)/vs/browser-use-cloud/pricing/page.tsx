@@ -28,7 +28,10 @@ const DESCRIPTION = `Browser Use Cloud's published rates as read on ${CAPTURED},
 export const metadata: Metadata = {
   title: SEO_TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: "/vs/browser-use-cloud/pricing" },
+  alternates: {
+    canonical: "/vs/browser-use-cloud/pricing",
+    types: { "text/markdown": "/vs/browser-use-cloud/pricing.md" },
+  },
   openGraph: {
     ...articleOpenGraph,
     title: SEO_TITLE,

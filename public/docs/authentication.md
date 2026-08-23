@@ -1,0 +1,34 @@
+# Authentication
+
+> Authenticate requests to a self-hosted OpenBrowse instance, protect the bearer token, and separate API access from the dashboard login.
+
+*Source: https://openbrowse.co/docs/authentication*
+
+OpenBrowse has no hosted account system. Each instance has its own credentials, created during first-time setup or configured in its `.env` file. The API accepts a bearer token on every protected request. Treat that token as a secret with the same care you give a production password: anyone who has it can submit work to your instance and read the resources that token is allowed to reach.
+
+## API requests
+
+Send the instance API key in the `Authorization` header:
+
+```bash
+curl https://your-host/v3/sessions \
+  -H "Authorization: Bearer $OPENBROWSE_API_KEY"
+```
+
+The `browser-use-sdk` client may send the same key in `X-Browser-Use-API-Key`; OpenBrowse accepts that form too. Use one credential-loading path in your application, keep it outside source control, and inject it through your deployment’s secret mechanism rather than committing it to a `.env` file that ships with code.
+
+## Dashboard access is separate
+
+The dashboard has its own HTTP Basic authentication. It protects the live browser view, session feed and profile-management interface. The dashboard login does not replace the API key, and an API key does not make a dashboard session safe to share. Configure both deliberately during setup, use distinct strong values, and restrict who can reach the host in the first place.
+
+## Operating an exposed instance
+
+The safest default is private network access, such as a Tailscale tailnet. If an instance must be reachable from the public internet, terminate TLS, preserve the forwarded client address correctly and keep authentication enabled. `ALLOW_INSECURE_NO_AUTH` exists only for local development; never set it on an exposed instance. See [exposing it safely](https://openbrowse.co/docs/exposing) for the deployment details.
+
+## If authentication fails
+
+A `401` saying `Server authentication is not configured` means the instance has no `API_KEY`. A `401` saying `Invalid API key` means the supplied value does not match, or an intermediary stripped the header. Recheck the base URL, header name and secret source before rotating anything. Repeated failed attempts are throttled, so a client should honour `Retry-After` when it receives a `429`.
+
+## Next
+
+Read [error handling](https://openbrowse.co/docs/errors) for retry guidance, and [profiles](https://openbrowse.co/docs/profiles) before automating any account that relies on stored browser credentials.

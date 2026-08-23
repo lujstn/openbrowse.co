@@ -54,7 +54,7 @@ const FAQ = [
 export const metadata: Metadata = {
   title: SEO_TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: "/vs/browserbase" },
+  alternates: { canonical: "/vs/browserbase", types: { "text/markdown": "/vs/browserbase.md" } },
   openGraph: {
     ...articleOpenGraph,
     title: SEO_TITLE,

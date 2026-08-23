@@ -29,4 +29,7 @@ curl -X PATCH "https://your-host/v3/profiles/{profile_id}" \
 ## Responses
 
 - `200`: Successful Response
-- `422`: Validation Error
+- `401`: Authentication failed.
+- `404`: Requested resource was not found.
+- `422`: Request validation failed.
+- `429`: Authentication attempts are rate limited.

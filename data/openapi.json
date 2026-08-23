@@ -28,7 +28,7 @@
         ],
         "summary": "Create Profile",
         "description": "Create an empty profile, with no cookies and no per-origin storage yet. Fill it by importing a cookie jar, or by letting a session log in while using it.",
-        "operationId": "create_profile_v3_profiles_post",
+        "operationId": "createProfile",
         "security": [
           {
             "HTTPBearer": []
@@ -80,12 +80,40 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "401": {
+            "description": "Authentication failed.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempts are rate limited.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until authentication may be retried.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             }
@@ -98,7 +126,7 @@
         ],
         "summary": "List Profiles",
         "description": "List profiles, paginated, with an optional query to narrow the results.",
-        "operationId": "list_profiles_v3_profiles_get",
+        "operationId": "listProfiles",
         "security": [
           {
             "HTTPBearer": []
@@ -169,12 +197,40 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "401": {
+            "description": "Authentication failed.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempts are rate limited.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until authentication may be retried.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             }
@@ -189,7 +245,7 @@
         ],
         "summary": "Get Profile",
         "description": "Fetch a single profile by id. Returns 404 if no profile has that id.",
-        "operationId": "get_profile_v3_profiles__profile_id__get",
+        "operationId": "getProfile",
         "security": [
           {
             "HTTPBearer": []
@@ -229,6 +285,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProfileView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempts are rate limited.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until authentication may be retried.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             }
@@ -251,7 +345,7 @@
         ],
         "summary": "Update Profile",
         "description": "Update a profile's editable fields. PUT and PATCH behave identically here: both apply only the fields present in the request body.",
-        "operationId": "update_profile_v3_profiles__profile_id__put",
+        "operationId": "updateProfile",
         "security": [
           {
             "HTTPBearer": []
@@ -305,12 +399,50 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "401": {
+            "description": "Authentication failed.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempts are rate limited.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until authentication may be retried.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             }
@@ -323,7 +455,7 @@
         ],
         "summary": "Update Profile",
         "description": "Update a profile's editable fields. PUT and PATCH behave identically here: both apply only the fields present in the request body.",
-        "operationId": "update_profile_v3_profiles__profile_id__patch",
+        "operationId": "patchProfile",
         "security": [
           {
             "HTTPBearer": []
@@ -377,12 +509,50 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "401": {
+            "description": "Authentication failed.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempts are rate limited.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until authentication may be retried.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             }
@@ -395,7 +565,7 @@
         ],
         "summary": "Delete Profile",
         "description": "Delete a profile and the browser state stored against it. The cookies and per-origin storage go with it.",
-        "operationId": "delete_profile_v3_profiles__profile_id__delete",
+        "operationId": "deleteProfile",
         "security": [
           {
             "HTTPBearer": []
@@ -432,6 +602,44 @@
           "204": {
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Authentication failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempts are rate limited.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until authentication may be retried.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -452,7 +660,7 @@
         ],
         "summary": "Put Storage State",
         "description": "Import a cookie jar into a profile, creating the profile if it does not exist yet.",
-        "operationId": "put_storage_state_v3_profiles__profile_id__storage_state_put",
+        "operationId": "putProfileStorageState",
         "security": [
           {
             "HTTPBearer": []
@@ -506,12 +714,50 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "400": {
+            "description": "Invalid storage state.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempts are rate limited.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until authentication may be retried.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             }
@@ -526,7 +772,7 @@
         ],
         "summary": "Create Session",
         "description": "Start a browser session and give the agent its task. The run begins immediately, and the response carries the session id you poll for progress.",
-        "operationId": "create_session_v3_sessions_post",
+        "operationId": "createSession",
         "security": [
           {
             "HTTPBearer": []
@@ -578,12 +824,50 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "401": {
+            "description": "Authentication failed.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempts are rate limited.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until authentication may be retried.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             }
@@ -596,7 +880,7 @@
         ],
         "summary": "List Sessions",
         "description": "List sessions with their current status, paginated. Running and finished sessions are both included.",
-        "operationId": "list_sessions_v3_sessions_get",
+        "operationId": "listSessions",
         "security": [
           {
             "HTTPBearer": []
@@ -654,12 +938,40 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "401": {
+            "description": "Authentication failed.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempts are rate limited.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until authentication may be retried.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             }
@@ -674,7 +986,7 @@
         ],
         "summary": "Get Session",
         "description": "Fetch one session by id, with its status, step count, live view URL and structured output as they stand right now.",
-        "operationId": "get_session_v3_sessions__session_id__get",
+        "operationId": "getSession",
         "security": [
           {
             "HTTPBearer": []
@@ -718,6 +1030,44 @@
               }
             }
           },
+          "401": {
+            "description": "Authentication failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempts are rate limited.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until authentication may be retried.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -736,7 +1086,7 @@
         ],
         "summary": "Delete Session",
         "description": "Cancel the session if it is still running, then delete it and everything stored against it.",
-        "operationId": "delete_session_v3_sessions__session_id__delete",
+        "operationId": "deleteSession",
         "security": [
           {
             "HTTPBearer": []
@@ -773,6 +1123,44 @@
           "204": {
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Authentication failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempts are rate limited.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until authentication may be retried.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -793,7 +1181,7 @@
         ],
         "summary": "List Messages",
         "description": "Read the messages a session has produced, paged with after, before and limit, for following a run live or diagnosing one afterwards.",
-        "operationId": "list_messages_v3_sessions__session_id__messages_get",
+        "operationId": "listSessionMessages",
         "security": [
           {
             "HTTPBearer": []
@@ -881,12 +1269,50 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "401": {
+            "description": "Authentication failed.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempts are rate limited.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until authentication may be retried.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             }
@@ -901,7 +1327,7 @@
         ],
         "summary": "Stop Session",
         "description": "Cancel a running session and close its browser. The default leaves it stopped; strategy \"task\" leaves it idle, so a later call can give it new work.",
-        "operationId": "stop_session_v3_sessions__session_id__stop_post",
+        "operationId": "stopSession",
         "security": [
           {
             "HTTPBearer": []
@@ -962,6 +1388,44 @@
               }
             }
           },
+          "401": {
+            "description": "Authentication failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested resource was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempts are rate limited.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until authentication may be retried.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -978,6 +1442,37 @@
   },
   "components": {
     "schemas": {
+      "ErrorEnvelope": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "description": "Stable machine-readable error code."
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Human-readable summary of the error."
+          },
+          "resolution": {
+            "type": "string",
+            "title": "Resolution",
+            "description": "Action the caller can take to resolve the error."
+          },
+          "detail": {
+            "title": "Detail",
+            "description": "Legacy error detail retained for compatibility."
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "resolution",
+          "detail"
+        ],
+        "title": "ErrorEnvelope"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {

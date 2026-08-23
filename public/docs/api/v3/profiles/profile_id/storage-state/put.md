@@ -29,4 +29,7 @@ curl -X PUT "https://your-host/v3/profiles/{profile_id}/storage-state" \
 ## Responses
 
 - `200`: Successful Response
-- `422`: Validation Error
+- `400`: Invalid storage state.
+- `401`: Authentication failed.
+- `422`: Request validation failed.
+- `429`: Authentication attempts are rate limited.
