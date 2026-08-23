@@ -26,7 +26,7 @@ The public MCP endpoint is \`${site.url}/mcp\`. It searches this documentation a
 ## Discovery
 
 - [Documentation](${site.url}/docs)
-- [Developer resources](${site.url}/developers)
+- [Notes for Agents](${site.url}/developers)
 - [LLMs index](${site.url}/llms.txt)
 - [Complete LLM corpus](${site.url}/llms-full.txt)
 - [Source code](${site.repo})

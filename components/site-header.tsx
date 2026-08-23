@@ -7,7 +7,6 @@ import { CONTAINER } from "@/components/section";
 const LINKS = [
   { label: "Benchmarks", href: "/benchmarks" },
   { label: "Docs", href: "/docs" },
-  { label: "Developers", href: "/developers" },
 ];
 
 export function SiteHeader() {
@@ -38,21 +37,30 @@ export function SiteHeader() {
           ))}
         </ul>
 
-        <a
-          href={site.repo}
-          aria-label="OpenBrowse on GitHub"
-          className="group ml-auto inline-flex size-8 shrink-0 items-center justify-center rounded-sm text-dim transition-colors hover:bg-panel hover:text-ink"
-        >
-          <svg
-            role="img"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            className="size-[18px] transition-transform duration-200 group-hover:scale-110"
-            fill="currentColor"
+        <div className="ml-auto flex items-center gap-4">
+          <Link
+            href="/developers"
+            className="whitespace-nowrap text-[13px] text-muted transition-colors hover:text-ink"
           >
-            <path d={siGithub.path} />
-          </svg>
-        </a>
+            Notes for Agents
+          </Link>
+
+          <a
+            href={site.repo}
+            aria-label="OpenBrowse on GitHub"
+            className="group inline-flex size-8 shrink-0 items-center justify-center rounded-sm text-dim transition-colors hover:bg-panel hover:text-ink"
+          >
+            <svg
+              role="img"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="size-[18px] transition-transform duration-200 group-hover:scale-110"
+              fill="currentColor"
+            >
+              <path d={siGithub.path} />
+            </svg>
+          </a>
+        </div>
       </nav>
     </header>
   );

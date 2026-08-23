@@ -11,7 +11,7 @@ const COLUMNS = [
       { label: "Getting started", href: "/docs" },
       { label: "Installation", href: "/docs/installation" },
       { label: "v3 API reference", href: "/docs/api" },
-      { label: "Developer resources", href: "/developers" },
+      { label: "Notes for Agents", href: "/developers" },
     ],
   },
   {
