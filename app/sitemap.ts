@@ -13,6 +13,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${site.url}/vs/browser-use-cloud`, priority: 0.9, changeFrequency: "monthly" },
     { url: `${site.url}/vs/browser-use-cloud/pricing`, priority: 0.8, changeFrequency: "monthly" },
     { url: `${site.url}/vs/browserbase`, priority: 0.9, changeFrequency: "monthly" },
+    { url: `${site.url}/developers`, priority: 0.9, changeFrequency: "monthly" },
+    { url: `${site.url}/about`, priority: 0.6, changeFrequency: "monthly" },
+    { url: `${site.url}/contact`, priority: 0.5, changeFrequency: "monthly" },
+    { url: `${site.url}/privacy`, priority: 0.5, changeFrequency: "monthly" },
   ];
 
   const docs: MetadataRoute.Sitemap = source.getPages().map((page) => ({

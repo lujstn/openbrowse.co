@@ -44,6 +44,22 @@ Author: ${site.author} (${site.orcid})
 
 ---
 
+# Agent use and discovery
+
+## When to use OpenBrowse
+
+Use OpenBrowse for self-hosted Browser Use v3 migrations, live browser-agent work and grounded schema-validated extraction on Linux infrastructure you control.
+
+## When not to use OpenBrowse
+
+OpenBrowse is not a managed browser API, residential proxy, remote CDP endpoint, recording service, workspace product or webhook provider. Browser traffic comes from your own machine and you operate the host and credentials.
+
+## Calling an instance
+
+Install the first-party CLI from PyPI with \`pipx install openbrowse\`, run \`openbrowse start\`, then call your own \`/v3\` endpoint with an \`Authorization: Bearer\` API key. Consult [the OpenAPI schema](${site.url}/openapi.json) and [authentication documentation](${site.url}/docs/authentication). The site-level [documentation MCP](${site.url}/mcp) is read-only and cannot run browser tasks.
+
+---
+
 # Benchmark
 
 ${benchmarks.task.summary}

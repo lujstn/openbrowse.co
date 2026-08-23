@@ -7,6 +7,7 @@ import { CONTAINER } from "@/components/section";
 const LINKS = [
   { label: "Benchmarks", href: "/benchmarks" },
   { label: "Docs", href: "/docs" },
+  { label: "Developers", href: "/developers" },
 ];
 
 export function SiteHeader() {

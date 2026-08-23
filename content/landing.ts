@@ -64,7 +64,7 @@ export const install = {
   start: "openbrowse start",
 } as const;
 
-// @nonobvious(must-hold) every section heading rendered on a marketing page is named here exactly once, and content/pages.ts assembles them into the page map that llms.txt publishes. A heading typed inline in a component would be invisible to that map, and scripts/check-export.mjs compares the published map against the exported HTML in both directions, so an unlisted heading fails the build rather than silently making llms.txt wrong.
+// @nonobvious(must-hold) every section heading rendered on a marketing page is named here exactly once, and content/pages.ts assembles them into the page map that llms.txt publishes. A heading typed inline in a component would be invisible to that map, and scripts/check-served.mjs compares the published map against the rendered HTML in both directions, so an unlisted heading fails the build rather than silently making llms.txt wrong.
 export const headings = {
   faqs: "FAQs",
   capabilities: "What it does that a cloud runner does not",
@@ -365,7 +365,7 @@ export const browserbase = {
     "The comparison above is an architectural one, and every line of it comes from documentation one side or the other publishes today.",
 } as const;
 
-// @nonobvious(must-hold) these two paths are the llmstxt.org contract and are also asserted by scripts/check-export.mjs; renaming either one silently breaks retrievers that look for them by convention
+// @nonobvious(must-hold) these two paths are the llmstxt.org contract and are also asserted by scripts/check-served.mjs; renaming either one silently breaks retrievers that look for them by convention
 // @nonobvious(must-hold) every figure this page renders comes from data/cloud-pricing.json and is stamped
 // with the date it was read, because a competitor's prices change without telling you and an undated quote of
 // them is a claim that goes wrong on its own. The arithmetic is derived rather than written: the multiplier

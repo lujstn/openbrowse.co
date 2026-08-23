@@ -25,14 +25,14 @@ The Markdown sources live in [`content/docs`](content/docs), and the pages that 
 
 ## What this repository is
 
-A static Next.js export, deployed on Vercel. It exists to be the crawlable canonical that search engines and LLM retrievers quote instead of the source repository, so every claim on it is real HTML text, the benchmark is a semantic table rather than an image, and the figures are derived from [`data/`](data) rather than typed into components.
+A dynamic Next.js app, deployed on Vercel. It exists to be the crawlable canonical that search engines and LLM retrievers quote instead of the source repository, so every claim on it is real HTML text, the benchmark is a semantic table rather than an image, and the figures are derived from [`data/`](data) rather than typed into components.
 
 It is published for reference rather than for outside contribution, and several of its checks expect a local checkout of the product repository alongside it.
 
 ```bash
 npm install
-npm run build   # static export to out/
-npm run check   # typecheck, constants, citation contract, markdown mirrors
+npm run build   # production build
+npm run check   # typecheck, tests, constants, citation contract, served-site checks
 ```
 
 ## Licence

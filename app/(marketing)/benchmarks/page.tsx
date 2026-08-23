@@ -31,7 +31,7 @@ const DESCRIPTION = `${shape.runs} runs of our extraction benchmark task across 
 export const metadata: Metadata = {
   title: SEO_TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: "/benchmarks" },
+  alternates: { canonical: "/benchmarks", types: { "text/markdown": "/benchmarks.md" } },
   openGraph: {
     ...articleOpenGraph,
     title: SEO_TITLE,

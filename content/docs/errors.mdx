@@ -1,0 +1,54 @@
+---
+title: "Error handling"
+description: "Interpret HTTP responses, session failureKind values and run status so callers retry only the failures that can plausibly succeed next time."
+---
+
+An accepted session is not a completed task. After creating a session, poll it or read its message stream until it reaches a terminal state, then inspect `isTaskSuccessful`, `output`, `lastStepSummary`, `failureKind` and `failureStatusCode`. This preserves the difference between an invalid request, a temporary provider outage and an agent that could not complete the work.
+
+## Request errors
+
+Every `/v3` endpoint reports failures as a structured JSON envelope, so a caller can branch on a stable field rather than parsing prose. A response that carries no body by specification, such as `204`, `304` or any `1xx`, stays bodyless.
+
+```json
+{
+  "code": "SESSION_NOT_IDLE",
+  "message": "Session is running, not idle",
+  "resolution": "Wait for the session to reach a terminal state, or start a new session for this task.",
+  "detail": "Session is running, not idle"
+}
+```
+
+Branch and retry on `code`. It is the stable, machine-readable identifier and does not change wording between releases. `message` is a human-readable summary, `resolution` is the action to surface to whoever made the request, and `detail` is the legacy error text kept for backward compatibility rather than for parsing.
+
+| Status | Code | Meaning |
+| --- | --- | --- |
+| `400` | `INVALID_STORAGE_STATE` | The request was structurally valid but its contents were rejected. |
+| `401` | `AUTH_NOT_CONFIGURED` | The instance has no API authentication configured. |
+| `401` | `INVALID_API_KEY` | The bearer token is missing or wrong. |
+| `404` | `SESSION_NOT_FOUND` | No session exists for the given id. |
+| `404` | `PROFILE_NOT_FOUND` | No profile exists for the given id. |
+| `404` | `ENDPOINT_NOT_FOUND` | The route or method does not exist under `/v3`. |
+| `422` | `REQUEST_VALIDATION_FAILED` | A field failed validation; `detail` names the field and the reason. |
+| `422` | `TASK_REQUIRED` | A task is required when targeting an existing session. |
+| `422` | `SESSION_NOT_IDLE` | The target session is not idle, so it cannot accept this request yet. |
+| `422` | `INVALID_REASONING_EFFORT` | The requested reasoning effort is not one the model accepts. |
+| `429` | `AUTH_RATE_LIMITED` | Authentication attempts are temporarily throttled; wait for `Retry-After`. |
+| `5xx` | `UNEXPECTED_ERROR` | The instance could not complete the request; inspect server logs and retry only if the operation is safe to repeat. |
+
+`UNEXPECTED_ERROR` is also the fallback for any status the instance does not map explicitly, so `code` is always present even on an error a caller has not seen before.
+
+Never blindly repeat a `POST` after a network interruption. First list or retrieve sessions to establish whether the instance accepted the original request; otherwise a retry can create duplicate work.
+
+## Session failures
+
+When a session ends in `error`, `failureKind` tells you whether a retry is sensible. `provider_rate_limit`, `provider_server_error`, `provider_connection_error` and `provider_timeout` describe failures outside the task itself and are normally worth retrying with back-off. `failureStatusCode` carries the upstream provider status where one exists.
+
+`session_timeout`, `invalid_output`, `budget_exhausted` and ordinary agent failures need investigation before a repeat. They often point to a task that is too broad, a schema that is too strict, a model choice that does not fit the work, or a `maxCostUsd` cap that stopped the run. A session interrupted by a server restart or blocked by a profile held by another running session may have no `failureKind`; its `lastStepSummary` and step feed are the source of truth.
+
+## A practical retry policy
+
+Retry temporary provider failures with bounded exponential back-off and a maximum attempt count. Do not retry `422` responses without changing the request. Keep the session id and the final response in your job record, and make processing of a successful `output` idempotent so a worker restart cannot publish the same result twice. If the result is incomplete, inspect the live view or exported full session before raising limits or resubmitting the task.
+
+## Next
+
+The [troubleshooting guide](/docs/troubleshooting) covers common host and browser failures. [Cost control](/docs/cost) explains how a spend cap changes a session’s terminal state.

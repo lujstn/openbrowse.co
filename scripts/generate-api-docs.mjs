@@ -182,7 +182,7 @@ ${sections}
 
 ## Errors
 
-Validation failures return \`422\` with a body describing which field failed and why. Anything that would exceed a session's \`maxCostUsd\` cap stops the run rather than continuing to spend.
+Every \`/v3\` error is a JSON envelope with a stable \`code\`, a human-readable \`message\`, a \`resolution\` hint and a legacy \`detail\`; branch and retry on \`code\` rather than on wording. Responses that carry no body by specification (\`204\`, \`304\`, \`1xx\`) stay bodyless, and anything that would exceed a session's \`maxCostUsd\` cap stops the run rather than continuing to spend. See [error handling](/docs/errors) for the full code list and retry policy.
 `;
 
 await writeFile(`${OUT}/index.mdx`, index);

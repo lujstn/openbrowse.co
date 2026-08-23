@@ -16,7 +16,7 @@ export type MarketingPage = {
   headings: string[];
 };
 
-// @nonobvious(mirrors) the source for both the page map llms.txt publishes and the assertion in scripts/check-export.mjs that compares it against the exported HTML. Headings are references, not literals, so a page and its map cannot hold different strings.
+// @nonobvious(mirrors) the source for both the page map llms.txt publishes and the assertion in scripts/check-served.mjs that compares it against the rendered HTML. Headings are references, not literals, so a page and its map cannot hold different strings.
 export const marketingPages: MarketingPage[] = [
   {
     url: "/",

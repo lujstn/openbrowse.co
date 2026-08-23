@@ -17,7 +17,7 @@ _openapi:
       - content: "Read the messages a session has produced, paged with after, before and limit, for following a run live or diagnosing one afterwards."
       - content: "Parameters: session_id, after, before, limit, x-browser-use-api-key"
       - content: "Response fields: messages, id, sessionId, role, data, type, summary, screenshotUrl, hidden, createdAt, hasMore"
-      - content: "Status codes: 200, 422"
+      - content: "Status codes: 200, 401, 404, 422, 429"
       - content: Read the messages a session has produced, paged with after, before and
           limit, for following a run live or diagnosing one afterwards.
 ---

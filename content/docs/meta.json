@@ -16,6 +16,9 @@
     "captchas",
     "models",
     "exposing",
+    "authentication",
+    "errors",
+    "mcp",
     "troubleshooting",
     "---API---",
     "..."

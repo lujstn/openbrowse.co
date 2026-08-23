@@ -11,6 +11,7 @@ const COLUMNS = [
       { label: "Getting started", href: "/docs" },
       { label: "Installation", href: "/docs/installation" },
       { label: "v3 API reference", href: "/docs/api" },
+      { label: "Developer resources", href: "/developers" },
     ],
   },
   {
@@ -28,6 +29,9 @@ const COLUMNS = [
       { label: "Source", href: site.repo },
       { label: "Issues", href: `${site.repo}/issues` },
       { label: "PyPI", href: site.pypi },
+      { label: "About", href: "/about" },
+      { label: "Contact", href: "/contact" },
+      { label: "Privacy", href: "/privacy" },
     ],
   },
 ];

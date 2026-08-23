@@ -100,7 +100,10 @@ export async function generateMetadata(
   return {
     title: page.data.seoTitle ?? page.data.title,
     description: page.data.seoDescription ?? page.data.description,
-    alternates: { canonical: page.url },
+    alternates: {
+      canonical: page.url,
+      types: { "text/markdown": `${page.url}.md` },
+    },
     openGraph: {
       ...articleOpenGraph,
       title: page.data.title,

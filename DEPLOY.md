@@ -5,18 +5,17 @@ touched. The apex still serves the old redirect described below.
 
 ## What it is
 
-A static Next.js export (`output: "export"`), built to `out/`. No server, no
-database, no runtime. Vercel serves the directory as static files.
+A dynamic Next.js app (App Router). It renders on the server and runs a
+middleware (`proxy.ts`) that serves any page as Markdown when the address ends
+in `.md` or the request sends `Accept: text/markdown`, alongside a read-only MCP
+server under `/mcp`. It deploys as Vercel functions; there is no static export
+and no `out/` directory.
 
 Response headers come from `vercel.ts`, which is generated from
-`config/headers.json`. That file is the single source: `scripts/check-export.mjs`
-asserts against the same list, so a header the site depends on cannot be
-removed without failing the build.
-
-The rule that matters most is `Content-Type: image/png` for the Open Graph
-image routes. They export without a file extension, so without an explicit rule
-they are served as `application/octet-stream` and every social preview fails
-silently.
+`config/headers.json`, together with the `headers()` block in `next.config.ts`.
+`scripts/check-served.mjs` boots the built site and asserts the headers, status
+codes and machine-readable files it depends on against the real responses, so a
+header the site relies on cannot go missing without failing the build.
 
 ## Deploying
 
@@ -27,8 +26,9 @@ npx vercel --prod  # production
 ```
 
 Or connect the repository in the Vercel dashboard. The framework preset is
-Next.js, the build command is `npm run build`, and the output directory is
-`out`.
+Next.js and the build command is `npm run build`; leave the output directory at
+the Next.js default rather than `out`, since the app is no longer a static
+export.
 
 ## The published version tracks upstream
 

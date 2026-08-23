@@ -31,7 +31,10 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Build static export
+      - name: Test
+        run: npm test
+
+      - name: Build
         run: npm run build
 
       # @nonobvious(mirrors) this runs before the build because it is the cheapest failure to read: a
@@ -41,13 +44,8 @@ jobs:
         env:
           OPENBROWSE_REPO: .upstream
 
-      - name: Verify the export still satisfies the citation contract
-        run: npm run check:export
-
-      # @nonobvious(mirrors) public/docs is committed but generated, so an MDX edit that never got a local
-      # build leaves the markdown an LLM fetches describing the previous version of the page
-      - name: Verify the committed markdown mirrors are current
-        run: npm run check:mirror
+      - name: Verify the served site satisfies the citation contract
+        run: npm run check:served
 
   upstream-drift:
     runs-on: ubuntu-latest
