@@ -1,7 +1,7 @@
 import { aiCatalog } from "@/lib/mcp";
 import { validatePublicMcpRequest } from "@/lib/mcp-http";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 const body = JSON.stringify(aiCatalog);
 const etag = `\"${Buffer.from(body).toString("base64url")}\"`;

@@ -2,6 +2,7 @@ import { marketingPages } from "@/content/pages";
 import { site } from "@/content/landing";
 import { trustPages, type TrustPage } from "@/content/trust";
 import { getLLMText, source } from "@/lib/source";
+import { canonicalPathFor } from "@/lib/markdown-path";
 
 const trustPageForPath = Object.entries(trustPages).map(([slug, page]) => ({
   path: `/${slug}`,
@@ -38,7 +39,7 @@ function trustMarkdown(path: string) {
 }
 
 export async function getMarkdownForPath(path: string) {
-  const normalised = path === "/" ? "/" : path.replace(/\/$/, "");
+  const normalised = canonicalPathFor(path);
   if (normalised === "/") return marketingMarkdown(normalised);
 
   if (normalised === "/docs") {

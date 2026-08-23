@@ -59,11 +59,6 @@ jobs:
         env:
           OPENBROWSE_CFF: .upstream/CITATION.cff
 
-      # @nonobvious(mirrors) the reference pages have just changed, and public/docs is a committed build
-      # product of content/docs; leaving it out of this PR lands a tree that fails check:mirror on main
-      - name: Regenerate the markdown mirrors
-        run: node scripts/generate-md-mirror.mjs
-
       - name: Raise a pull request if anything changed
         uses: peter-evans/create-pull-request@v7
         with:
@@ -82,4 +77,3 @@ jobs:
             data/openapi.json
             data/release.json
             content/docs/api
-            public/docs

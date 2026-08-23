@@ -12,7 +12,7 @@ function isPublicContentPath(pathname: string) {
 
 function nextWithVary() {
   const response = NextResponse.next();
-  response.headers.set("Vary", "Accept");
+  response.headers.set("Vary", "Accept, Accept-Encoding");
   return response;
 }
 
@@ -23,7 +23,8 @@ export function proxy(request: NextRequest) {
 
   if (
     explicitMarkdown
-      ? EXCLUDED_PREFIXES.some((prefix) => canonicalPath.startsWith(prefix))
+      ? EXCLUDED_PREFIXES.some((prefix) => canonicalPath.startsWith(prefix)) ||
+        EXCLUDED_FILES.includes(pathname)
       : !isPublicContentPath(canonicalPath)
   ) {
     return NextResponse.next();

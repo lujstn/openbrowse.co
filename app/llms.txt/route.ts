@@ -40,7 +40,7 @@ function headline() {
   return facts.join("\n");
 }
 
-// @nonobvious(must-hold) the section list is emitted from content/pages.ts and re-read by scripts/check-export.mjs, which compares it against that page's exported headings in both directions; written by hand it would promise retrievers sections the page does not have
+// @nonobvious(must-hold) the section list is emitted from content/pages.ts and re-read by scripts/check-served.mjs, which compares it against that page's rendered headings in both directions; written by hand it would promise retrievers sections the page does not have
 function pageMap() {
   return marketingPages
     .map(

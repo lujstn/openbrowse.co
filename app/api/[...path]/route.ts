@@ -1,5 +1,3 @@
-const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"] as const;
-
 function endpointNotFound(request: Request) {
   const url = new URL(request.url);
   return Response.json(
@@ -26,6 +24,7 @@ export const PATCH = endpointNotFound;
 export const DELETE = endpointNotFound;
 export const OPTIONS = endpointNotFound;
 
-export function HEAD() {
-  return new Response(null, { status: 404, headers: { Allow: METHODS.join(", ") } });
+export function HEAD(request: Request) {
+  const { headers } = endpointNotFound(request);
+  return new Response(null, { status: 404, headers });
 }

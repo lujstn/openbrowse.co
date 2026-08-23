@@ -250,24 +250,15 @@ export function createMcpServer() {
   return server;
 }
 
-const sessions = new Map<string, WebStandardStreamableHTTPServerTransport>();
-
+// @nonobvious(forced-by) a fresh transport and server per request rather than a shared session map:
+// serverless scales across instances with separate memory, so a session stored on one instance is
+// invisible to the next request routed elsewhere, which would 404 as "Session not found". The tools are
+// read-only with no cross-request state, and the /mcp route hard-405s the GET and DELETE that streaming
+// resumption and explicit termination need, so stateless mode loses nothing.
 export async function handleMcpRequest(request: Request) {
-  const sessionId = request.headers.get("mcp-session-id") ?? undefined;
-  const existing = sessionId ? sessions.get(sessionId) : undefined;
-  if (existing) return existing.handleRequest(request);
-  if (sessionId) {
-    return Response.json(
-      { jsonrpc: "2.0", error: { code: -32001, message: "Session not found" }, id: null },
-      { status: 404 },
-    );
-  }
-
   const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: crypto.randomUUID,
+    sessionIdGenerator: undefined,
     enableJsonResponse: true,
-    onsessioninitialized: (id) => void sessions.set(id, transport),
-    onsessionclosed: (id) => void sessions.delete(id),
   });
   await createMcpServer().connect(transport);
   return transport.handleRequest(request);

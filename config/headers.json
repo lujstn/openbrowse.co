@@ -1,5 +1,5 @@
 {
-  "$comment": "The single source for response headers. vercel.ts turns these into the deploy config, and scripts/check-export.mjs asserts against the same list, so the guard cannot drift from what is actually served.",
+  "$comment": "The single source for response headers. vercel.ts turns these into the deploy config, and scripts/check-served.mjs fetches the running site and asserts the headers it depends on, so the guard cannot drift from what is actually served.",
   "rules": [
     {
       "source": "/_next/static/(.*)",
@@ -45,41 +45,6 @@
       }
     },
     {
-      "$comment": "Scoped to the docs tree rather than every .md path, because a header rule cannot be conditioned on response status: a catch-all stamped text/markdown onto the HTML 404 body served for any invented .md address. The pattern is deliberately /(docs.*) and not /docs/(.*), because the index mirror is written to public/docs.md, outside the public/docs directory.",
-      "source": "/(docs.*).md",
-      "headers": {
-        "Content-Type": "text/markdown; charset=utf-8",
-        "Cache-Control": "public, max-age=300, must-revalidate"
-      }
-    },
-    {
-      "$comment": "The mirrors are near-verbatim duplicates of pages that are themselves indexable, so they name the HTML page as canonical. A markdown file cannot carry a rel=canonical link element, and this header is the documented equivalent for a non-HTML resource. :path+ requires at least one segment, which keeps this rule disjoint from the /docs.md rule below rather than relying on which of two matching rules wins.",
-      "source": "/docs/:path+.md",
-      "headers": {
-        "Link": "<https://openbrowse.co/docs/$1>; rel=\"canonical\""
-      }
-    },
-    {
-      "source": "/docs.md",
-      "headers": {
-        "Link": "<https://openbrowse.co/docs>; rel=\"canonical\""
-      }
-    },
-    {
-      "$comment": "Every app route exports a sibling .txt holding the page's full React payload, which the client router prefetches. They cannot be removed without breaking client-side navigation, and they carry no robots signal of their own, so they are a parallel indexable copy of the whole site. The negative lookahead spares llms.txt and llms-full.txt, which exist to be retrieved; scripts/check-export.mjs compiles this exact pattern and asserts that split over the real exported file set.",
-      "source": "/((?!llms).*).txt",
-      "headers": {
-        "X-Robots-Tag": "noindex"
-      }
-    },
-    {
-      "$comment": "A static export cannot return 404 for the not-found route's own file, so it answers 200. Next injects its own noindex on the rendered page; this repeats it at the transport layer, where a crawler reads it without parsing the body.",
-      "source": "/_not-found",
-      "headers": {
-        "X-Robots-Tag": "noindex"
-      }
-    },
-    {
       "source": "/llms.txt",
       "headers": {
         "Content-Type": "text/plain; charset=utf-8",
@@ -94,7 +59,7 @@
       }
     },
     {
-      "$comment": "A megabyte of JSON holding the full text of every docs page. It has to stay public for the docs search to work, but it is a third copy of the corpus after the HTML and the mirrors, so it is kept out of the index.",
+      "$comment": "A megabyte of JSON holding the full text of every docs page. It has to stay public for the docs search to work, but it is a third copy of the corpus after the HTML and the generated markdown, so it is kept out of the index.",
       "source": "/api/search",
       "headers": {
         "Content-Type": "application/json; charset=utf-8",
@@ -110,7 +75,7 @@
       "source": "/",
       "headers": {
         "Cache-Control": "public, max-age=0, must-revalidate",
-        "Vary": "Accept"
+        "Vary": "Accept, Accept-Encoding"
       }
     },
     {

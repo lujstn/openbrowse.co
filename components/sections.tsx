@@ -4,26 +4,22 @@ import { Section, SectionHead } from "@/components/section";
 import { HeadlineStats } from "@/components/headline-stats";
 import { Panel } from "@/components/ui";
 
-// @nonobvious(must-hold) the heading is visually hidden rather than deleted: these four read as a bare capability strip by design, but a section of prose with no heading in the outline is unreadable to a screen reader and to a retriever building a page map
+// @nonobvious(must-hold) the h2 is visually hidden rather than deleted, and every item keeps a real h3: these four read as a bare capability strip by design, but a section of prose with no headings in the outline is unreadable to a screen reader and to a retriever building a page map. The strip is a plain list of headed items rather than a dl, because a dt cannot legally contain the h3 the outline needs
 export function CapabilitiesSection() {
   return (
     <Section id="how-it-differs" className="py-12 sm:py-16">
       <h2 className="sr-only">{differentiators.h2}</h2>
-      <dl className="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+      <ul role="list" className="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
         {differentiators.items.map((item) => (
-          <div
+          <li
             key={item.id}
             className="border-t border-line pt-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6 lg:first:border-l-0 lg:first:pl-0"
           >
-            <dt>
-              <h3 className="text-[16px] font-semibold text-ink text-balance">{item.title}</h3>
-            </dt>
-            <dd className="mt-2.5 text-[14px] leading-relaxed text-muted">
-              {item.body}
-            </dd>
-          </div>
+            <h3 className="text-[16px] font-semibold text-ink text-balance">{item.title}</h3>
+            <p className="mt-2.5 text-[14px] leading-relaxed text-muted">{item.body}</p>
+          </li>
         ))}
-      </dl>
+      </ul>
     </Section>
   );
 }

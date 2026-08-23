@@ -33,6 +33,7 @@ const publisher = {
     email: "help@lujstn.com",
     availableLanguage: "English",
   },
+  // @nonobvious(deliberately-missing) no address or telephone: this is a solo open-source project that publishes no postal address or phone, and inventing a PostalAddress to satisfy an audit is the kind of fabricated claim Google's structured-data policy forbids. The contactPoint email above is the real, verifiable contact.
   sameAs: [site.repo, site.pypi, site.doiUrl, release.orcid],
 };
 

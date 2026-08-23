@@ -102,7 +102,7 @@ export async function generateMetadata(
     description: page.data.seoDescription ?? page.data.description,
     alternates: {
       canonical: page.url,
-      types: { "text/markdown": `${page.url === "/docs" ? "/docs" : page.url}.md` },
+      types: { "text/markdown": `${page.url}.md` },
     },
     openGraph: {
       ...articleOpenGraph,
