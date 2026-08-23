@@ -15,10 +15,6 @@ const config: NextConfig = {
         ],
       },
       {
-        source: "/",
-        headers: [{ key: "Vary", value: "Accept, Accept-Encoding" }],
-      },
-      {
         source: "/((?!api|mcp|.well-known|_next).*)",
         headers: [{ key: "Vary", value: "Accept, Accept-Encoding" }],
       },

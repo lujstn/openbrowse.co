@@ -1,8 +1,12 @@
 import { handleMcpRequest, MCP_ENDPOINT } from "@/lib/mcp";
-import { isAllowedMcpRequest } from "@/lib/mcp-security";
+import { isAllowedMcpHost, isAllowedMcpRequest } from "@/lib/mcp-security";
 
 export function validatePublicMcpRequest(request: Request) {
   return isAllowedMcpRequest(request) ? null : new Response("Forbidden", { status: 403 });
+}
+
+export function validatePublicMcpHost(request: Request) {
+  return isAllowedMcpHost(request) ? null : new Response("Forbidden", { status: 403 });
 }
 
 export function mcpCorsHeaders() {

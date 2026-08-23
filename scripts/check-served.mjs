@@ -317,8 +317,15 @@ async function run() {
   } else {
     problems.push("/mcp/server-card served no ETag, so conditional caching cannot work");
   }
-  const denied = await get("/mcp/server-card", { headers: { Origin: "https://evil.example" } });
-  check(denied.status === 403, `/mcp/server-card allowed a cross-origin request (got ${denied.status}), so the security gate is not running`);
+  const cardCrossOrigin = await get("/mcp/server-card", { headers: { Origin: "https://elsewhere.example" } });
+  check(cardCrossOrigin.status === 200, `/mcp/server-card must be publicly readable cross-origin (it advertises Access-Control-Allow-Origin: *), got ${cardCrossOrigin.status}`);
+
+  const mcpCrossOrigin = await get("/mcp", {
+    method: "POST",
+    headers: { Origin: "https://elsewhere.example", "Content-Type": "application/json", Accept: "application/json, text/event-stream" },
+    body: "{}",
+  });
+  check(mcpCrossOrigin.status === 403, `/mcp accepted a cross-origin RPC (got ${mcpCrossOrigin.status}); the DNS-rebinding gate is not running`);
 
   const mcp = await get("/mcp", {
     method: "POST",

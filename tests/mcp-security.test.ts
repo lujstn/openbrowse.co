@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isAllowedMcpRequest } from "../lib/mcp-security.ts";
+import { isAllowedMcpHost, isAllowedMcpRequest } from "../lib/mcp-security.ts";
 
 function request(url: string, headers?: HeadersInit) {
   return new Request(url, { headers });
@@ -30,6 +30,15 @@ test("permits local HTTP development only for a local origin", () => {
     isAllowedMcpRequest(request("http://localhost:3000/mcp", { origin: "https://localhost:3001" })),
     false,
   );
+});
+
+test("host validation admits any origin but still blocks DNS rebinding and insecure hosts", () => {
+  assert.equal(
+    isAllowedMcpHost(request("https://openbrowse.co/mcp/server-card", { origin: "https://claude.ai" })),
+    true,
+  );
+  assert.equal(isAllowedMcpHost(request("https://evil.example/mcp/server-card", { host: "evil.example" })), false);
+  assert.equal(isAllowedMcpHost(request("http://openbrowse.co/mcp/server-card")), false);
 });
 
 test("allows only the configured Vercel preview hostname over HTTPS", () => {

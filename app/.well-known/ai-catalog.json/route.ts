@@ -1,5 +1,5 @@
 import { aiCatalog } from "@/lib/mcp";
-import { validatePublicMcpRequest } from "@/lib/mcp-http";
+import { validatePublicMcpHost } from "@/lib/mcp-http";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +7,7 @@ const body = JSON.stringify(aiCatalog);
 const etag = `\"${Buffer.from(body).toString("base64url")}\"`;
 
 export function GET(request: Request) {
-  const denied = validatePublicMcpRequest(request);
+  const denied = validatePublicMcpHost(request);
   if (denied) return denied;
   const headers = {
     "content-type": "application/ai-catalog+json; charset=utf-8",
@@ -25,5 +25,14 @@ export function GET(request: Request) {
 }
 
 export function OPTIONS(request: Request) {
-  return validatePublicMcpRequest(request) ?? new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-methods": "GET, OPTIONS", "access-control-allow-headers": "content-type, if-none-match" } });
+  const denied = validatePublicMcpHost(request);
+  if (denied) return denied;
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "GET, OPTIONS",
+      "access-control-allow-headers": "content-type, if-none-match",
+    },
+  });
 }

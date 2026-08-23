@@ -26,3 +26,8 @@ test("never chooses explicitly unacceptable or malformed Markdown", () => {
   assert.equal(prefersMarkdown("text/markdown;q=wat, text/html"), false);
   assert.equal(prefersMarkdown("text/markdown;q=1.2, text/html"), false);
 });
+
+test("uses the most specific matching range's quality, not a broad wildcard's", () => {
+  assert.equal(prefersMarkdown("text/*;q=0.9, text/markdown;q=0.1, text/html;q=0.1"), true);
+  assert.equal(prefersMarkdown("text/markdown;q=0, text/*;q=0.9"), false);
+});

@@ -2,7 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prefersMarkdown } from "@/lib/accept-negotiation";
 
 const EXCLUDED_PREFIXES = ["/_next", "/api", "/mcp", "/.well-known"];
-const EXCLUDED_FILES = ["/favicon.ico", "/robots.txt", "/sitemap.xml", "/llms.txt", "/llms-full.txt", "/openapi.json", "/agents.md"];
+// @nonobvious(must-hold) only a dotted path the matcher lets through needs listing here: the config matcher
+// already excludes .ico/.txt/.xml/.json and images, so /agents.md is the one dedicated-route file that
+// reaches the middleware and would otherwise be shadowed by the .md negotiation
+const EXCLUDED_FILES = ["/agents.md"];
 
 function isPublicContentPath(pathname: string) {
   return !EXCLUDED_PREFIXES.some((prefix) => pathname.startsWith(prefix)) &&

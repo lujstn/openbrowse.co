@@ -1,13 +1,19 @@
 const localHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
 const publicHosts = new Set(["openbrowse.co", "www.openbrowse.co"]);
 
-function previewHost() {
-  const value = process.env.VERCEL_URL?.trim().toLocaleLowerCase();
-  return value?.replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/:\d+$/, "") ?? null;
+function normalisePreviewHost(value: string | undefined) {
+  return value
+    ?.trim()
+    .toLocaleLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/.*$/, "")
+    .replace(/:\d+$/, "");
 }
 
 function isPreviewHost(host: string) {
-  return host === previewHost();
+  return [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL].some(
+    (value) => host === normalisePreviewHost(value),
+  );
 }
 
 function requestHost(request: Request) {
@@ -19,13 +25,21 @@ function requestProtocol(request: Request) {
   return (request.headers.get("x-forwarded-proto")?.split(",", 1)[0] ?? new URL(request.url).protocol.replace(":", "")).toLocaleLowerCase();
 }
 
-export function isAllowedMcpRequest(request: Request) {
+// @nonobvious(must-hold) Host validation alone defeats DNS rebinding (a rebound request carries the attacker's Host), so public read-only discovery documents gate on this and ignore Origin, which lets legitimate cross-origin agents through
+export function isAllowedMcpHost(request: Request) {
   const host = requestHost(request);
   const protocol = requestProtocol(request);
   const publicHost = publicHosts.has(host) || isPreviewHost(host);
   if ((!publicHost && !localHosts.has(host)) || !["http", "https"].includes(protocol)) return false;
   if (publicHost && protocol !== "https") return false;
+  return true;
+}
 
+export function isAllowedMcpRequest(request: Request) {
+  if (!isAllowedMcpHost(request)) return false;
+
+  const host = requestHost(request);
+  const publicHost = publicHosts.has(host) || isPreviewHost(host);
   const origin = request.headers.get("origin");
   if (!origin) return true;
   try {

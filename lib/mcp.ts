@@ -53,7 +53,7 @@ async function documentForPath(path: string) {
   return getLLMText(page);
 }
 
-async function searchableDocuments() {
+function renderDocuments() {
   return Promise.all(
     source.getPages().map(async (page) => ({
       path: page.url,
@@ -62,6 +62,14 @@ async function searchableDocuments() {
       text: await getLLMText(page),
     })),
   );
+}
+
+let documentsCache: ReturnType<typeof renderDocuments> | null = null;
+
+// @nonobvious(forced-by) static docs corpus: cache the render across requests
+function searchableDocuments() {
+  documentsCache ??= renderDocuments();
+  return documentsCache;
 }
 
 function resourceError(message: string) {

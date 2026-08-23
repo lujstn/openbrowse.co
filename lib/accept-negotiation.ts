@@ -44,7 +44,7 @@ function bestScore(ranges: MediaRange[], target: string) {
     .filter((value): value is NonNullable<typeof value> => value !== null)
     .sort(
       (a, b) =>
-        b.quality - a.quality || b.specificity - a.specificity || a.position - b.position,
+        b.specificity - a.specificity || b.quality - a.quality || a.position - b.position,
     )[0];
 }
 
