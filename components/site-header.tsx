@@ -3,10 +3,19 @@ import { siGithub } from "simple-icons";
 import { Mark } from "@/components/wordmark";
 import { site } from "@/content/landing";
 import { CONTAINER } from "@/components/section";
+import { MobileNav } from "@/components/mobile-nav";
 
-const LINKS = [
+const PRIMARY = [
   { label: "Benchmarks", href: "/benchmarks" },
   { label: "Docs", href: "/docs" },
+];
+
+const AGENTS = { label: "Notes for Agents", href: "/developers" };
+
+const MOBILE_LINKS = [
+  PRIMARY[0],
+  AGENTS,
+  { ...PRIMARY[1], external: true },
 ];
 
 export function SiteHeader() {
@@ -24,8 +33,8 @@ export function SiteHeader() {
           OpenBrowse
         </Link>
 
-        <ul className="flex items-center gap-6">
-          {LINKS.map((link) => (
+        <ul className="hidden items-center gap-6 sm:flex">
+          {PRIMARY.map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}
@@ -39,10 +48,10 @@ export function SiteHeader() {
 
         <div className="ml-auto flex items-center gap-4">
           <Link
-            href="/developers"
-            className="whitespace-nowrap text-[13px] text-muted transition-colors hover:text-ink"
+            href={AGENTS.href}
+            className="hidden whitespace-nowrap text-[13px] text-muted transition-colors hover:text-ink sm:block"
           >
-            Notes for Agents
+            {AGENTS.label}
           </Link>
 
           <a
@@ -60,6 +69,8 @@ export function SiteHeader() {
               <path d={siGithub.path} />
             </svg>
           </a>
+
+          <MobileNav links={MOBILE_LINKS} />
         </div>
       </nav>
     </header>

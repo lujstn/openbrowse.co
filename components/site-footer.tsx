@@ -38,7 +38,7 @@ const COLUMNS = [
 
 function LlmsCard() {
   return (
-    <div className="rounded-md border border-line bg-raised p-4 sm:col-span-2 lg:col-span-1">
+    <div className="rounded-md border border-line bg-raised p-4 col-span-2 lg:col-span-1">
       <h2 className="text-[11px] font-medium uppercase tracking-[0.05em] text-label">
         {machineReadable.heading}
       </h2>
@@ -69,8 +69,8 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-line px-5 py-14 sm:px-8">
       <div className={CONTAINER}>
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,0.9fr))_minmax(0,1.5fr)]">
-          <div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,0.9fr))_minmax(0,1.5fr)]">
+          <div className="col-span-2 lg:col-span-1">
             <span className="inline-flex items-center gap-1.5 text-[14px] font-bold tracking-[-0.02em] text-ink">
               <Mark />
               OpenBrowse
