@@ -103,6 +103,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* @nonobvious(forced-by) clip, not hidden: overflow-x hidden on the root establishes a scroll container and breaks the sticky header, where clip contains any stray overflow on a phone without doing so */
+@media (max-width: 47.99rem) {
+  html {
+    overflow-x: clip;
+  }
+}
+
 ::selection {
   background: color-mix(in srgb, var(--color-accent) 28%, transparent);
   color: var(--color-ink);

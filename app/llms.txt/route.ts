@@ -92,7 +92,7 @@ Install the official CLI from PyPI with \`pipx install openbrowse\`, start your 
 
 ## Developer resources
 
-- [Developer hub](${site.url}/developers)
+- [Notes for Agents](${site.url}/developers)
 - [Agent instructions](${site.url}/agents.md)
 - [MCP server card](${site.url}/mcp/server-card)
 - [MCP AI catalogue](${site.url}/.well-known/ai-catalog.json)

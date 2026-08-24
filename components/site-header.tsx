@@ -3,11 +3,19 @@ import { siGithub } from "simple-icons";
 import { Mark } from "@/components/wordmark";
 import { site } from "@/content/landing";
 import { CONTAINER } from "@/components/section";
+import { MobileNav } from "@/components/mobile-nav";
 
-const LINKS = [
+const PRIMARY = [
   { label: "Benchmarks", href: "/benchmarks" },
   { label: "Docs", href: "/docs" },
-  { label: "Developers", href: "/developers" },
+];
+
+const AGENTS = { label: "Notes for Agents", href: "/developers" };
+
+const MOBILE_LINKS = [
+  PRIMARY[0],
+  AGENTS,
+  { ...PRIMARY[1], external: true },
 ];
 
 export function SiteHeader() {
@@ -25,8 +33,8 @@ export function SiteHeader() {
           OpenBrowse
         </Link>
 
-        <ul className="flex items-center gap-6">
-          {LINKS.map((link) => (
+        <ul className="hidden items-center gap-6 sm:flex">
+          {PRIMARY.map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}
@@ -38,21 +46,32 @@ export function SiteHeader() {
           ))}
         </ul>
 
-        <a
-          href={site.repo}
-          aria-label="OpenBrowse on GitHub"
-          className="group ml-auto inline-flex size-8 shrink-0 items-center justify-center rounded-sm text-dim transition-colors hover:bg-panel hover:text-ink"
-        >
-          <svg
-            role="img"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            className="size-[18px] transition-transform duration-200 group-hover:scale-110"
-            fill="currentColor"
+        <div className="ml-auto flex items-center gap-4">
+          <Link
+            href={AGENTS.href}
+            className="hidden whitespace-nowrap text-[13px] text-muted transition-colors hover:text-ink sm:block"
           >
-            <path d={siGithub.path} />
-          </svg>
-        </a>
+            {AGENTS.label}
+          </Link>
+
+          <a
+            href={site.repo}
+            aria-label="OpenBrowse on GitHub"
+            className="group inline-flex size-8 shrink-0 items-center justify-center rounded-sm text-dim transition-colors hover:bg-panel hover:text-ink"
+          >
+            <svg
+              role="img"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="size-[18px] transition-transform duration-200 group-hover:scale-110"
+              fill="currentColor"
+            >
+              <path d={siGithub.path} />
+            </svg>
+          </a>
+
+          <MobileNav links={MOBILE_LINKS} />
+        </div>
       </nav>
     </header>
   );

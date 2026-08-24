@@ -12,8 +12,8 @@ Every `/v3` endpoint reports failures as a structured JSON envelope, so a caller
 ```json
 {
   "code": "SESSION_NOT_IDLE",
-  "message": "Session is running, not idle",
-  "resolution": "Wait for the session to reach a terminal state, or start a new session for this task.",
+  "message": "The session is running, not idle.",
+  "resolution": "Wait for the session to become idle before sending a follow-up task.",
   "detail": "Session is running, not idle"
 }
 ```
@@ -27,7 +27,7 @@ Branch and retry on `code`. It is the stable, machine-readable identifier and do
 | `401` | `INVALID_API_KEY` | The bearer token is missing or wrong. |
 | `404` | `SESSION_NOT_FOUND` | No session exists for the given id. |
 | `404` | `PROFILE_NOT_FOUND` | No profile exists for the given id. |
-| `404` | `ENDPOINT_NOT_FOUND` | The route or method does not exist under `/v3`. |
+| `404` / `405` | `ENDPOINT_NOT_FOUND` | The route or method does not exist under `/v3`. |
 | `422` | `REQUEST_VALIDATION_FAILED` | A field failed validation; `detail` names the field and the reason. |
 | `422` | `TASK_REQUIRED` | A task is required when targeting an existing session. |
 | `422` | `SESSION_NOT_IDLE` | The target session is not idle, so it cannot accept this request yet. |
