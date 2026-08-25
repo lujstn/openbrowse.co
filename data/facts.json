@@ -380,7 +380,7 @@
       "value": "completion",
       "source": "openbrowse/agent/runner.py",
       "pattern": "msg_type=\"(completion)\"",
-      "prose": "| `completion` | The final outcome line"
+      "prose": "| `completion` | The final delivery line"
     },
     {
       "key": "event_category_goal",
@@ -1243,6 +1243,46 @@
       "source": "openbrowse/hostinfo.py",
       "pattern": "_BUSY_LOAD_PER_CORE = ([\\d.]+)",
       "prose": "above 0.5 of load per core"
+    }
+  ],
+  "behaviours": [
+    {
+      "key": "shared_profile_sessions",
+      "source": "openbrowse/agent/runner.py",
+      "pattern": "sharing_with = join_profile\\(profile\\[\"id\"\\], session_id\\)",
+      "requiredProse": [
+        "Concurrent sessions may use the same profile",
+        "three-way merge applies only the keys that session changed",
+        "`sharedProfile`"
+      ],
+      "forbiddenProse": [
+        "One profile, one running session",
+        "Two runs can never claim the same browser profile",
+        "Profile is in use by running session"
+      ]
+    },
+    {
+      "key": "task_success_is_delivery",
+      "source": "openbrowse/agent/runner.py",
+      "pattern": "is_successful = history\\.is_done\\(\\) and schema_valid",
+      "requiredProse": [
+        "`isTaskSuccessful` reports delivery rather than judging",
+        "`isTaskSuccessful` says whether the run delivered the requested shape",
+        "schema-valid null or partial values"
+      ],
+      "forbiddenProse": [
+        "passes the completeness gate",
+        "complete, valid answer store is recorded successful"
+      ]
+    },
+    {
+      "key": "agent_note_survives_completion",
+      "source": "openbrowse/agent/runner.py",
+      "pattern": "summary \\+= f\"\\. The agent noted: ",
+      "requiredProse": [
+        "`The agent noted:`"
+      ],
+      "forbiddenProse": []
     }
   ]
 }

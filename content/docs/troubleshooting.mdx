@@ -76,7 +76,7 @@ No default password ships, and this is why. A known pair would be a working cred
 
 **`'x' is not a valid model`:** the model name is not in the supported list, also in [choosing a model](/docs/models).
 
-**A session goes straight to `error` with `Profile is in use by running session <id>`:** two runs cannot hold the same browser profile at once. The claim is taken inside the run rather than at request time, so the second session is accepted and reaches `running` before it fails. Wait for the holder to finish, or give the second run its own profile.
+**A session reports that its profile is also open elsewhere:** this is an informational `sharedProfile` event, not an error. Both sessions continue against private copies and merge their own cookie and storage changes back when they close. If two sessions change the same key, the later merge wins; use separate profiles only when the runs must have isolated login state.
 
 **Session errors at launch with `needs OPENAI_API_KEY` (or `ANTHROPIC_API_KEY`):** the model's provider key is missing from `.env`.
 
@@ -91,13 +91,13 @@ Read `failureKind` on the session first. It says in one word whether the failure
 | `budget_exceeded` | Only with a higher cap; see [cost control](/docs/cost) |
 | `invalid_output` | Not as-is. The model's reply was truncated or unusable; a simpler schema usually fixes it |
 | `agent_failure` | Not as-is. Either the agent gave up, or the run never started at all: a missing provider key lands here too, before a single step runs. Read the feed to tell which |
-| null, on a session that failed | Not classified. A server restart or a profile another session already holds fails outside the classified path; `lastStepSummary` and the feed are the source of truth |
+| null, on a session that failed | Not classified. A server restart fails outside the classified path; `lastStepSummary` and the feed are the source of truth |
 
-`failureKind` is not the verdict on its own. A run stopped by its cost cap that salvaged a complete, valid answer store is recorded successful and still carries `budget_exceeded`, so read `isTaskSuccessful` alongside it.
+`failureKind` is not the delivery verdict on its own. A run stopped by its cost cap that salvaged a schema-valid answer store can carry `isTaskSuccessful: true` and `failureKind: "budget_exceeded"` together, so read both fields.
 
 Then check the last feed entry, or the `lastStepSummary` on the session. All four below reach `lastStepSummary`; the cost stop and the step timeout are additionally written into the feed as rows, so you will see those either way:
 
-- **`Stopped: Cost $X exceeded budget $Y`:** the `maxCostUsd` cap fired. Whatever the answer store held at that point is preserved in `output`, and the run is recorded a success only if that output validates and passes the completeness gate, so a partial result is visible rather than lost. The session goes `stopped`, or `idle` if it was created with `keepAlive`. Raise the cap, or reduce spend; see [cost control](/docs/cost).
+- **`Stopped: Cost $X exceeded budget $Y`:** the `maxCostUsd` cap fired. Whatever the answer store held at that point is preserved in `output`, and `isTaskSuccessful` is true if that output matches the requested schema. A schema-valid result may still contain null or partial values, so decide from `output` whether it is sufficient. The session goes `stopped`, or `idle` if it was created with `keepAlive`. Raise the cap, or reduce spend; see [cost control](/docs/cost).
 - **`Interrupted by server restart`:** the server went down mid-run. The session is marked `error` at the next startup because it can never resume; run the task again.
 - **Status `expired`:** the session was created without a task and never given one; task-less `created` sessions are expired after 15 minutes. Create a new one.
 - **`Step timed out and was cancelled before completing`:** one step exceeded the 520-second ceiling; the run continues past it, but repeated timeouts usually mean the host is overloaded.

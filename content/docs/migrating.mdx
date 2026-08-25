@@ -109,7 +109,7 @@ A session created without a task and never given one is expired after fifteen mi
 
 ## 7. Two response fields the cloud does not have
 
-A failed session here carries `failureKind` and `failureStatusCode`, which the cloud's v3 response model does not define. They distinguish a provider rate limit, a provider 5xx, a connection error and a provider timeout from a session timeout, invalid output, budget exhaustion and ordinary agent failure, so a retrying caller can tell a transient blip apart from an agent that will fail the same way again. Both are null on success.
+A run here can carry `failureKind` and `failureStatusCode`, which the cloud's v3 response model does not define. They distinguish a provider rate limit, a provider 5xx, a connection error and a provider timeout from a session timeout, invalid output, budget exhaustion and ordinary agent failure, so a retrying caller can tell a transient blip apart from an agent that will fail the same way again. A budget-capped run may deliver a schema-valid result with `isTaskSuccessful: true` while retaining `failureKind: "budget_exceeded"`, so treat the fields as complementary rather than assuming both are null whenever output was delivered.
 
 They are additive, so a client that ignores them behaves exactly as it did. See [how OpenBrowse works](/docs/concepts) for the full set of values.
 

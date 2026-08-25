@@ -114,7 +114,7 @@ function extract(fact, body) {
   return { found: match[1] };
 }
 
-const { facts } = JSON.parse(await readFile("./data/facts.json", "utf8"));
+const { facts, behaviours = [] } = JSON.parse(await readFile("./data/facts.json", "utf8"));
 
 // @nonobvious(must-hold) an emptied fact list is the one failure this script cannot report as drift,
 // because there would be nothing left to compare; it has to be caught as the vacuum it is
@@ -207,6 +207,33 @@ for (const fact of facts) {
   verified += 1;
 }
 
+const corpus = [...prose.values()].join(" ");
+for (const behaviour of behaviours) {
+  const body = await source(behaviour.source);
+  if (body === null) {
+    problems.push(`${behaviour.key}: ${behaviour.source} no longer exists in the application source`);
+    continue;
+  }
+  if (!compile(behaviour.pattern, "").test(body)) {
+    problems.push(
+      `${behaviour.key}: ${behaviour.source} no longer matches /${behaviour.pattern}/, so the documented behaviour must be reviewed`,
+    );
+    continue;
+  }
+
+  const missing = behaviour.requiredProse.filter((text) => !corpus.includes(flatten(text)));
+  const forbidden = behaviour.forbiddenProse.filter((text) => corpus.includes(flatten(text)));
+  if (missing.length) {
+    problems.push(`${behaviour.key}: required documentation is missing: ${missing.join("; ")}`);
+    continue;
+  }
+  if (forbidden.length) {
+    problems.push(`${behaviour.key}: obsolete documentation remains: ${forbidden.join("; ")}`);
+    continue;
+  }
+  verified += 1;
+}
+
 if (problems.length) {
   console.error("the published prose has drifted from the OpenBrowse application source:\n");
   for (const p of problems) console.error(`  - ${p}`);
@@ -215,5 +242,5 @@ if (problems.length) {
 }
 
 console.log(
-  `published prose matches the application source: ${verified} constants verified against ${sources.size} source files and re-found in ${prose.size} prose files.`,
+  `published prose matches the application source: ${verified} claims verified against ${sources.size} source files and re-found in ${prose.size} prose files.`,
 );
