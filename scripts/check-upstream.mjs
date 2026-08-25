@@ -1,7 +1,11 @@
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 
-const README =
+const README_URL =
   "https://raw.githubusercontent.com/lujstn/openbrowse/main/README.md";
+const README_FILE = process.env.OPENBROWSE_README;
+const BENCHMARKS_FILE = process.env.OPENBROWSE_BENCHMARKS ?? "./data/benchmarks.json";
+const MODELS_FILE = process.env.OPENBROWSE_MODELS ?? "./data/models.json";
+const WRITE = process.argv.includes("--write");
 
 const strip = (cell) =>
   cell
@@ -38,17 +42,41 @@ function tokensToNumber(display) {
   return Number(value);
 }
 
+function durationToSeconds(display) {
+  const match = /^(?:(\d+)h\s*)?(?:(\d+)m\s*)?(?:(\d+)s)?$/.exec(display.trim());
+  if (!match || !match.slice(1).some(Boolean)) return Number.NaN;
+  return (
+    Number(match[1] ?? 0) * 3600 +
+    Number(match[2] ?? 0) * 60 +
+    Number(match[3] ?? 0)
+  );
+}
+
 const problems = [];
 
-const res = await fetch(README, { headers: { "user-agent": "openbrowse.co-drift-check" } });
-if (!res.ok) {
-  console.error(`could not fetch upstream README: HTTP ${res.status}`);
-  process.exit(2);
+let markdown;
+let sourceLabel;
+if (README_FILE) {
+  sourceLabel = README_FILE;
+  try {
+    markdown = await readFile(README_FILE, "utf8");
+  } catch (error) {
+    console.error(`could not read upstream README at ${README_FILE}: ${error.message}`);
+    process.exit(2);
+  }
+} else {
+  sourceLabel = README_URL;
+  const res = await fetch(README_URL, { headers: { "user-agent": "openbrowse.co-drift-check" } });
+  if (!res.ok) {
+    console.error(`could not fetch upstream README: HTTP ${res.status}`);
+    process.exit(2);
+  }
+  markdown = await res.text();
 }
-const markdown = await res.text();
 
-const local = JSON.parse(await readFile("./data/benchmarks.json", "utf8"));
-const localModels = JSON.parse(await readFile("./data/models.json", "utf8"));
+const local = JSON.parse(await readFile(BENCHMARKS_FILE, "utf8"));
+const localModels = JSON.parse(await readFile(MODELS_FILE, "utf8"));
+let benchmarksChanged = false;
 
 const tables = parseTables(markdown);
 const runTable = tables.find(
@@ -75,7 +103,9 @@ if (!runTable) {
     reasoning: cells[idx.Reasoning],
     steps: Number(cells[idx.Steps]),
     timeDisplay: cells[idx.Time],
+    seconds: durationToSeconds(cells[idx.Time]),
     tokens: tokensToNumber(cells[idx.Tokens]),
+    tokensDisplay: cells[idx.Tokens],
     costUsd: Number(cells[idx["LLM cost"]].replace("$", "")),
     records: recordsCol === -1 ? null : cells[recordsCol].trim(),
   }));
@@ -87,6 +117,15 @@ if (!runTable) {
   }
 
   for (const up of upstream) {
+    const invalidFields = ["steps", "seconds", "tokens", "costUsd"].filter(
+      (field) => !Number.isFinite(up[field]),
+    );
+    if (invalidFields.length) {
+      problems.push(
+        `${up.runtime} / ${up.model} / ${up.reasoning}: could not parse ${invalidFields.join(", ")} from the upstream row`,
+      );
+      continue;
+    }
     const match = local.runs.find(
       (r) =>
         r.runtime.replace("Browser Use Cloud", "BU Cloud") ===
@@ -100,7 +139,29 @@ if (!runTable) {
       );
       continue;
     }
-    for (const field of ["steps", "tokens", "costUsd", "timeDisplay"]) {
+    if (WRITE) {
+      for (const field of [
+        "steps",
+        "seconds",
+        "timeDisplay",
+        "tokens",
+        "tokensDisplay",
+        "costUsd",
+      ]) {
+        if (String(match[field]) !== String(up[field])) {
+          match[field] = up[field];
+          benchmarksChanged = true;
+        }
+      }
+    }
+    for (const field of [
+      "steps",
+      "seconds",
+      "timeDisplay",
+      "tokens",
+      "tokensDisplay",
+      "costUsd",
+    ]) {
       if (String(match[field]) !== String(up[field])) {
         problems.push(
           `${up.runtime} / ${up.model} / ${up.reasoning}: ${field} is ${match[field]} locally but ${up[field]} upstream`,
@@ -114,6 +175,13 @@ if (!runTable) {
       );
     }
   }
+}
+
+if (WRITE && benchmarksChanged) {
+  await writeFile(BENCHMARKS_FILE, `${JSON.stringify(local, null, 2)}\n`);
+  console.log(`synchronised benchmark measurements in ${BENCHMARKS_FILE}`);
+} else if (WRITE) {
+  console.log(`${BENCHMARKS_FILE} already matches the upstream benchmark measurements`);
 }
 
 // @nonobvious(forced-by) the leading `>` is optional because upstream folds these lists into a <details>
@@ -159,7 +227,7 @@ for (const up of upstreamModels) {
 if (problems.length) {
   console.error("data/ has drifted from the upstream README:\n");
   for (const p of problems) console.error(`  - ${p}`);
-  console.error(`\nSource: ${README}`);
+  console.error(`\nSource: ${sourceLabel}`);
   process.exit(1);
 }
 

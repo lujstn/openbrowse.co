@@ -83,7 +83,7 @@
       "timeDisplay": "2m 03s",
       "tokens": 136000,
       "tokensDisplay": "136k",
-      "costUsd": 0.41,
+      "costUsd": 0.33,
       "records": 14,
       "recordsExpected": 14,
       "faithful": true
@@ -148,7 +148,7 @@
       "timeDisplay": "5m 24s",
       "tokens": 339000,
       "tokensDisplay": "339k",
-      "costUsd": 1.12,
+      "costUsd": 0.9,
       "records": 14,
       "recordsExpected": 14,
       "faithful": true

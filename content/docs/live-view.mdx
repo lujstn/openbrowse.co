@@ -26,7 +26,7 @@ Each feed row is one message from the run. The row's badge tells you which layer
 | `result` | A step whose action returned content, such as a page read or a store write summary |
 | `browser_action_error` | A step that failed; the row shows the first sentence and the expandable card carries the full error text |
 | `event` | Annotations that are not steps: goal reminders, coverage checks, read progress, reviewer verdicts |
-| `completion` | The final outcome line |
+| `completion` | The final delivery line. When a schema-valid result arrives despite the agent expressing doubt, the line reports completion and preserves the agent's reason after `The agent noted:` |
 
 Those six are what a run itself produces. A seventh, `user_message`, records a follow-up task sent to a keep-alive session. `GET /v3/sessions/{id}/messages` applies no type filter at all, so match on all seven if you are filtering programmatically.
 

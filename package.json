@@ -12,6 +12,7 @@
     "openapi": "python3 scripts/generate-openapi.py --repo ../openbrowse -o data/openapi.json",
     "openapi:check": "python3 scripts/generate-openapi.py --repo ../openbrowse -o data/openapi.json --check",
     "check:upstream": "node scripts/check-upstream.mjs",
+    "sync:upstream": "node scripts/check-upstream.mjs --write",
     "check:served": "node scripts/check-served.mjs",
     "check:facts": "node scripts/check-facts.mjs",
     "check": "npm run typecheck && npm test && npm run check:facts && npm run build && npm run check:served",

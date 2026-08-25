@@ -34,11 +34,11 @@ const session = await client.sessions.create({
 
 ### A capped run keeps what it produced
 
-A budget stop resolves its output the same way an ordinary finish does, rather than discarding the work and charging you for nothing. The answer store's contents stand when the store holds them, `result.json` otherwise, and the run is recorded a success only when that output both validates against the schema and passes the completeness gate. Either way the output is written, so a partial is visible instead of vanishing, and a caller can see what was recovered before deciding whether to escalate.
+A budget stop resolves its output the same way an ordinary finish does, rather than discarding the work and charging you for nothing. The answer store's contents stand when the store holds them, `result.json` otherwise, and `isTaskSuccessful` is true when that output matches the requested schema. Either way the output is written, so null or partial values remain visible and the caller can decide whether the delivered result is sufficient before escalating.
 
 The salvage never calls the LLM. The budget that ended the run is the same budget schema repair would spend.
 
-One consequence worth knowing: a capped run whose store was complete is recorded successful **and** still carries `failureKind: "budget_exceeded"`. The two fields answer different questions, so read them together.
+One consequence worth knowing: a capped run whose store is schema-valid can carry `isTaskSuccessful: true` **and** `failureKind: "budget_exceeded"`. The first says a result was delivered; the second says the run stopped at its spending limit, so read them together.
 
 ### On a keep-alive session, the cap is per dispatch
 

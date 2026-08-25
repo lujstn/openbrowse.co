@@ -9,9 +9,9 @@ This page is the map. Everything on it is observable in the live view, and each 
 
 When you create a session with a task, the instance allocates a **display slot**: a fresh Xvfb virtual display at 1920x1080, an `x11vnc` server attached to it, and a `websockify` bridge serving noVNC to your browser. It then launches a stealth-configured Chromium on that display, supplied by CloakBrowser, the library that provides the patched browser binary with its own user-data directory and a Chrome DevTools Protocol port, and connects the agent to it over CDP. This is why the live view shows a real browser rather than a replay: the stream is the actual X display the agent is working on.
 
-Port allocation is deterministic per slot: displays start at `:10`, VNC ports at `5900` plus the display number, noVNC ports at `6080`, and CDP ports at `9222`. The number of slots is `MAX_CONCURRENT_SESSIONS` (default 1). Over the cap the create call still returns straight away: the session is accepted and its run waits for a slot inside its own task, so a burst of submissions queues rather than blocking the caller or failing. A keep-alive session parked between follow-ups gives its slot up to a newly started run, oldest first, so a browser nobody is using cannot hold a one-slot host indefinitely. Two runs can never claim the same browser profile. The claim is taken inside the run rather than at request time, so the second session is accepted, reaches `running`, and then ends `error` with a message naming the session that holds the profile.
+Port allocation is deterministic per slot: displays start at `:10`, VNC ports at `5900` plus the display number, noVNC ports at `6080`, and CDP ports at `9222`. The number of slots is `MAX_CONCURRENT_SESSIONS` (default 1). Over the cap the create call still returns straight away: the session is accepted and its run waits for a slot inside its own task, so a burst of submissions queues rather than blocking the caller or failing. A keep-alive session parked between follow-ups gives its slot up to a newly started run, oldest first, so a browser nobody is using cannot hold a one-slot host indefinitely. Concurrent runs may share one browser profile: each uses a private storage-state copy and merges only its own changes back when it closes.
 
-If a `profileId` was given, the profile's storage state (cookies plus per-origin `localStorage` and `sessionStorage`) is loaded into the browser before the run, and written back when the session ends. See [profiles](/docs/profiles).
+If a `profileId` was given, the profile's storage state (cookies plus per-origin `localStorage` and `sessionStorage`) is copied into the browser before the run. When the browser closes, a three-way merge applies that session's changes to the profile without discarding unrelated changes from other sessions. See [profiles](/docs/profiles).
 
 ## The goal pre-flight
 
@@ -51,7 +51,7 @@ If the task has an `outputSchema`, the schema is converted to a validation model
 
 When a run finishes with `done` and looks successful, a judge assesses the submitted result. If it requests changes, the review re-enters the agent as a continuation turn: the agent may apply the changes and resubmit, or push back with a justification (it gets two of those before the message demands the changes). The conversation is bounded at three rounds, and every verdict is recorded in the feed as an `event` whose category is `judge`, including a dissent note whenever the judge's verdict differs from the recorded outcome.
 
-One deliberate asymmetry: a run that dies before calling `done` but leaves behind a complete, schema-valid answer store is recorded as a success, with a feed entry saying so. The completeness gate is the arbiter, not the ceremony of finishing.
+One deliberate asymmetry: a run that ends before calling `done` but leaves behind a schema-valid answer store is recorded as delivered, with a feed entry saying so. `isTaskSuccessful` reports delivery rather than judging whether null or partial values make the result useful.
 
 ## Session lifecycle
 
@@ -97,8 +97,10 @@ The classification reads the original exception and unwraps a wrapped provider e
 
 Two things the table does not cover, both of which matter if you are treating `failureKind` as exhaustive:
 
-- **`failureKind` can be null on a failure.** A session errored by a server restart, or by a profile another running session already holds, is failed outside the classified path and carries no kind. `lastStepSummary` and the feed are the source of truth there.
-- **`failureKind` can be set on a success.** A run stopped by its cost cap that salvaged a complete, valid answer store is recorded successful *and* still carries `budget_exceeded`, because it did not finish on its own terms. Read `isTaskSuccessful` and `failureKind` together rather than treating either as the verdict on its own.
+- **`failureKind` can be null on a failure.** A session interrupted by a server restart is reconciled outside the classified path and carries no kind. `lastStepSummary` and the feed are the source of truth there.
+- **`failureKind` can be set when a result was delivered.** A run stopped by its cost cap that salvaged a schema-valid answer store has `isTaskSuccessful: true` *and* still carries `budget_exceeded`, because it delivered a result without finishing on its own terms. Read the two fields together.
+
+`isTaskSuccessful` answers a narrower question than its name may suggest: did this run deliver the requested shape? A run that reaches the end succeeds when it has no output schema, or when its output matches the requested schema. A paywall, a field the site does not publish and an agent expressing doubt can therefore accompany `true`; null and partial values in `output`, plus the agent's note in `lastStepSummary`, tell the caller what was unobtainable. `false` means nothing was delivered because the run stopped early, exhausted its steps or returned the wrong shape. Whether a delivered result is good enough remains the caller's decision.
 
 `POST /v3/sessions/{id}/stop` takes a strategy: `task` cancels the current task and leaves the session `idle` for follow-ups, while the default `session` stops it outright.
 

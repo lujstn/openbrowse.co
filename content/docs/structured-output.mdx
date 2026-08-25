@@ -81,11 +81,11 @@ The gate is one-shot: the second `done` is always accepted, so it can never loop
 Two consequences worth knowing:
 
 - The judge reviews the store's actual content (with long values elided for display, never truncated mid-record), so a complete store cannot be failed for looking abbreviated.
-- A run that dies before `done` but leaves a complete, schema-valid store is still recorded as a success, with a feed entry saying so.
+- A run that ends before `done` but leaves a schema-valid store is still recorded as delivered, with a feed entry saying so. Null or partial values may be valid; usefulness remains the caller's judgement.
 
 ## Getting the result
 
-The final `output` on the session is the store's content, validated once more against the schema; `isTaskSuccessful` reflects both the agent's completion and that validation.
+The final `output` on the session is the store's content, validated once more against the schema. `isTaskSuccessful` says whether the run delivered the requested shape, not whether every value is useful: a completed run with schema-valid null or partial values is `true`, while an early stop, exhausted step budget or schema-invalid result is `false`. When the agent doubts a delivered result, its reason appears alongside the successful completion in `lastStepSummary` instead of overriding the delivery flag.
 
 ```bash
 curl http://<your-host>:8420/v3/sessions/<session-id> \

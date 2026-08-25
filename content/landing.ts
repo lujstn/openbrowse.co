@@ -179,7 +179,7 @@ export const comparison = {
     {
       dimension: "Profiles",
       cloud: "Cloud profiles",
-      openbrowse: "Import your existing cloud profiles, cookies and localStorage, with one command",
+      openbrowse: "Import existing cloud profiles, then safely share one login across concurrent sessions",
       advantage: "neutral",
     },
     {
@@ -466,7 +466,7 @@ export const faq = [
   },
   {
     q: "Can I bring my existing profiles?",
-    a: "Yes. Import your cloud profile export and existing profileId references keep working.",
+    a: "Yes. Import your cloud profile export and existing profileId references keep working. Concurrent sessions can safely share that profile: each merges only its own cookie and storage changes back when it finishes.",
     link: { label: "Profiles", href: "/docs/profiles" },
   },
   {
