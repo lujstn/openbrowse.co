@@ -121,6 +121,8 @@ Upgrades are the part that comes closest to the managed experience: the instance
 
 ## What does carry over
 
+`outputSchema` carries two standard JSON Schema 2020-12 keywords that OpenBrowse acts on and the cloud ignores: a top-level `if` / `then` / `else` marking a field that only applies on one branch, and `default` on a field whose value you already hold. A schema using them runs unchanged against either backend, so you can adopt them without forking your request builder. See [structured output](/docs/structured-output#telling-the-schema-what-you-already-know).
+
 Worth stating plainly, because the list above is longer than the list of things that break:
 
 - The whole `sessions` surface: create, get, list, stop, and follow-up tasks against an existing session.

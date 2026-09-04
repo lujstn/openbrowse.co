@@ -60,6 +60,8 @@ In benchmark order of leverage:
 2. **Model choice.** The spread between the cheapest and dearest full extraction was 7.4x, with no difference in records recovered.
 3. **Prompt scope.** A tight prompt finishes in fewer steps, and steps are where tokens go. The 36-step budget run and the 11-step focused run recovered identical data.
 4. **Schema design.** Nullable fields and enums let the store settle absent data quickly instead of sending the agent hunting for values the site never publishes.
+5. **Fields you already know.** Anything recoverable from one plain HTTP GET — the title, the meta description, `og:` tags, the page's own links — costs nothing to fetch yourself and a browser step each to have an agent read back. Hand them over as schema `default`s and the agent never spends a token on them. On one org-enrichment task this was the difference between 30 steps and 8.
+6. **Fields that only apply sometimes.** A field that is null by design on the branch the run took is still chased by the completeness gate unless the schema says otherwise. Both keywords are described under [structured output](/docs/structured-output#telling-the-schema-what-you-already-know).
 
 Token-heavy behaviour inside a run is already managed for you: repeated large tool outputs are deduplicated into back-references, oversized dumps are capped to previews with the data saved to files, and steps that only do store or file work skip the screenshot and DOM re-serialisation entirely.
 
