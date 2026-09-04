@@ -15,6 +15,7 @@ This page covers what the schema may contain, how the store behaves, and why the
 - Optional fields as `anyOf`/`oneOf` with a `{"type": "null"}` branch, or as a type array `["string", "null"]`
 - String `enum`s, enforced as literal types
 - Nested objects and arrays, `$ref` and `$defs`, `additionalProperties` (`false` forbids unknown keys, anything else allows them), and `description` on any field
+- `default` on a top-level field, and a top-level `if` / `then` / `else`. These two say something about a run rather than a shape, and both are covered under [telling the schema what you already know](#telling-the-schema-what-you-already-know)
 
 A genuine multi-branch union (more than one non-null type for a field) cannot be represented. In that case the run falls back to prose mode: the schema is appended to the task text, the agent works without the store, and the final answer is validated once at the end, with a single reformat pass if it does not parse.
 
@@ -38,6 +39,31 @@ Values are kept byte-identical rather than normalised, because scraped data shou
 - Make fields the site might not publish nullable. A required non-nullable field the site never shows can only end in a failed run.
 - If you want unmapped observables kept rather than dropped, give items a field shaped as a list of `{key, value}` objects (or a plain object field); the draft mapper routes leftovers there.
 
+### Telling the schema what you already know
+
+Two standard JSON Schema 2020-12 keywords are read for what they say about a run. Both are ignored by hosted Browser Use, so a schema carrying them works against either backend; it simply costs less here.
+
+**A field that only applies on one branch.** A `reason` that exists only when a page could not be retrieved is not missing work, but without saying so the completeness gate treats it as an unfilled field and the agent spends steps settling something the schema already considers inapplicable.
+
+```json
+"if":   { "properties": { "found": { "const": false } } },
+"then": { "required": ["reason"] },
+"else": { "not": { "required": ["reason"] } }
+```
+
+The condition is evaluated against the answer as it stands, so a field stops being excused the moment the run moves to the branch that needs it. Excused fields appear in the coverage summary as `not applicable`. Only the `{"properties": {"field": {"const": value}}}` form is read; anything richer is ignored rather than rejected, so an unusual schema gets the ordinary behaviour instead of a failed run.
+
+**A value you already hold.** If you have already fetched the page for your own purposes, there is no reason to pay an agent to read its `<title>` back to you. A `default` on a top-level field pre-fills the store before the run starts:
+
+```json
+"title": { "anyOf": [{ "type": "string" }, { "type": "null" }],
+           "default": "Arize AI | Agent Observability" }
+```
+
+Seeded values go through the same validated writer an agent write uses, so a seed cannot put the store into a state the agent could not have reached; anything that fails validation is skipped and left for the agent rather than failing the run. The feed records what was prefilled and what was rejected. Seeds are **hints, not locks**: the agent can overwrite one, which matters when the value came from a pre-JavaScript fetch of a client-rendered page.
+
+Because a seeded field holds a value, the completeness gate already treats it as filled. Nothing else in the schema changes.
+
 ## How the store behaves during a run
 
 The agent writes through a fixed set of actions, and every one validates before it lands:
@@ -48,7 +74,7 @@ The agent writes through a fixed set of actions, and every one validates before 
 | `update_item` / `update_items` | Merges fields into one item, or many in one call, reporting per-entry failures without aborting the rest |
 | `set_field` | Sets a top-level, non-list field |
 | `remove_items` | Deletes items by index, for duplicates or rows that should never have been records |
-| `mark_absent` | Settles a field the source genuinely does not publish, with a reason |
+| `mark_absent` | Settles a field the source genuinely does not publish, with a reason. Accepted once you have read the page you are claiming about; reading your own output back does not count, since it shows what you recorded rather than what the page publishes |
 | `read_output` / `search_output` | Reads back or searches what has been built, windowed and elided so a large store never floods the context |
 | `add_items_from_file` / `update_items_from_file` | Bulk-loads items or merges from a saved JSON file in one step |
 
@@ -76,7 +102,7 @@ For list-shaped extractions, the intended golden path takes four steps regardles
 
 The first time the agent calls `done` while schema fields are still empty, the call is bounced with the exact list of deficiencies: unset top-level fields, item fields empty on N of M items, an empty answer array, or a **link deficit** (`find_links` captured more usable links than the store holds items, with the unmatched URLs listed). The bounce includes shortcuts when they exist, such as a captured raw key that appears to fill an empty schema field, or a reminder that published dates usually live in each page's JSON-LD rather than its visible text.
 
-The gate is one-shot: the second `done` is always accepted, so it can never loop. Fields settled with `mark_absent` do not count as deficiencies, and a field that is partial once every item page has been read is treated as finished. When the gate passes, the feed shows a `schema` event whose action is `completeness` with the final coverage summary.
+The gate is one-shot: the second `done` is always accepted, so it can never loop. Fields settled with `mark_absent` do not count as deficiencies, fields the schema's own conditional excuses are never asked for at all, and a field that is partial once every item page has been read is treated as finished. When the gate passes, the feed shows a `schema` event whose action is `completeness` with the final coverage summary.
 
 Two consequences worth knowing:
 

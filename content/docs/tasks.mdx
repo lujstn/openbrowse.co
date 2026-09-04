@@ -11,7 +11,7 @@ Three things are extracted from the task before the first step:
 
 1. **The start URL.** The first `http(s)` URL in the task is saved to the session clipboard as `startUrl`, and the agent is instructed to begin by opening it. Put the URL in the task; do not make the agent search for the site.
 2. **The goal.** A cheap pre-flight LLM call reduces the task to one sentence stating what a complete and correct result looks like. That sentence is pinned under your task as `GOAL:` and re-injected every ten steps, so the first sentence of your task effectively becomes the run's standing instruction. Make it carry the finish line.
-3. **The schema, if any.** With an `outputSchema`, an empty answer store is built before the run and the agent is told its purpose is to fill it, not to memorise things. Field names and descriptions in the schema act as instructions; see [structured output](/docs/structured-output).
+3. **The schema, if any.** With an `outputSchema`, an empty answer store is built before the run and the agent is told its purpose is to fill it, not to memorise things. Field names and descriptions in the schema act as instructions, and the schema is also where you say which fields only apply sometimes and which values you already hold; see [structured output](/docs/structured-output).
 
 The system prompt already teaches the extraction method (collect links, read pages in bulk, load draft rows, fix judgement fields, settle absent fields, finish), warns the agent that index pages are a table of contents rather than the content, and forbids guessing enum values. You do not need to restate any of that. Your task supplies what the system prompt cannot know: the site, the goal, and the definition of done.
 
